@@ -1,0 +1,28 @@
+EUCALYPTUS="<%= node["eucalyptus"]["home-directory"] %>"
+EUCA_USER="<%= node["eucalyptus"]["user"] %>"
+CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
+NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
+CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
+SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
+NODES=""
+NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
+HYPERVISOR="<%= node["eucalyptus"]["nc"]["hypervisor"] %>"
+MAX_CORES="<%= node["eucalyptus"]["nc"]["max-cores"] %>"
+INSTANCE_PATH="<%= node["eucalyptus"]["nc"]["instance-path"] %>"
+VNET_MODE="<%= node["eucalyptus"]["network"]["mode"] %>"
+VNET_PRIVINTERFACE="<%= node["eucalyptus"]["network"]["private-interface"] %>"
+VNET_PUBINTERFACE="<%= node["eucalyptus"]["network"]["public-interface"] %>"
+VNET_BRIDGE="<%= node["eucalyptus"]["network"]["bridge-interface"] %>"
+VNET_PUBLICIPS="<%= node["eucalyptus"]["network"]["public-ips"] %>"
+VNET_PRIVATEIPS="<%= node["eucalyptus"]["network"]["private-ips"] %>"
+VNET_SUBNET="<%= node["eucalyptus"]["network"]["subnet"] %>"
+VNET_NETMASK="<%= node["eucalyptus"]["network"]["netmask"] %>"
+VNET_ADDRSPERNET="<%= node["eucalyptus"]["network"]["addresses-per-net"] %>"
+VNET_DNS="<%= node["eucalyptus"]["network"]["dns-server"] %>"
+VNET_BROADCAST="<%= node["eucalyptus"]["network"]["broadcast"] %>"
+<% if node["eucalyptus"]["network"]["router"] -%>
+    VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
+<% end -%>
+<% if node["eucalyptus"]["network"]["domain-name"] -%>
+    VNET_DOMAINNAME="<%= node["eucalyptus"]["network"]["domain-name"] %>"
+<% end -%>
