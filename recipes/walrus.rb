@@ -7,10 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
-## Install packages for the VB
-%w{eucalyptus-enterprise-vmware-broker}.each do |pkg|
+## Install packages for the Walrus
+%w{eucalyptus-walrus}.each do |pkg|
   package pkg do
-    action :upgrade
+    action :install
   end
 end
 

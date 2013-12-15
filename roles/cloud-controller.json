@@ -4,7 +4,7 @@
   "json_class": "Chef::Role",
   "default_attributes": {
     "eucalyptus": {
-      "release-rpm": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-internal-3.4-1.el6.noarch.rpm"
+      "install-load-balancer": false
     }
   },
   "override_attributes": {
@@ -12,7 +12,12 @@
   "chef_type": "role",
   "run_list": [
     "recipe[eucalyptus]",
-    "recipe[eucalyptus::cloud-controller]"
+    "recipe[eucalyptus::eutester]",
+    "recipe[eucalyptus::cluster-controller]",
+    "recipe[eucalyptus::walrus]",
+    "recipe[eucalyptus::storage-controller]",
+    "recipe[eucalyptus::cloud-controller]",
+    "recipe[eucalyptus::register-components]"
   ],
   "env_run_lists": {
   }

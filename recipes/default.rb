@@ -40,3 +40,11 @@ end
 execute 'yum install -y *release*.rpm' do
   cwd '/tmp'
 end
+
+execute 'Authorize passwordless SSH' do
+  command "ssh-keygen -f /root/.ssh/id_rsa -P '' && cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod og-r /root/.ssh/authorized_keys"
+end
+
+execute 'Add host key' do
+  command "ssh-keyscan #{node['ipaddress']} >> /root/.ssh/known_hosts"
+end

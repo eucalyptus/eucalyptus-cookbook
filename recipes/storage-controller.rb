@@ -10,6 +10,11 @@
 ## Install packages for the SC
 %w{eucalyptus-sc}.each do |pkg|
   package pkg do
-    action :install
+    action :upgrade
   end
+end
+
+service "eucalyptus-cloud" do
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
 end

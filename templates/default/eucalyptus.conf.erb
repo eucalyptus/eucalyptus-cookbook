@@ -20,6 +20,7 @@ VNET_NETMASK="<%= node["eucalyptus"]["network"]["netmask"] %>"
 VNET_ADDRSPERNET="<%= node["eucalyptus"]["network"]["addresses-per-net"] %>"
 VNET_DNS="<%= node["eucalyptus"]["network"]["dns-server"] %>"
 VNET_BROADCAST="<%= node["eucalyptus"]["network"]["broadcast"] %>"
+VNET_DHCPDAEMON="<%= node["eucalyptus"]["network"]["dhcp-daemon"] %>"
 <% if node["eucalyptus"]["network"]["router"] -%>
     VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
 <% end -%>
