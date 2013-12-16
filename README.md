@@ -5,6 +5,10 @@ This cookbook installs and configures Eucalyptus on CentOS 6 physical and virtua
 Requirements
 ------------
 
+#### Chef server config 
+Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
+erchef['s3_url_ttl'] = 3600
+
 #### Platforms
 This playbook only supports RHEL/CentOS 6 at the time being.
 

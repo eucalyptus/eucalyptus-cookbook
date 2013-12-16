@@ -2,8 +2,8 @@
 default["eucalyptus"]["install-type"] = "package"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
 default["eucalyptus"]["source-branch"] = "testing"
-default["eucalyptus"]["release-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-3.4.noarch.rpm"
-default["eucalyptus"]["euca2ools-rpm"] = "http://downloads.eucalyptus.com/software/euca2ools/3.0/centos/6/x86_64/euca2ools-release-3.0.noarch.rpm"
+default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/"
+default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.0/centos/6/x86_64/"
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
 default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
 default['eucalyptus']['install-load-balancer'] = false
@@ -30,6 +30,7 @@ default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd41"
 default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
+default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 default["eucalyptus"]["topology"]["walrus"] = ""
 
 ## Cluster the current recipe is running in more for

@@ -25,17 +25,18 @@ else
     creates "#{node["eucalyptus"]["home-directory"]}/usr/share/eucalyptus/eucalyptus-storage-*.jar"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud /etc/init.d/eucalyptus-cloud"
+  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud /etc/init.d/eucalyptus-cloud" do
+    creates "/etc/init.d/eucalyptus-cloud" 
+  end
   execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud"
-  execute "chown -R eucalyptus:eucalyptus #{node["eucalyptus"]["home-directory"]}"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
-  mode 0440
-  owner "eucalyptus"
-  group "eucalyptus"
+  action :create
 end
+
+execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
 
 service "eucalyptus-cloud" do
   action [ :enable, :start ]

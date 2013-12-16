@@ -17,14 +17,16 @@ selinux_state "SELinux Disabled" do
 end
 
 ## Install repo rpms
-remote_file "/tmp/eucalyptus-release.rpm" do
-  source node["eucalyptus"]["release-rpm"]
-  not_if "rpm -qa | grep -qx 'eucalyptus-release'"
+yum_repository "eucalyptus-release" do
+  description "Eucalyptus Package Repo"
+  url node["eucalyptus"]["eucalyptus-repo"]
+  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
 end
 
-remote_file "/tmp/euca2ools-release.rpm" do
-  source node["eucalyptus"]["euca2ools-rpm"]
-  not_if "rpm -qa | grep -qx 'euca2ools-release'"
+yum_repository "euca2ools-release" do
+  description "Euca2ools Package Repo"
+  url node["eucalyptus"]["euca2ools-repo"]
+  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
 end
 
 remote_file "/tmp/epel-release.rpm" do
@@ -78,7 +80,7 @@ if node["eucalyptus"]["install-type"] == "source"
 
   ### Runtime deps
   %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c 
-    axis2c-devel bridge-utils coreutils curl curl-devel 
+    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils 
     dejavu-serif-fonts device-mapper dhcp41 dhcp41-common drbd drbd83 drbd83-kmod 
     drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm 
     PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
