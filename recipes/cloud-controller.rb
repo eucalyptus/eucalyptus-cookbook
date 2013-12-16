@@ -24,17 +24,17 @@ else
   execute 'rm /etc/security/limits.d/90-nproc.conf' # these apparently override limits.conf?
   execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
   ## Install CLC from source from internal repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0/' && export JAVA='$JAVA_HOME/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/clc"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/clc"
   end
   ## Install CLC from open source repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0/' && export JAVA='$JAVA_HOME/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/clc"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/clc"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute 'ln -s #{default["eucalyptus"]["home-directory"]}/etc/init.d/eucalyptus-cloud /etc/init.d/eucalyptus-cloud'
+  execute "ln -s #{default["eucalyptus"]["home-directory"]}/etc/init.d/eucalyptus-cloud /etc/init.d/eucalyptus-cloud"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
