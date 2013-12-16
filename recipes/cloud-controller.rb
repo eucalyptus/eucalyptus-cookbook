@@ -34,7 +34,9 @@ else
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/clc"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute "ln -s #{default["eucalyptus"]["home-directory"]}/etc/init.d/eucalyptus-cloud /etc/init.d/eucalyptus-cloud"
+  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud /etc/init.d/eucalyptus-cloud"
+  execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud"
+  execute "chown -R eucalyptus:eucalyptus #{node["eucalyptus"]["home-directory"]}"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
@@ -48,12 +50,12 @@ execute "Stop any running cloud process" do
 	command "service eucalyptus-cloud stop || true"
 end
 
-execute "Clear /var/run/eucalyptus" do
-	command "rm -rf /var/run/eucalyptus*"
+execute "Clear $EUCALYPTUS/var/run/eucalyptus" do
+	command "rm -rf #{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus/*"
 end
 
 execute "Initialize Eucalyptus DB" do
- command "euca_conf --initialize"
+ command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --initialize"
 end
 
 service "eucalyptus-cloud" do
@@ -62,7 +64,7 @@ service "eucalyptus-cloud" do
 end
 
 execute "Wait for credentials." do
-  command "euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 10
   retry_delay 50
