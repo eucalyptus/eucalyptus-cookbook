@@ -19,17 +19,32 @@ node[:bridger][:dhcp] = 'true' # (dhcp in use on interface)
 #node[:bridger][:netmask] = '255.255.255.0' # (netmask in use)
 #node[:bridger][:gateway] = nil # (gateway to use)
 
-if node["eucalyptus"]["install-type"] == "package"
-  %w{eucalyptus-nc}.each do |pkg|
-    package pkg do
-      action :upgrade
-    end
+if node["eucalyptus"]["install-type"] == "packages"
+  package "eucalyptus-nc" do
+    action :install
   end
 else
-  execute "usermod -a -G kvm eucalyptus"
-  execute "cp #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
-  execute "dbus-uuidgen > /var/lib/dbus/machine-id && service messagebus restart"
+  ## Install CC from source from internal repo if it exists
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+    cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node"
+  end
+  ## Install CLC from open source repo if it exists
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+    cwd "#{node["eucalyptus"]["home-directory"]}/source/node"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/node"
+  end
+  ### Create symlink for eucalyptus-cloud service
+  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-nc"
+  execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
+  execute "chown -R eucalyptus:eucalyptus #{node["eucalyptus"]["home-directory"]}"
+end
 
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  mode 0440
+  owner "eucalyptus"
+  group "eucalyptus"
 end
 
 service "eucalyptus-nc" do
