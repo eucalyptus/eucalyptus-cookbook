@@ -1,5 +1,7 @@
 #### Install Info
 default["eucalyptus"]["install-type"] = "package"
+default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
+default["eucalyptus"]["source-branch"] = "testing"
 default["eucalyptus"]["release-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-3.4.noarch.rpm"
 default["eucalyptus"]["euca2ools-rpm"] = "http://downloads.eucalyptus.com/software/euca2ools/3.0/centos/6/x86_64/euca2ools-release-3.0.noarch.rpm"
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
@@ -29,8 +31,6 @@ default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
 default["eucalyptus"]["topology"]["walrus"] = ""
-
-default["eucalyptus"]["eutester"]["ssh"]["password"] = "foobar"
 
 ## Cluster the current recipe is running in more for
 default["eucalyptus"]["cluster-name"] = "default"

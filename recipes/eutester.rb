@@ -14,7 +14,6 @@
   end
 end
 
-execute "Install eutester" do
-  command "easy_install eutester"
-  action :run
+easy_install_package "eutester" do
+	  action :install
 end

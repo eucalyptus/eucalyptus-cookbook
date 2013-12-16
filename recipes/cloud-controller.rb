@@ -12,12 +12,32 @@ package "unzip" do
   action :install
 end
 
-## Install packages for the CLC
-package "eucalyptus-cloud" do
-  action :install
+## Install binaries for the CLC
+if node["eucalyptus"]["install-type"] == "packages"
+  package "eucalyptus-cloud" do
+    action :install
+  end
+else
+  # increasing max process limit to accommodate CLC
+  execute 'echo "* soft nproc 64000" >>/etc/security/limits.conf'
+  execute 'echo "* hard nproc 64000" >>/etc/security/limits.confi'
+  execute 'rm /etc/security/limits.d/90-nproc.conf' # these apparently override limits.conf?
+  execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
+  ## Install CLC from source from internal repo if it exists
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0/' && export JAVA='$JAVA_HOME/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+    cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/clc"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/clc"
+  end
+  ## Install CLC from open source repo if it exists
+  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0/' && export JAVA='$JAVA_HOME/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+    cwd "#{node["eucalyptus"]["home-directory"]}/source/clc"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/clc"
+  end
+  ### Create symlink for eucalyptus-cloud service
+  execute 'ln -s #{default["eucalyptus"]["home-directory"]}/etc/init.d/eucalyptus-cloud /etc/init.d/eucalyptus-cloud'
 end
 
-template "/etc/eucalyptus/eucalyptus.conf" do
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   mode 0440
   owner "eucalyptus"
@@ -41,8 +61,6 @@ service "eucalyptus-cloud" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-#The ignore_failure, provider, retries, retry_delay, and supports attributes can be used with any resource or lightweight resources.
-
 execute "Wait for credentials." do
   command "euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
@@ -54,5 +72,5 @@ if node['eucalyptus']['install-load-balancer']
   package "eucalyptus-load-balancer-image" do
     action :install
   end
-  #execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
 end
