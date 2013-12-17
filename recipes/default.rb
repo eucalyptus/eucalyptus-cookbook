@@ -11,7 +11,6 @@
 include_recipe "ntp"
 
 ## Disable SELinux
-include_recipe "selinux"
 selinux_state "SELinux Disabled" do
   action :disabled
 end
