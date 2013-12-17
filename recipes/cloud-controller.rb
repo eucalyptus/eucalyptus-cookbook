@@ -27,13 +27,13 @@ else
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/clc"
-    creates "#{node["eucalyptus"]["home-directory"]}/usr/share/eucalyptus/eucalyptus-cloud*.jar"
+    creates "/etc/init.d/eucalyptus-cloud"
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/clc"
-    creates "#{node["eucalyptus"]["home-directory"]}/usr/share/eucalyptus/eucalyptus-cloud*.jar"
+    creates "/etc/init.d/eucalyptus-cloud"
   end
   ### Create symlink for eucalyptus-cloud service
   execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud /etc/init.d/eucalyptus-cloud" do

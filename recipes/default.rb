@@ -67,7 +67,6 @@ if node["eucalyptus"]["install-type"] == "source"
 
   ### This is a source install so we need the build time deps and runtime deps
   ### Build time first
-  execute 'yum groupinstall -y development'
   
   %w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
     axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel 

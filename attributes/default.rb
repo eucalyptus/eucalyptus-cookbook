@@ -14,6 +14,7 @@ default["eucalyptus"]["home-directory"] = "/"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
 default["eucalyptus"]["install-load-balancer"] = true
+default["eucalyptus"]["local-cluster-name"] = "default"
 
 ## Networking Config
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"

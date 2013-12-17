@@ -7,18 +7,22 @@
 # All rights reserved - Do Not Redistribute
 #
 
+## Setup Bridge
+template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["public-interface"] do
+  source "ifcfg-eth0.erb"
+  mode 0440
+  owner "root"
+  group "root"
+end
+
+template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"] do
+  source "ifcfg-br0.erb"
+  mode 0440
+  owner "root"
+  group "root"
+end
+
 ## Install packages for the NC
-
-include_recipe "bridger"
-
-node[:bridger][:interface] = node["eucalyptus"]["network"]["public-interface"] # (interface to bridge to)
-node[:bridger][:name] = node["eucalyptus"]["network"]["bridge-interface"] # (name of the bridge)
-### Need to add these to config
-node[:bridger][:dhcp] = 'true' # (dhcp in use on interface)
-#node[:bridger][:address] = nil # (static address to use)
-#node[:bridger][:netmask] = '255.255.255.0' # (netmask in use)
-#node[:bridger][:gateway] = nil # (gateway to use)
-
 if node["eucalyptus"]["install-type"] == "packages"
   package "eucalyptus-nc" do
     action :install
@@ -26,16 +30,19 @@ if node["eucalyptus"]["install-type"] == "packages"
 else
   ## Install CC from source from internal repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node"
-    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node"
+    cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus"
+    creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node/generated"
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source/node"
-    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/node"
+    cwd "#{node["eucalyptus"]["home-directory"]}/source"
+    only_if "ls #{node["eucalyptus"]["home-directory"]}/source"
+    creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node/generated"
   end
   ### Create symlink for eucalyptus-cloud service
   execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-nc"
+  execute "cp #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
   execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
 end
 

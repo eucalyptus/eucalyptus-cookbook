@@ -16,7 +16,7 @@ execute "Authorizing SSH and ICMP traffic for default security group" do
 end
 
 execute "Wait for resource availability" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-availability-zones verbose | grep m1.small | cut -f 3 | cut -f 1 -d ' ') -eq 0"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-availability-zones verbose | grep m1.small | grep -v 0000"
   retries 50
   retry_delay 10
 end
