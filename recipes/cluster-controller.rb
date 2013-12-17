@@ -17,11 +17,13 @@ else
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus/cluster"
+    creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/cluster/generated"
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["home-directory"]}/source/"
     only_if "ls #{node["eucalyptus"]["home-directory"]}/source/cluster"
+    creates "#{node["eucalyptus"]["home-directory"]}/source/cluster/generated"
   end
   ### Create symlink for eucalyptus-cloud service
   execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cc /etc/init.d/eucalyptus-cc"

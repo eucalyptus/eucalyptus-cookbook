@@ -67,7 +67,7 @@ service "eucalyptus-cloud" do
 end
 
 execute "Wait for credentials." do
-  command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 10
   retry_delay 50
