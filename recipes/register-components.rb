@@ -40,3 +40,10 @@ end
 execute "Register Walrus" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-walrus -P walrus -H #{walrus_ip} -C walrus-1"
 end
+
+execute "Wait for credentials with S3 URL populated" do
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  cwd node['eucalyptus']['admin-cred-dir']
+  retries 10
+  retry_delay 50
+end
