@@ -8,7 +8,8 @@
       "source-branch": "maint/3.4/testing",
       "home-directory": "/opt/eucalyptus",
       "release-rpm": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-internal-3.4-1.el6.noarch.rpm",
-      "install-load-balancer": false
+      "install-load-balancer": false,
+      "nc" : {"hypervisor" : "qemu"}
     }
   },
   "override_attributes": {
@@ -20,7 +21,9 @@
     "recipe[eucalyptus::cluster-controller]",
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
+    "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::register-components]",
+    "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::create-first-resources]"
   ],
   "env_run_lists": {
