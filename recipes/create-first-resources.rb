@@ -15,6 +15,10 @@ execute "Authorizing SSH and ICMP traffic for default security group" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-authorize -P icmp -t -1:-1 -s 0.0.0.0/0 default && euca-authorize -P tcp -p 22 -s 0.0.0.0/0 default"
 end
 
+execute "Install default image" do
+  command "eustore-install-image -b my-first-image -i $(eustore-describe-images | egrep \"#{node["eucalyptus"]["default-image"]}.*kvm\" | head -1 | cut -f 1)"
+end
+
 execute "Wait for resource availability" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-availability-zones verbose | grep m1.small | grep -v 0000"
   retries 50

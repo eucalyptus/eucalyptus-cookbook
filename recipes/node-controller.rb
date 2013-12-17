@@ -22,6 +22,8 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   group "root"
 end
 
+execute "service network restart"
+
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
   package "eucalyptus-nc" do

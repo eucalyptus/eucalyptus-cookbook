@@ -15,6 +15,7 @@ default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
 default["eucalyptus"]["install-load-balancer"] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
+default["eucalyptus"]["default-image"] = "cirros"
 
 ## Networking Config
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
@@ -33,9 +34,6 @@ default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 default["eucalyptus"]["topology"]["walrus"] = ""
-
-## Cluster the current recipe is running in more for
-default["eucalyptus"]["cluster-name"] = "default"
 
 ## CC Specific
 default["eucalyptus"]["cc"]["port"] = "8774"
