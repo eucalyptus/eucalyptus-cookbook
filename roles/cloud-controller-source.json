@@ -1,0 +1,28 @@
+{
+  "name": "cloud-controller-source",
+  "description": "",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    "eucalyptus": {
+      "install-type": "source",
+      "source-branch": "maint/3.4/testing",
+      "home-directory": "/opt/eucalyptus",
+      "release-rpm": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-internal-3.4-1.el6.noarch.rpm",
+      "install-load-balancer": false
+    }
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[eucalyptus]",
+    "recipe[eucalyptus::cloud-controller]",
+    "recipe[eucalyptus::cluster-controller]",
+    "recipe[eucalyptus::storage-controller]",
+    "recipe[eucalyptus::walrus]",
+    "recipe[eucalyptus::register-components]",
+    "recipe[eucalyptus::create-first-resources]"
+  ],
+  "env_run_lists": {
+  }
+}
