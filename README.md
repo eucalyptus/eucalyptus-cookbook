@@ -10,7 +10,12 @@ Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
 erchef['s3_url_ttl'] = 3600
 
 #### Platforms
-This playbook only supports RHEL/CentOS 6 at the time being.
+This cookbook only supports RHEL/CentOS 6 at the time being.
+
+#### Bershelf
+A Berksfile is included to allow users to easily download the required cookbook dependencies.
+- Install Berkshelf: `gem install berkshelf`
+- Install Deps from inside this cookbook: `berks install`
 
 #### Cookbooks
 - `bridger` - configures bridges on Node Controllers
