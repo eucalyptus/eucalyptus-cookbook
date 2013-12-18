@@ -45,9 +45,10 @@ end
 if node["eucalyptus"]["install-type"] == "source"
   ### Create eucalyptus user
   user "eucalyptus" do
+    supports :manage_home => true
     comment "Eucalyptus User"
-    system true
-    shell "/bin/false"
+    home "/home/eucalyptus"
+    shell "/bin/bash"
   end
   ### Create eucalyptus home directory
   directory node["eucalyptus"]["home-directory"] do
