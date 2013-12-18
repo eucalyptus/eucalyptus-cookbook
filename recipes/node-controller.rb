@@ -48,6 +48,11 @@ else
   execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
 end
 
+## Setup bridge to allow instances to dhcp properly and early on
+execute "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
