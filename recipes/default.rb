@@ -35,11 +35,12 @@ end
 
 remote_file "/tmp/elrepo-release.rpm" do
   source node["eucalyptus"]["elrepo-rpm"]
-  not_if "rpm -qa | grep -qx 'elrepo-release'"
+  not_if "rpm -qa | grep 'elrepo-release'"
 end
 
 execute 'yum install -y *release*.rpm' do
   cwd '/tmp'
+  only_if "ls /tmp/*release*.rpm"
 end
 
 if node["eucalyptus"]["install-type"] == "source"
