@@ -9,7 +9,7 @@
 
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
-  source "ifcfg-eth0.erb"
+  source "ifcfg-eth.erb"
   mode 0440
   owner "root"
   group "root"
