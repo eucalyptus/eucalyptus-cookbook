@@ -109,9 +109,12 @@ if node["eucalyptus"]["install-type"] == "source"
   end
 end
 
+execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
+  not_if "ls /root/.ssh/id_rsa"
+end
 
-execute 'Authorize passwordless SSH' do
-  command "ssh-keygen -f /root/.ssh/id_rsa -P '' && cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod og-r /root/.ssh/authorized_keys"
+execute 'Authorize passwordless SSH for self' do
+  command "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod og-r /root/.ssh/authorized_keys"
 end
 
 execute 'Add host key' do
