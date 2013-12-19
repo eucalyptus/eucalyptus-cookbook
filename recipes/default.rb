@@ -30,7 +30,7 @@ end
 
 remote_file "/tmp/epel-release.rpm" do
   source node["eucalyptus"]["epel-rpm"]
-  not_if "rpm -qa | grep -qx 'epel-release'"
+  not_if "rpm -qa | grep 'epel-release'"
 end
 
 remote_file "/tmp/elrepo-release.rpm" do
