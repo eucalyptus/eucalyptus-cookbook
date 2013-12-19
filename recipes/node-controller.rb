@@ -46,6 +46,10 @@ else
   execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-nc"
   execute "cp #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
   execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
+  service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+  end
 end
 
 ## Setup bridge to allow instances to dhcp properly and early on
