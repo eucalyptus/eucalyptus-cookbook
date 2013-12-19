@@ -47,3 +47,11 @@ execute "Wait for credentials with S3 URL populated" do
   retries 10
   retry_delay 50
 end
+
+### Register ELB Image
+if node['eucalyptus']['install-load-balancer']
+  package "eucalyptus-load-balancer-image" do
+    action :install
+  end
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
+end

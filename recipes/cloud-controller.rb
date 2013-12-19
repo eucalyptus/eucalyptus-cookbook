@@ -72,10 +72,3 @@ execute "Wait for credentials." do
   retries 10
   retry_delay 50
 end
-
-if node['eucalyptus']['install-load-balancer']
-  package "eucalyptus-load-balancer-image" do
-    action :install
-  end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
-end
