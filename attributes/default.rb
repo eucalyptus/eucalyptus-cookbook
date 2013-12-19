@@ -1,5 +1,5 @@
 #### Install Info
-default["eucalyptus"]["install-type"] = "package"
+default["eucalyptus"]["install-type"] = "packages"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
 default["eucalyptus"]["source-branch"] = "testing"
 default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/"
