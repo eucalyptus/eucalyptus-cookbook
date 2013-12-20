@@ -59,6 +59,7 @@ end
 
 execute "Initialize Eucalyptus DB" do
  command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --initialize"
+ creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
 end
 
 service "eucalyptus-cloud" do
