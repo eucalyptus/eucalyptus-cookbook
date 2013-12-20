@@ -29,6 +29,11 @@ if node["eucalyptus"]["install-type"] == "packages"
   package "eucalyptus-nc" do
     action :install
   end
+  if node["eucalyptus"]["network"]["mode"] == "EDGE"
+    package "eucalyptus-eucanet" do
+      action :install
+    end
+  end
 else
   ## Install CC from source from internal repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
@@ -46,6 +51,10 @@ else
   execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-nc"
   execute "cp #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
   execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
+  if node["eucalyptus"]["network"]["mode"] == "EDGE"
+    execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-eucanetd"
+    execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-eucanetd"
+  end
   service "messagebus" do
     supports :status => true, :restart => true, :reload => true
     action [ :enable, :start ]
