@@ -1,6 +1,6 @@
 {
-  "name": "cloud-controller-source",
-  "description": "",
+  "name": "cloud-in-a-box-source",
+  "description": "All components installed from source and configured to run on the same machine",
   "json_class": "Chef::Role",
   "default_attributes": {
     "eucalyptus": {
@@ -8,11 +8,8 @@
       "source-branch": "maint/3.4/testing",
       "home-directory": "/opt/eucalyptus",
       "release-rpm": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-internal-3.4-1.el6.noarch.rpm",
-      "install-load-balancer": false,
-      "nc" : {"hypervisor" : "qemu"}
+      "install-load-balancer": false
     }
-  },
-  "override_attributes": {
   },
   "chef_type": "role",
   "run_list": [
@@ -25,7 +22,5 @@
     "recipe[eucalyptus::register-components]",
     "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::create-first-resources]"
-  ],
-  "env_run_lists": {
-  }
+  ]
 }
