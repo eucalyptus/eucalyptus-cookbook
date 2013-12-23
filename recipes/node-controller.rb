@@ -24,8 +24,6 @@ end
 
 execute "service network restart"
 
-execute "service messagebus start"
-
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
   package "eucalyptus-nc" do
@@ -57,10 +55,11 @@ else
     execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-eucanetd"
     execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-eucanetd"
   end
-  service "messagebus" do
-    supports :status => true, :restart => true, :reload => true
-    action [ :enable, :start ]
-  end
+end
+
+service "messagebus" do
+  supports :status => true, :restart => true, :reload => true
+  action [ :enable, :start ]
 end
 
 ## Setup bridge to allow instances to dhcp properly and early on
