@@ -34,6 +34,12 @@ clusters.each do |cluster, info|
   end
 end
 
+
+if node['eucalyptus']['topology']['osg'] == ""
+      osg_ip = node['ipaddress']
+  else
+      osg_ip = node['eucalyptus']['topology']['osg']
+end
 ### If this is 4.0 we need to register an OSG
 execute "Register OSG" do
   command "#{euca_conf} --register-osg -P osg -H #{osg_ip} -C osg-1"
