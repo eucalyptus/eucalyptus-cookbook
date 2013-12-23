@@ -37,6 +37,10 @@ default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 default["eucalyptus"]["topology"]["walrus"] = ""
+default['eucalyptus']['topology']['riak']['endpoint'] = ""
+default['eucalyptus']['topology']['riak']['access-key'] = ""
+default['eucalyptus']['topology']['riak']['secret-key'] = ""
+
 
 ## CC Specific
 default["eucalyptus"]["cc"]["port"] = "8774"
