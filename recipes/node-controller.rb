@@ -24,6 +24,8 @@ end
 
 execute "service network restart"
 
+execute "service messagebus start"
+
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
   package "eucalyptus-nc" do
