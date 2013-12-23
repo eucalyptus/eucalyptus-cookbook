@@ -8,8 +8,9 @@
 #
 
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-sc" do
+  yum_package "eucalyptus-sc" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
 else
   ## Install CC from source from internal repo if it exists

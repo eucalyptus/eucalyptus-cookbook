@@ -74,7 +74,7 @@ if node["eucalyptus"]["install-type"] == "source"
     libxslt-devel m2crypto openssl-devel python-devel python-setuptools
     rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
     yum_package dependency do
-      options "--nogpg"
+      options node['eucalyptus']['yum-options']
     end
   end
 
@@ -88,7 +88,9 @@ if node["eucalyptus"]["install-type"] == "source"
     postgresql91 postgresql91-server python-boto python-devel python-setuptools 
     rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig 
     velocity vtun wget which xalan-j2-xsltc ipset ebtables}.each do |dependency|
-    yum_package dependency
+    yum_package dependency do
+      options node['eucalyptus']['yum-options']
+    end
   end
   
   ### Get WSDL2C

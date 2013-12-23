@@ -9,8 +9,9 @@
 
 ## Install packages for the Walrus
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-walrus" do
+  yum_package "eucalyptus-walrus" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
 else
   ## Install CC from source from internal repo if it exists

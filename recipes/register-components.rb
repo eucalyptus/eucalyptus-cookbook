@@ -77,8 +77,9 @@ end
 
 ### Register ELB Image
 if node['eucalyptus']['install-load-balancer']
-  package "eucalyptus-load-balancer-image" do
+  yum_package "eucalyptus-load-balancer-image" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
 end

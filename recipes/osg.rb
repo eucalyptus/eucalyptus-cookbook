@@ -9,8 +9,9 @@
 
 ## Install packages for the OSG
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-osg" do
+  yum_package "eucalyptus-osg" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
 else
   ## Install CC from source from internal repo if it exists

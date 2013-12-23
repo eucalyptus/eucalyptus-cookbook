@@ -9,8 +9,9 @@
 
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-cc" do
+  yum_package "eucalyptus-cc" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
 else
   ## Install CC from source from internal repo if it exists

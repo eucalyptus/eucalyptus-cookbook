@@ -8,8 +8,9 @@
 #
 
 ## Install unzip so we can extract creds
-package "unzip" do
+yum_package "unzip" do
   action :install
+  options node['eucalyptus']['yum-options']
 end
 
 # increasing max process limit to accommodate CLC
@@ -19,8 +20,9 @@ execute 'rm /etc/security/limits.d/90-nproc.conf' # these apparently override li
 
 ## Install binaries for the CLC
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-cloud" do
+  yum_package "eucalyptus-cloud" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
 else
   execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"

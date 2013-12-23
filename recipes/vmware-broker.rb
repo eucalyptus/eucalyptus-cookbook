@@ -9,8 +9,9 @@
 
 ## Install packages for the VB
 %w{eucalyptus-enterprise-vmware-broker}.each do |pkg|
-  package pkg do
+  yum_package pkg do
     action :upgrade
+    options node['eucalyptus']['yum-options']
   end
 end
 

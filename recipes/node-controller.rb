@@ -26,12 +26,14 @@ execute "service network restart"
 
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
-  package "eucalyptus-nc" do
+  yum_package "eucalyptus-nc" do
     action :install
+    options node['eucalyptus']['yum-options']
   end
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    package "eucalyptus-eucanet" do
+    yum_package "eucalyptus-eucanet" do
       action :install
+      options node['eucalyptus']['yum-options']
     end
   end
 else
