@@ -7,6 +7,7 @@ default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/softw
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
 default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
 default['eucalyptus']['install-load-balancer'] = false
+default['eucalyptus']['yum-options'] = ""
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
