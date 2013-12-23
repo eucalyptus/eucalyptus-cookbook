@@ -20,7 +20,7 @@ if node["eucalyptus"]["install-type"] == "packages"
 else
   # increasing max process limit to accommodate CLC
   execute 'echo "* soft nproc 64000" >>/etc/security/limits.conf'
-  execute 'echo "* hard nproc 64000" >>/etc/security/limits.confi'
+  execute 'echo "* hard nproc 64000" >>/etc/security/limits.conf'
   execute 'rm /etc/security/limits.d/90-nproc.conf' # these apparently override limits.conf?
   execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
   ## Install CLC from source from internal repo if it exists
