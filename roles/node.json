@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "description": "All frontend components on one machine: CLC WS CC SC",
+  "name": "node",
+  "description": "Node controller installation",
   "json_class": "Chef::Role",
   "default_attributes": {
     "eucalyptus": {
