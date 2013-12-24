@@ -75,7 +75,7 @@ else
 end
 
 execute "Wait for credentials with S3 URL populated" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip && grep "export S3_URL" eucarc"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 10
   retry_delay 50
