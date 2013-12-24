@@ -1,0 +1,16 @@
+{
+  "name": "frontend",
+  "description": "All frontend components on one machine: CLC WS CC SC",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+    "eucalyptus": {
+      "release-repo": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/",
+      "install-load-balancer": false
+    }
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[eucalyptus]",
+    "recipe[eucalyptus::node-controller]"
+  ]
+}
