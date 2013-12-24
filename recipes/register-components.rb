@@ -18,6 +18,8 @@ clusters.each do |cluster, info|
   else
 	cc_ip = info["cc-1"]
   end
+  
+  ssh_known_hosts_entry cc_ip
   execute "Register CC" do
     command "#{euca_conf} --register-cluster -P #{cluster} -H #{cc_ip} -C #{cluster}-cc-1"
   end
@@ -26,6 +28,8 @@ clusters.each do |cluster, info|
   else
 	sc_ip = info["sc-1"]
   end
+  
+  ssh_known_hosts_entry sc_ip
   execute "Register SC" do
     command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1"
   end
@@ -41,6 +45,8 @@ if node['eucalyptus']['topology']['osg'] == ""
       osg_ip = node['eucalyptus']['topology']['osg']
 end
 ### If this is 4.0 we need to register an OSG
+
+ssh_known_hosts_entry osg_ip
 execute "Register OSG" do
   command "#{euca_conf} --register-osg -P osg -H #{osg_ip} -C osg-1"
   only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
@@ -68,6 +74,7 @@ else
       walrus_ip = node['eucalyptus']['topology']['walrus']
   end
 
+  ssh_known_hosts_entry walrus_ip
   ##### Register Walrus
   execute "Register Walrus" do
     command "#{euca_conf} --register-walrus -P walrus -H #{walrus_ip} -C walrus-1"

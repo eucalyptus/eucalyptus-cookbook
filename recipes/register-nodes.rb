@@ -14,6 +14,11 @@ if cluster['nodes'] == ""
 else
   nodes = cluster['nodes']
 end
+
+nodes.split().each do |nc_ip|
+  ssh_known_hosts_entry nc_ip
+end
+
 execute "Register Nodes" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nodes}"
 end
