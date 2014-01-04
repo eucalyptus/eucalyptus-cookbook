@@ -75,7 +75,7 @@ if node["eucalyptus"]["install-type"] == "source"
   ### Add build deps repo
   yum_repository "euca-build-deps" do
     description "Eucalyptus Build Dependencies repo"
-    url "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
+    url node['eucalyptus']['build-deps-repo']
     action :add
   end
 
