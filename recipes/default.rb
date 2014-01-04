@@ -115,6 +115,7 @@ if node["eucalyptus"]["install-type"] == "source"
   git "#{node['eucalyptus']['home-directory']}/source" do
     repository node['eucalyptus']['source-repo']
     reference node['eucalyptus']['source-branch']
+    enable_submodules true
     action :sync
   end
 
