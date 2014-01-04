@@ -7,6 +7,17 @@
 # All rights reserved - Do Not Redistribute
 #
 
+## Init script
+if node['eucalyptus']['init-script-url']
+  remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
+    source node['eucalyptus']['init-script-url']
+    mode "777"
+  end
+  execute 'Running init script' do
+    command "bash #{node['eucalyptus']['home-directory']}/init.sh"
+  end
+end
+
 ## Setup NTP
 include_recipe "ntp"
 
