@@ -6,6 +6,15 @@
 #
 # All rights reserved - Do Not Redistribute
 #
+## Create home directory
+if node["eucalyptus"]["home-directory"] != "/"
+  directory node["eucalyptus"]["home-directory"] do
+    owner "eucalyptus"
+    group "eucalyptus"
+    mode 00750
+    action :create
+  end
+end
 
 ## Init script
 if node['eucalyptus']['init-script-url']
@@ -61,13 +70,6 @@ if node["eucalyptus"]["install-type"] == "source"
     comment "Eucalyptus User"
     home "/home/eucalyptus"
     shell "/bin/bash"
-  end
-  ### Create eucalyptus home directory
-  directory node["eucalyptus"]["home-directory"] do
-    owner "eucalyptus"
-    group "eucalyptus"
-    mode 00750
-    action :create
   end
 
   ### Add build deps repo
