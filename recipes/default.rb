@@ -17,7 +17,7 @@ if node["eucalyptus"]["home-directory"] != "/"
 end
 
 ## Init script
-if node['eucalyptus']['init-script-url']
+if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
     source node['eucalyptus']['init-script-url']
     mode "777"
@@ -119,8 +119,22 @@ if node["eucalyptus"]["install-type"] == "source"
     action :sync
   end
 
+  yum_repository "euca-vmware-libs" do
+    description "VDDK libs repo"
+    url node['eucalyptus']['vddk-libs-repo']
+    action :add
+    only_if "ls #{node['eucalyptus']['home-directory']}/source/vmware-broker"
+  end
+
+  yum_package "vmware-vix-disklib" do
+    only_if "ls #{node['eucalyptus']['home-directory']}/source/vmware-broker"  
+    options node['eucalyptus']['yum-options']
+  end
+
+  configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh --with-vddk=/opt/packages/vddk"
+
   ### Run configure
-  execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh" do
+  execute configure_command do
     cwd "#{node["eucalyptus"]["home-directory"]}/source"
   end
 end
