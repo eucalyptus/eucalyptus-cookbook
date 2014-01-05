@@ -27,8 +27,16 @@ else
     creates "#{node["eucalyptus"]["home-directory"]}/source/cluster/generated"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cc /etc/init.d/eucalyptus-cc"
-  execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cc"
+  tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/tools"
+  if node['eucalyptus']['source-repo'].end_with?("internal")
+    tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/tools"
+  end
+
+  execute "ln -s #{tools_dir}/eucalyptus-cc /etc/init.d/eucalyptus-cc" do
+    creates "/etc/init.d/eucalyptus-cc"
+  end
+
+  execute "chmod +x #{tools_dir}/eucalyptus-cc"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

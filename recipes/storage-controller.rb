@@ -26,10 +26,16 @@ else
     creates "/etc/init.d/eucalyptus-cloud"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud /etc/init.d/eucalyptus-cloud" do
-    creates "/etc/init.d/eucalyptus-cloud" 
+  tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/tools"
+  if node['eucalyptus']['source-repo'].end_with?("internal")
+    tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/tools"
   end
-  execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-cloud"
+
+  execute "ln -s #{tools_dir}/eucalyptus-cloud /etc/init.d/eucalyptus-cloud" do
+    creates "/etc/init.d/eucalyptus-cloud"
+  end
+
+  execute "chmod +x #{tools_dir}/eucalyptus-cloud"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

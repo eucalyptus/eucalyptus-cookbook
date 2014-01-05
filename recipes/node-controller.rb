@@ -50,12 +50,21 @@ else
     creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node/generated"
   end
   ### Create symlink for eucalyptus-cloud service
-  execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-nc"
-  execute "cp #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
-  execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc"
+  tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/tools"
+  if node['eucalyptus']['source-repo'].end_with?("internal")
+    tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/tools"
+  end
+
+  execute "ln -s #{tools_dir}/eucalyptus-nc /etc/init.d/eucalyptus-nc" do
+    creates "/etc/init.d/eucalyptus-nc"
+  end
+
+  execute "chmod +x #{tools_dir}/eucalyptus-nc"
+  execute "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
+  
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    execute "ln -s #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-nc /etc/init.d/eucalyptus-eucanetd"
-    execute "chmod +x #{node["eucalyptus"]["home-directory"]}/source/tools/eucalyptus-eucanetd"
+    execute "ln -s #{tools_dir}/eucalyptus-eucanetd /etc/init.d/eucalyptus-eucanetd"
+    execute "chmod +x #{tools_dir}/eucalyptus-eucanetd"
   end
 end
 
