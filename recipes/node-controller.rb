@@ -15,11 +15,18 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   group "root"
 end
 
+if node["eucalyptus"]["network"]["bridge-ip"] == ""
+  bridge_template = "ifcfg-br0-static.erb"
+else
+  bridge_template = "ifcfg-br0-dhcp.erb"
+end
+
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"] do
-  source "ifcfg-br0.erb"
+  source bridge_template
   mode 0440
   owner "root"
   group "root"
+  not_if "ls /etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"]
 end
 
 execute "service network restart"

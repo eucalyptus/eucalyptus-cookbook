@@ -1,0 +1,5 @@
+DEVICE=<%= node["eucalyptus"]["network"]["bridge-interface"] %>
+BOOTPROTO=static
+IPADDR=<%= node["eucalyptus"]["network"]["bridge-ip"] %>
+ONBOOT=yes
+TYPE=Bridge
