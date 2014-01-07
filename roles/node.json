@@ -2,12 +2,6 @@
   "name": "node",
   "description": "Node controller installation",
   "json_class": "Chef::Role",
-  "default_attributes": {
-    "eucalyptus": {
-      "release-repo": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/",
-      "install-load-balancer": false
-    }
-  },
   "chef_type": "role",
   "run_list": [
     "recipe[eucalyptus]",
