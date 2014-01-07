@@ -90,6 +90,13 @@ end
 
 ### Register ELB Image
 if node['eucalyptus']['install-load-balancer']
+  if node['eucalyptus']['load-balancer-repo'] != ""
+    yum_repository "eucalyptus-load-balancer" do
+      description "Eucalyptus LoadBalancer Repo"
+      url node["eucalyptus"]["load-balancer-repo"]
+      gpgcheck false
+    end
+  end
   yum_package "eucalyptus-load-balancer-image" do
     action :install
     options node['eucalyptus']['yum-options']

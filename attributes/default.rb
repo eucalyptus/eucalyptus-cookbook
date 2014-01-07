@@ -4,6 +4,7 @@ default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus
 default["eucalyptus"]["source-branch"] = "testing"
 default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/"
 default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.0/centos/6/x86_64/"
+default['eucalyptus']['load-balancer-repo'] = ""
 default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
 default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/euca-master-plugin-build-bootstrap/centos/$releasever/$basearch/"
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
