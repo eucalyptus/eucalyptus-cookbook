@@ -94,5 +94,5 @@ if node['eucalyptus']['install-load-balancer']
     action :install
     options node['eucalyptus']['yum-options']
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-install-load-balancer --install-default"
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"
 end
