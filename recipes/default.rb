@@ -88,6 +88,7 @@ if node["eucalyptus"]["install-type"] == "source"
     rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
     yum_package dependency do
       options node['eucalyptus']['yum-options']
+      action :upgrade
     end
   end
 
@@ -103,6 +104,7 @@ if node["eucalyptus"]["install-type"] == "source"
     velocity vtun wget which xalan-j2-xsltc ipset ebtables}.each do |dependency|
     yum_package dependency do
       options node['eucalyptus']['yum-options']
+      action :upgrade
     end
   end
   
@@ -132,6 +134,7 @@ if node["eucalyptus"]["install-type"] == "source"
   yum_package "vmware-vix-disklib" do
     only_if "ls #{node['eucalyptus']['home-directory']}/source/vmware-broker"  
     options node['eucalyptus']['yum-options']
+    action :upgrade
   end
 
   configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh --with-vddk=/opt/packages/vddk"
