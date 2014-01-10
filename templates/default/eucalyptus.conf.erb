@@ -6,8 +6,12 @@ CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
 NODES=""
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
-NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
-NC_CACHE_SIZE=<%= node["eucalyptus"]["nc"]["cache-size"] %>
+<% if node["eucalyptus"]["nc"]["work-size"] -%>
+    NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
+<% end -%>
+<% if node["eucalyptus"]["nc"]["cache-size"] -%>
+    NC_CACHE_SIZE=<%= node["eucalyptus"]["nc"]["cache-size"] %>
+<% end -%>
 HYPERVISOR="<%= node["eucalyptus"]["nc"]["hypervisor"] %>"
 MAX_CORES="<%= node["eucalyptus"]["nc"]["max-cores"] %>"
 INSTANCE_PATH="<%= node["eucalyptus"]["nc"]["instance-path"] %>"
