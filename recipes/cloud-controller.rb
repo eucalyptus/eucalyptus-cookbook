@@ -13,15 +13,6 @@ yum_package "unzip" do
   options node['eucalyptus']['yum-options']
 end
 
-# increasing max process limit to accommodate CLC
-execute 'echo "* soft nproc 64000" >>/etc/security/limits.conf'
-execute 'echo "* hard nproc 64000" >>/etc/security/limits.conf'
-
-# these apparently override limits.conf?
-execute 'rm /etc/security/limits.d/90-nproc.conf' do
-  only_if "ls /etc/security/limits.d/90-nproc.conf"
-end
-
 ## Install binaries for the CLC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
