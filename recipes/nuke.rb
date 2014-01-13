@@ -21,11 +21,11 @@ end
 
 ## Destroy all running VMs
 execute 'Destroy VMs' do
-  command "virsh list | grep 'running$' | sed -re 's/^\\s*[0-9-]+\\s+(.*?[^ ])\\s+running$/\"\\1\"/' | xargs -r -n 1 -P 1 virsh destroy"
+  command "virsh list | sed -re 's/^\\s*[0-9-]+\\s+(.*?[^ ])\\s+running$/\"\\1\"/' | xargs -r -n 1 -P 1 virsh destroy"
 end
 
 ## Purge all Packages
-%w{euca2ools 'eucalyptus*' python-eucadmin.noarch}.each do |pkg|
+%w{euca2ools %q[eucalyptus*] python-eucadmin.noarch}.each do |pkg|
   yum_package pkg do
     action :purge
   end
