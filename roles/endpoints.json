@@ -1,0 +1,11 @@
+{
+  "name": "endpoints",
+  "description": "All frontend components on one machine: CLC WS CC SC",
+  "json_class": "Chef::Role",
+  "chef_type": "role",
+  "run_list": [
+    "recipe[eucalyptus]",
+    "recipe[eucalyptus::cloud-controller]",
+    "recipe[eucalyptus::walrus]"
+  ]
+}

@@ -20,6 +20,10 @@ clusters.each do |cluster, info|
   end
   
   ssh_known_hosts_entry cc_ip
+  execute "Send creds to CC" do
+    command "scp #{node["eucalyptus"]["admin-cred-dir"]}/admin.zip root@#{cc_ip}:" 
+  end
+
   execute "Register CC" do
     command "#{euca_conf} --register-cluster -P #{cluster} -H #{cc_ip} -C #{cluster}-cc-1"
   end
