@@ -21,14 +21,19 @@ end
 
 ## Destroy all running VMs
 execute 'Destroy VMs' do
-  command "virsh list | sed -re 's/^\\s*[0-9-]+\\s+(.*?[^ ])\\s+running$/\"\\1\"/' | xargs -r -n 1 -P 1 virsh destroy"
+  command "virsh list | grep 'running$' | sed -re 's/^\\s*[0-9-]+\\s+(.*?[^ ])\\s+running$/\"\\1\"/' | xargs -r -n 1 -P 1 virsh destroy"
 end
 
 ## Purge all Packages
-%w{euca2ools %q[eucalyptus*] python-eucadmin.noarch}.each do |pkg|
+%w{euca2ools python-eucadmin.noarch}.each do |pkg|
   yum_package pkg do
     action :purge
   end
+end
+
+## Remove euca packages chef yum_package does not seem to like wildcard
+execute 'remove euca packages' do
+  command "yum -y remove 'eucalyptus*'"
 end
 
 ## Delete home directory
