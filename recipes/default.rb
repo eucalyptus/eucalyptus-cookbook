@@ -58,9 +58,14 @@ remote_file "/tmp/elrepo-release.rpm" do
   not_if "rpm -qa | grep 'elrepo-release'"
 end
 
-execute 'yum install -y *release*.rpm' do
+execute 'yum install -y *epel*.rpm' do
   cwd '/tmp'
-  only_if "ls /tmp/*release*.rpm"
+  not_if "ls /etc/yum.repos.d/epel*"
+end
+
+execute 'yum install -y *elrepo*.rpm' do
+  cwd '/tmp'
+  not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
 if node["eucalyptus"]["install-type"] == "source"
@@ -81,7 +86,7 @@ if node["eucalyptus"]["install-type"] == "source"
 
   ### This is a source install so we need the build time deps and runtime deps
   ### Build time first
-  
+
   %w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
     axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel 
     libxslt-devel m2crypto openssl-devel python-devel python-setuptools
