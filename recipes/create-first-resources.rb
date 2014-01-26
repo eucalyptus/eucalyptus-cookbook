@@ -16,7 +16,11 @@ execute "Authorizing SSH and ICMP traffic for default security group" do
 end
 
 execute "Install default image" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && eustore-install-image -b my-first-image -i $(eustore-describe-images | egrep \"#{node["eucalyptus"]["default-image"]}.*kvm\" | head -1 | cut -f 1)"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUSTORE_URL=#{node["eucalyptus"]["eustore-url"]} && eustore-install-image -b my-first-image -i $(eustore-describe-images | egrep \"#{node["eucalyptus"]["default-image"]}.*kvm\" | head -1 | cut -f 1)"
+end
+
+execute "Ensure default image is public" do
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep my-first-image | grep emi | awk '{print $2}')" 
 end
 
 execute "Wait for resource availability" do
