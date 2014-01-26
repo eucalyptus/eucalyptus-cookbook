@@ -46,20 +46,20 @@ if node["eucalyptus"]["install-type"] == "packages"
 else
   ## Install CC from source from internal repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus"
-    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/eucalyptus"
-    creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node/generated"
+    cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus"
+    only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus"
+    creates "#{node["eucalyptus"]["source-directory"]}/eucalyptus/node/generated"
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source"
-    only_if "ls #{node["eucalyptus"]["home-directory"]}/source"
-    creates "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/node/generated"
+    cwd "#{node["eucalyptus"]["source-directory"]}"
+    only_if "ls #{node["eucalyptus"]["source-directory"]}"
+    creates "#{node["eucalyptus"]["source-directory"]}/eucalyptus/node/generated"
   end
   ### Create symlink for eucalyptus-cloud service
-  tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/tools"
+  tools_dir = "#{node["eucalyptus"]["source-directory"]}/tools"
   if node['eucalyptus']['source-repo'].end_with?("internal")
-    tools_dir = "#{node["eucalyptus"]["home-directory"]}/source/eucalyptus/tools"
+    tools_dir = "#{node["eucalyptus"]["source-directory"]}/eucalyptus/tools"
   end
 
   execute "ln -s #{tools_dir}/eucalyptus-nc /etc/init.d/eucalyptus-nc" do
