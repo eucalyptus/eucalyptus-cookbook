@@ -120,12 +120,11 @@ if node["eucalyptus"]["install-type"] == "source"
 
   ### Checkout Eucalyptus Source
   execute "Checkout source" do
-    cwd node["eucalyptus"]["home-directory"]
-    command "git clone #{node['eucalyptus']['source-repo']} -b #{node['eucalyptus']['source-branch']} source"
+    command "git clone #{node['eucalyptus']['source-repo']} -b #{node['eucalyptus']['source-branch']} #{node['eucalyptus']['source-directory']}"
   end
 
   execute "Init submodules" do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source"
+    cwd "#{node["eucalyptus"]["source-directory"]}"
     command "git submodule init && git submodule update"
   end
 
@@ -133,11 +132,11 @@ if node["eucalyptus"]["install-type"] == "source"
     description "VDDK libs repo"
     url node['eucalyptus']['vddk-libs-repo']
     action :add
-    only_if "ls #{node['eucalyptus']['home-directory']}/source/vmware-broker"
+    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
   end
 
   yum_package "vmware-vix-disklib" do
-    only_if "ls #{node['eucalyptus']['home-directory']}/source/vmware-broker"  
+    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"  
     options node['eucalyptus']['yum-options']
     action :upgrade
   end
@@ -146,7 +145,7 @@ if node["eucalyptus"]["install-type"] == "source"
 
   ### Run configure
   execute configure_command do
-    cwd "#{node["eucalyptus"]["home-directory"]}/source"
+    cwd "#{node["eucalyptus"]["source-directory"]}"
   end
 end
 
