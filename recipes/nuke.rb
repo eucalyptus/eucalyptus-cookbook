@@ -7,16 +7,16 @@
 # All rights reserved - Do Not Redistribute
 #
 ## Stop all euca components
-execute 'Stop any running nc process' do
-  command 'service eucalyptus-nc stop || true'
+service "eucalyptus-nc" do
+  action [ :stop ]
 end
 
-execute 'Stop any running cc process' do
-  command 'service eucalyptus-cc stop || true'
+service "eucalyptus-cc" do
+  action [ :stop ]
 end
 
-execute 'Stop any running cloud process' do
-  command 'service eucalyptus-cloud stop || true'
+service "eucalyptus-cloud" do
+  action [ :stop ]
 end
 
 ## Destroy all running VMs
@@ -74,17 +74,6 @@ if node['eucalyptus']['install-type'] == 'source'
     description 'Eucalyptus Build Dependencies repo'
     url node['eucalyptus']['build-deps-repo']
     action :remove
-  end
-
-  ### Checkout Eucalyptus Source
-  execute 'Checkout source' do
-    cwd node['eucalyptus']['home-directory']
-    command "git clone #{node['eucalyptus']['source-repo']} -b #{node['eucalyptus']['source-branch']} source"
-  end
-
-  execute 'Init submodules' do
-    cwd "#{node['eucalyptus']['home-directory']}/source"
-    command 'git submodule init && git submodule update'
   end
 
   directory node['eucalyptus']['home-directory']/source do
