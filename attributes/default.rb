@@ -19,6 +19,7 @@ default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['admin-cred-dir'] = "/root"
 default["eucalyptus"]["home-directory"] = "/"
 default["eucalyptus"]["log-level"] = "INFO"
+default["eucalyptus"]["source-directory"] = "/"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
 default["eucalyptus"]["install-load-balancer"] = true
