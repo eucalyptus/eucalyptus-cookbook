@@ -107,3 +107,7 @@ if node['eucalyptus']['install-load-balancer']
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"
 end
+
+execute "Set DNS server on CLC" do
+  command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
+end
