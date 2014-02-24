@@ -29,6 +29,9 @@ end
 
 ## Setup NTP
 include_recipe "ntp"
+execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
+  cwd '/tmp'
+end
 
 ## Disable SELinux
 selinux_state "SELinux Disabled" do

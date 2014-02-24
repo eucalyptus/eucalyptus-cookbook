@@ -26,6 +26,8 @@ default["eucalyptus"]["install-load-balancer"] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
 default["eucalyptus"]["default-image"] = "cirros"
 default["eucalyptus"]["cloud-keys"] = {}
+default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
+
 ## Networking Config
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 default["eucalyptus"]["network"]["private-interface"] = "eth0"
