@@ -12,7 +12,6 @@
   },
   "chef_type": "role",
   "run_list": [
-    "recipe[eucalyptus]",
     "recipe[eucalyptus::cloud-controller]",
     "recipe[eucalyptus::register-components]",
     "recipe[eucalyptus::cluster-controller]",
