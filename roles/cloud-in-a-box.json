@@ -20,6 +20,7 @@
     "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
+    "recipe[eucalyptus::configure-storage]",
     "recipe[eucalyptus::create-first-resources]"
   ],
   "env_run_lists": {

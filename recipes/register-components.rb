@@ -7,18 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-##### Sync cloud keys
-cloud_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys"
-ruby_block "Upload cloud keys Chef Server" do
-  block do
-    %w(cloud-cert.pem cloud-pk.pem euca.p12 cc-client-policy.xml sc-client-policy.xml).each do |key_name|
-      cert = Base64.encode64(::File.new("#{cloud_keys_dir}/#{key_name}").read)
-      node.set['eucalyptus']['cloud-keys'][key_name] = cert
-      node.save
-    end
-  end
-end
-
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
@@ -48,9 +36,6 @@ clusters.each do |cluster, info|
   execute "Register SC" do
     command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep #{cluster}-sc-1"
-  end
-  execute "Set storage backend" do
-     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{info["storage-backend"]}"
   end
   #### Sync cluster keys
   cluster_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{cluster}"
