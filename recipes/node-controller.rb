@@ -7,6 +7,8 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe "eucalyptus::default"
+
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
   source "ifcfg-eth.erb"
@@ -87,10 +89,27 @@ execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
-  action :create
+  action :create_if_missing
 end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
+
+
+ruby_block "Get node keys from CC" do
+  block do
+    cc_ip = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"]
+    cc = search(:node, "ipaddress:#{cc_ip}").first
+    cc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
+      file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+      File.open(file_name, 'w', ) do |file|
+        file.puts Base64.decode64(data)
+      end
+      require 'fileutils'
+      FileUtils.chmod 0700, file_name
+      FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+    end
+  end
+end
 
 service "eucalyptus-nc" do
   action [ :enable, :start ]

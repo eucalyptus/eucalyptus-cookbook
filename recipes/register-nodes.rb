@@ -15,15 +15,17 @@ else
   nodes = cluster['nodes']
 end
 
-execute "Unzip creds if present" do
-  command "unzip -o admin.zip"
-  only_if "ls #{node["eucalyptus"]["admin-cred-dir"]}/admin.zip"
-  cwd node["eucalyptus"]["admin-cred-dir"]
+ruby_block "Save node list" do
+  block do
+    node.set["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] = nodes
+    node.save
+  end
 end
 
 nodes.split().each do |nc_ip|
   ssh_known_hosts_entry nc_ip
   execute "Register Nodes" do
-    command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip}"
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip}"
   end
 end
+

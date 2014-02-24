@@ -5,7 +5,7 @@ CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
 NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
 CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
-NODES=""
+NODES="<%= node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] %>"
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
     NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>

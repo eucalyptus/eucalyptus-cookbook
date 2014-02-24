@@ -2,16 +2,26 @@
   "name": "cloud-in-a-box",
   "description": "All components configured on the same machine.",
   "json_class": "Chef::Role",
+  "default_attributes": {
+    "eucalyptus": {
+      "release-repo": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/",
+      "install-load-balancer": false
+    }
+  },
+  "override_attributes": {
+  },
   "chef_type": "role",
   "run_list": [
     "recipe[eucalyptus]",
     "recipe[eucalyptus::cloud-controller]",
+    "recipe[eucalyptus::register-components]",
     "recipe[eucalyptus::cluster-controller]",
+    "recipe[eucalyptus::register-nodes]",
+    "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::node-controller]",
-    "recipe[eucalyptus::register-components]",
-    "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::create-first-resources]"
-  ]
+  ],
+  "env_run_lists": {
+  }
 }

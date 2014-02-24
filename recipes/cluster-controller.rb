@@ -6,7 +6,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-
+include_recipe "eucalyptus::default"
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
@@ -45,6 +45,30 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
 end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
+
+ruby_block "Get cluster keys from CLC" do
+  block do
+    node.set["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"] = node["ipaddress"]
+    if node["eucalyptus"]["topology"]["clc-1"] != ""
+      ### CLC is seperate
+      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+      clc  = search(:node, "ipaddress:#{clc_ip}").first
+      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = clc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
+    else
+      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
+    end
+    node.save
+    node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
+     file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+     File.open(file_name, 'w', ) do |file|  
+       file.puts Base64.decode64(data)
+     end
+     require 'fileutils'
+     FileUtils.chmod 0700, file_name
+     FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+    end
+  end
+end
 
 service "eucalyptus-cc" do
   action [ :enable, :start ]

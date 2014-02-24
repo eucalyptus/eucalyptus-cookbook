@@ -25,7 +25,7 @@ default["eucalyptus"]["cloud-opts"] = ""
 default["eucalyptus"]["install-load-balancer"] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
 default["eucalyptus"]["default-image"] = "cirros"
-
+default["eucalyptus"]["cloud-keys"] = {}
 ## Networking Config
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 default["eucalyptus"]["network"]["private-interface"] = "eth0"
@@ -41,6 +41,7 @@ default["eucalyptus"]["network"]["dns-server"] = "8.8.8.8"
 default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd41"
 
 ## Define Topology - Used for registration on CLC
+default["eucalyptus"]["topology"]["clc-1"] = "" 
 default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
 default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""

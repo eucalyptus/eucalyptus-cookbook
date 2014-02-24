@@ -6,7 +6,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-
+include_recipe "eucalyptus::default"
 ## Install unzip so we can extract creds
 yum_package "unzip" do
   action :install
