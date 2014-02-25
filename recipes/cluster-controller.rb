@@ -68,6 +68,7 @@ ruby_block "Get cluster keys from CLC" do
      FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
     end
   end
+  not_if Chef::Config[:solo]
 end
 
 service "eucalyptus-cc" do

@@ -68,6 +68,7 @@ ruby_block "Get keys from CLC" do
      end
     end
   end
+  not_if Chef::Config[:solo]
 end
 
 service "eucalyptus-cloud" do
