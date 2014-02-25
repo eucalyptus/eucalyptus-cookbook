@@ -75,7 +75,7 @@ ruby_block "Upload cloud keys Chef Server" do
       node.save
     end
   end
-  not_if Chef::Config[:solo]
+  not_if "#{Chef::Config[:solo]}"
 end 
 
 service "eucalyptus-cloud" do

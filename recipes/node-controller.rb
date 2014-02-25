@@ -109,6 +109,7 @@ ruby_block "Get node keys from CC" do
       FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
     end
   end
+  not_if "#{Chef::Config[:solo]}"
 end
 
 service "eucalyptus-nc" do

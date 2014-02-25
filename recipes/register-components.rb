@@ -48,7 +48,7 @@ clusters.each do |cluster, info|
       end
     end
   end
-  not_if Chef::Config[:solo]
+  not_if "#{Chef::Config[:solo]}"
 end
 
 if node['eucalyptus']['topology']['osg'] == ""

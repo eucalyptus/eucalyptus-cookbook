@@ -72,7 +72,7 @@ ruby_block "Get cluster keys from CLC" do
        file.puts Base64.decode64(node["eucalyptus"]["cloud-keys"]["euca.p12"])
     end
   end
-  not_if Chef::Config[:solo]
+  not_if "#{Chef::Config[:solo]}"
 end
 
 service "eucalyptus-cloud" do
