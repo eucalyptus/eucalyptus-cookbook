@@ -49,6 +49,10 @@ clusters.each do |cluster, info|
     end
     not_if "#{Chef::Config[:solo]}"
   end
+  execute "Copy keys locally" do
+    command "cp #{cluster_keys_dir}/* #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/"
+    only_if "#{Chef::Config[:solo]}"
+  end
 end
 
 if node['eucalyptus']['topology']['osg'] == ""
