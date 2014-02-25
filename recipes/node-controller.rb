@@ -93,7 +93,7 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
 end
 
 if node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] == ""
-  node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] = node["ipaddress"]
+  node.default["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] = node["ipaddress"]
 end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
