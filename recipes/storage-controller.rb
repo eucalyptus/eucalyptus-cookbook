@@ -68,7 +68,7 @@ ruby_block "Get cluster keys from CLC" do
      FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
     end
     euca_p12 = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/euca.p12"
-    File.open(euca_p12, 'w', ) do |file|
+    File.open(euca_p12, 'w') do |file|
        file.puts Base64.decode64(node["eucalyptus"]["cloud-keys"]["euca.p12"])
     end
   end
