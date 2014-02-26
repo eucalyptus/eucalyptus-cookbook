@@ -58,7 +58,7 @@ ruby_block "Get keys from CLC" do
       node["eucalyptus"]["cloud-keys"].each do |key_name,data|
         if data.is_a? String
           file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
-          File.open(file_name, 'w', ) do |file|
+          File.open(file_name, 'w') do |file|
             file.puts Base64.decode64(data)
           end
           require 'fileutils'
