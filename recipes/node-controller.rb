@@ -105,7 +105,7 @@ ruby_block "Get node keys from CC" do
     cc = search(:node, "ipaddress:#{cc_ip}").first
     cc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
       file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
-      File.open(file_name, 'w', ) do |file|
+      File.open(file_name, 'w') do |file|
         file.puts Base64.decode64(data)
       end
       require 'fileutils'
