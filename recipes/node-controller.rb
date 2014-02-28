@@ -40,7 +40,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     options node['eucalyptus']['yum-options']
   end
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    yum_package "eucalyptus-eucanet" do
+    yum_package "eucanetd" do
       action :install
       options node['eucalyptus']['yum-options']
     end
@@ -89,7 +89,7 @@ execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
-  action :create_if_missing
+  action :create
 end
 
 if node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] == ""
