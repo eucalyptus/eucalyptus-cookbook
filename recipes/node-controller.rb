@@ -120,3 +120,10 @@ service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
+
+if node["eucalyptus"]["network"]["mode"] == "EDGE"
+  service "eucanetd" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
+end
