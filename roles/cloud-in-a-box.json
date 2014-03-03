@@ -1,11 +1,17 @@
 {
   "name": "cloud-in-a-box",
-  "description": "All components configured on the same machine.",
+  "description": "",
   "json_class": "Chef::Role",
   "default_attributes": {
     "eucalyptus": {
-      "release-repo": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/",
-      "install-load-balancer": false
+      "yum-options": "--nogpg",
+      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/3.4/centos/6/x86_64/",
+      "source-directory": "/opt/eucalyptus-src",
+      "install-load-balancer": true,
+      "network": {
+        "public-interface": "br0",
+        "private-interface": "br0"
+      }
     }
   },
   "override_attributes": {

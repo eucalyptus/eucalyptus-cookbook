@@ -5,6 +5,7 @@
   "chef_type": "role",
   "run_list": [
     "recipe[eucalyptus::cluster-controller]",
+    "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::storage-controller]"
   ]
 }
