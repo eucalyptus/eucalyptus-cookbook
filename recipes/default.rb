@@ -144,11 +144,19 @@ if node["eucalyptus"]["install-type"] == "source"
     action :upgrade
   end
 
-  configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh --with-vddk=/opt/packages/vddk"
+  configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh"
 
-  ### Run configure
-  execute configure_command do
+  ### Run configure for open source
+  execute "Run configure with open source bits"  do
+    command configure_command
     cwd "#{node["eucalyptus"]["source-directory"]}"
+    not_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+  end
+  ### Run configure with enterprise bits
+  execute "Run configure with enterprise bits" do
+    command configure_command + " --with-vddk=/opt/packages/vddk"
+    cwd "#{node["eucalyptus"]["source-directory"]}"
+    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
   end
 end
 

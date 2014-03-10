@@ -9,6 +9,7 @@
 
 execute "Add keypair: my-first-keypair" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair && chmod 0600 /root/my-first-keypair"
+  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypair my-first-keypair"
 end
 
 execute "Authorizing SSH and ICMP traffic for default security group" do
@@ -17,6 +18,7 @@ end
 
 execute "Install default image" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUSTORE_URL=#{node["eucalyptus"]["eustore-url"]} && eustore-install-image -b my-first-image -i $(eustore-describe-images | egrep \"#{node["eucalyptus"]["default-image"]}.*kvm\" | head -1 | cut -f 1)"
+  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep emi"
 end
 
 execute "Ensure default image is public" do
