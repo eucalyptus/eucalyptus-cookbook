@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    {
+      "groups": ["frontend::default"],
+      "hosts": ["10.111.5.167"]
+    },
+    {
+      "groups": ["cluster::default"],
+      "hosts": ["10.111.5.168"]
+    },
+    {
+      "groups": ["frontend::configure-storage"],
+      "hosts": ["10.111.5.167"]
+    },
+    {
+      "groups": ["node::default"],
+      "hosts": ["10.111.5.169"]
+    },
+    {
+      "groups": ["node::default"],
+      "hosts": ["10.111.5.170"]
+    } 
+  ]
+}
