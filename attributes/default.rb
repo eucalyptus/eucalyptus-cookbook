@@ -27,6 +27,7 @@ default["eucalyptus"]["local-cluster-name"] = "default"
 default["eucalyptus"]["default-image"] = "cirros"
 default["eucalyptus"]["cloud-keys"] = {}
 default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
+default["eucalyptus"]["compile-timeout"] = 7200
 
 ## Networking Config
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"

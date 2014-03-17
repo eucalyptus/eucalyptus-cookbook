@@ -19,12 +19,14 @@ else
     cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus/"
     only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster"
     creates "#{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster/generated"
+    timeout node["eucalyptus"]["compile-timeout"]
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["source-directory"]}/"
     only_if "ls #{node["eucalyptus"]["source-directory"]}/cluster"
     creates "#{node["eucalyptus"]["source-directory"]}/cluster/generated"
+    timeout node["eucalyptus"]["compile-timeout"]
   end
   ### Create symlink for eucalyptus-cloud service
   tools_dir = "#{node["eucalyptus"]["source-directory"]}/tools"
