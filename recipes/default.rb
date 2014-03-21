@@ -37,6 +37,10 @@ if node['eucalyptus']['init-script-url'] != ""
   end
 end
 
+execute "Flush and save iptables" do
+  command "iptables -F; iptables -F -t nat; iptables-save > /etc/sysconfig/iptables"
+end
+
 ## Setup NTP
 include_recipe "ntp"
 execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
