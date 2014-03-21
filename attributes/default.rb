@@ -42,8 +42,8 @@ default["eucalyptus"]["network"]['config-json'] = {
             "Name" => node["eucalyptus"]["local-cluster-name"],
             "MacPrefix" => "d0:0d",
             "Subnet" => {
-                "Name" => "10.0.1.0",
-                "Subnet" => "10.0.1.0",
+                "Name" => "10.0.0.0",
+                "Subnet" => "10.0.0.0",
                 "Netmask" => "255.255.0.0",
                 "Gateway" => "10.0.1.1"
             },
