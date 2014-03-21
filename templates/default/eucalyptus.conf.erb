@@ -8,10 +8,10 @@ SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
 NODES="<%= node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] %>"
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
-    NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
+NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
 <% end -%>
 <% if node["eucalyptus"]["nc"]["cache-size"] -%>
-    NC_CACHE_SIZE=<%= node["eucalyptus"]["nc"]["cache-size"] %>
+NC_CACHE_SIZE=<%= node["eucalyptus"]["nc"]["cache-size"] %>
 <% end -%>
 HYPERVISOR="<%= node["eucalyptus"]["nc"]["hypervisor"] %>"
 MAX_CORES="<%= node["eucalyptus"]["nc"]["max-cores"] %>"
@@ -23,14 +23,15 @@ VNET_MODE="<%= node["eucalyptus"]["network"]["mode"] %>"
 VNET_PRIVINTERFACE="<%= node["eucalyptus"]["network"]["private-interface"] %>"
 VNET_PUBINTERFACE="<%= node["eucalyptus"]["network"]["public-interface"] %>"
 VNET_BRIDGE="<%= node["eucalyptus"]["network"]["bridge-interface"] %>"
+VNET_DHCPDAEMON="<%= node["eucalyptus"]["network"]["dhcp-daemon"] %>"
+<% if (node["eucalyptus"]["network"]["mode"] == "MANAGED" || node["eucalyptus"]["network"]["mode"] == "MANAGED-NOVLAN") -%>
 VNET_PUBLICIPS="<%= node["eucalyptus"]["network"]["public-ips"] %>"
-VNET_PRIVATEIPS="<%= node["eucalyptus"]["network"]["private-ips"] %>"
 VNET_SUBNET="<%= node["eucalyptus"]["network"]["subnet"] %>"
 VNET_NETMASK="<%= node["eucalyptus"]["network"]["netmask"] %>"
 VNET_ADDRSPERNET="<%= node["eucalyptus"]["network"]["addresses-per-net"] %>"
 VNET_DNS="<%= node["eucalyptus"]["network"]["dns-server"] %>"
 VNET_BROADCAST="<%= node["eucalyptus"]["network"]["broadcast"] %>"
-VNET_DHCPDAEMON="<%= node["eucalyptus"]["network"]["dhcp-daemon"] %>"
+<% end -%>
 <% if node["eucalyptus"]["network"]["router"] -%>
     VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
 <% end -%>

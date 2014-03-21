@@ -29,19 +29,40 @@ default["eucalyptus"]["cloud-keys"] = {}
 default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
 default["eucalyptus"]["compile-timeout"] = 7200
 
-## Networking Config
-default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
+default["eucalyptus"]["network"]["mode"] = "EDGE"
+
+## Networking Config for EDGE
+default["eucalyptus"]["network"]['config-json'] = {
+    "InstanceDnsDomain" => "eucalyptus.internal",
+    "InstanceDnsServers"=> ["8.8.8.8"],
+    "PublicIps" => ["10.0.1.50-10.0.1.59"],
+    "Subnets" => [],
+    "Clusters" => [
+        {
+            "Name" => node["eucalyptus"]["local-cluster-name"],
+            "MacPrefix" => "d0:0d",
+            "Subnet" => {
+                "Name" => "10.0.1.0",
+                "Subnet" => "10.0.1.0",
+                "Netmask" => "255.255.0.0",
+                "Gateway" => "10.0.1.1"
+            },
+            "PrivateIps" => [ "10.0.1.60-10.0.1.69"]
+        }
+     ]
+}
+
+## Networking config for managed modes
 default["eucalyptus"]["network"]["private-interface"] = "eth0"
 default["eucalyptus"]["network"]["public-interface"] = "eth0"
 default["eucalyptus"]["network"]["bridge-interface"] = "br0"
 default["eucalyptus"]["network"]["bridged-nic"] = "eth0"
 default["eucalyptus"]["network"]["public-ips"] = ""
-default["eucalyptus"]["network"]["private-ips"] = "172.16.0.1-172.16.0.100"
 default["eucalyptus"]["network"]["subnet"] = "172.16.0.0"
 default["eucalyptus"]["network"]["netmask"] = "255.255.0.0"
 default["eucalyptus"]["network"]["addresses-per-net"] = "32"
 default["eucalyptus"]["network"]["dns-server"] = "8.8.8.8"
-default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd41"
+default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
 
 ## Define Topology - Used for registration on CLC
 default["eucalyptus"]["topology"]["clc-1"] = "" 

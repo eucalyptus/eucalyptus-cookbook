@@ -16,7 +16,7 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-
+require 'json'
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
@@ -72,11 +72,21 @@ if node['eucalyptus']['topology']['osg'] == ""
 end
 ### If this is 4.0 we need to register an OSG
 
-ssh_known_hosts_entry osg_ip
 execute "Register OSG" do
   command "#{euca_conf} --register-osg -P osg -H #{osg_ip} -C osg-1 #{dont_sync_keys}"
   not_if "euca-describe-services | grep osg-1"
   only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+end
+
+if node['eucalyptus']['network']['mode'] == "EDGE"
+  file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
+    content node['eucalyptus']['network']['config-json'].to_json
+    mode "644"
+    action :create
+  end
+  execute "Configure network" do
+    command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
+  end
 end
 
 if node['eucalyptus']['topology']['riak']['endpoint'] != ""

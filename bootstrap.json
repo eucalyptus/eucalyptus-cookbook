@@ -1,24 +1,20 @@
 {
   "nodes": [
     {
-      "groups": ["frontend::default"],
-      "hosts": ["10.111.5.167"]
+      "groups": ["frontend::default", "frontend::configure-storage"],
+      "hosts": ["10.0.1.186"]
     },
     {
       "groups": ["cluster::default"],
-      "hosts": ["10.111.5.168"]
-    },
-    {
-      "groups": ["frontend::configure-storage"],
-      "hosts": ["10.111.5.167"]
+      "hosts": ["10.0.1.187"]
     },
     {
       "groups": ["node::default"],
-      "hosts": ["10.111.5.169"]
+      "hosts": ["10.0.1.188"]
     },
     {
       "groups": ["node::default"],
-      "hosts": ["10.111.5.170"]
+      "hosts": ["10.0.1.189"]
     } 
   ]
 }
