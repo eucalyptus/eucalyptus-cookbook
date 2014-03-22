@@ -17,6 +17,7 @@ default['eucalyptus']['init-script-url'] = ""
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
+default['eucalyptus']['admin-ssh-pub-key'] = ""
 default["eucalyptus"]["home-directory"] = "/"
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["source-directory"] = "/opt/eucalyptus"

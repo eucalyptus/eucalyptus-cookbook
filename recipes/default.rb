@@ -37,6 +37,12 @@ if node['eucalyptus']['init-script-url'] != ""
   end
 end
 
+if node['eucalyptus']['admin-ssh-pub-key'] != ""
+  execute "Add the admins ssh key to authorized keys" do
+    command "echo #{node['eucalyptus']['admin-ssh-pub-key']} >> /root/.ssh/authorized_keys"
+  end
+end
+
 execute "Flush and save iptables" do
   command "iptables -F; iptables -F -t nat; iptables-save > /etc/sysconfig/iptables"
 end
