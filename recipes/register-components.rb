@@ -142,6 +142,23 @@ if node['eucalyptus']['install-load-balancer']
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"
 end
 
+### Register Imaging Service Image
+if node['eucalyptus']['install-imaging-worker']
+  if node['eucalyptus']['imaging-worker-repo'] != ""
+    yum_repository "eucalyptus-imaging-worker" do
+      description "Eucalyptus Imaging Repo"
+      url node["eucalyptus"]["imaging-worker-repo"]
+      gpgcheck false
+    end
+  end
+  yum_package "eucalyptus-imaging-worker-image" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+  end
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default"
+end
+
 execute "Set DNS server on CLC" do
   command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
