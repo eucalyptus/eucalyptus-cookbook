@@ -20,7 +20,7 @@
 include_recipe "eucalyptus::default"
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-sc" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
 else

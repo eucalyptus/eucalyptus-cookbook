@@ -21,7 +21,7 @@
 ## Install packages for the OSG
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-osg" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
 else

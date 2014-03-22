@@ -136,7 +136,7 @@ if node['eucalyptus']['install-load-balancer']
     end
   end
   yum_package "eucalyptus-load-balancer-image" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"

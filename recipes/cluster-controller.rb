@@ -21,7 +21,7 @@ include_recipe "eucalyptus::default"
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
 else

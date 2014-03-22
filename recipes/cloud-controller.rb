@@ -19,14 +19,19 @@
 include_recipe "eucalyptus::default"
 ## Install unzip so we can extract creds
 yum_package "unzip" do
-  action :install
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+end
+
+yum_package "euca2ools" do
+  action :upgrade
   options node['eucalyptus']['yum-options']
 end
 
 ## Install binaries for the CLC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
 else

@@ -28,7 +28,7 @@ end
 
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-console" do
-    action :install
+    action :upgrade
     options node['eucalyptus']['yum-options']
   end
 #else
