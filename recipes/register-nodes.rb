@@ -35,7 +35,7 @@ end
 
 nodes.split().each do |nc_ip|
   execute "Register Nodes" do
-    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip}"
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
   end
 end
 
