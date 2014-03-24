@@ -22,7 +22,7 @@ include_recipe "eucalyptus::default"
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
   source "ifcfg-eth.erb"
-  mode 0440
+  mode 0644
   owner "root"
   group "root"
 end
@@ -35,7 +35,7 @@ end
 
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"] do
   source bridge_template
-  mode 0440
+  mode 0644
   owner "root"
   group "root"
   not_if "ls /etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"]
