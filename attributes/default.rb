@@ -35,25 +35,7 @@ default["eucalyptus"]["compile-timeout"] = 7200
 default["eucalyptus"]["network"]["mode"] = "EDGE"
 
 ## Networking Config for EDGE
-default["eucalyptus"]["network"]['config-json'] = {
-    "InstanceDnsDomain" => "eucalyptus.internal",
-    "InstanceDnsServers"=> ["8.8.8.8"],
-    "PublicIps" => ["10.0.1.50-10.0.1.59"],
-    "Subnets" => [],
-    "Clusters" => [
-        {
-            "Name" => node["eucalyptus"]["local-cluster-name"],
-            "MacPrefix" => "d0:0d",
-            "Subnet" => {
-                "Name" => "10.0.0.0",
-                "Subnet" => "10.0.0.0",
-                "Netmask" => "255.255.0.0",
-                "Gateway" => "10.0.1.1"
-            },
-            "PrivateIps" => [ "10.0.1.60-10.0.1.69"]
-        }
-     ]
-}
+default["eucalyptus"]["network"]['config-json'] = {}
 
 ## Networking config for managed modes
 default["eucalyptus"]["network"]["private-interface"] = "eth0"
