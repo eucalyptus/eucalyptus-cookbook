@@ -88,3 +88,20 @@ component 'node' do
     recipe 'eucalyptus::node-controller'
   end
 end
+
+component 'user-console' do
+  description "Eucalyptus User Console"
+  versioned
+  group 'default' do
+    recipe 'eucalyptus::user-console'
+  end
+end
+
+component 'nuke' do
+  description "The nuclear option"
+  versioned
+  group 'default' do
+    recipe 'eucalyptus::nuke'
+  end
+end
+
