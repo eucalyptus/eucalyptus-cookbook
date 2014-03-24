@@ -20,14 +20,14 @@
 
 ## Install packages for the user-console
 
-yum_repository "eucalyptus-console" do
+yum_repository "eucaconsole" do
    description "Eucalyptus Console Repo"
    url node["eucalyptus"]["user-console-repo"]
    only_if { node['eucalyptus']['user-console-repo'] != '' }
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
-  yum_package "eucalyptus-console" do
+  yum_package "eucaconsole" do
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
@@ -35,7 +35,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   ## Source install stuff here
 end
 
-service "eucalyptus-console" do
+service "eucaconsole" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
