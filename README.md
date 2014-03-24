@@ -18,10 +18,7 @@ A Berksfile is included to allow users to easily download the required cookbook 
 - Install Deps from inside this cookbook: `berks install`
 
 #### Cookbooks
-- `bridger` - configures bridges on Node Controllers
 - `ntp` - sets up NTP for all Eucalyptus servers
-- `partial_search` - required for `ssh_known_hosts`
-- `ssh_known_hosts` - add components to known hosts list
 - `yum` - used for managing repositories
 - `selinux` - disables selinux on Eucalyptus servers
 

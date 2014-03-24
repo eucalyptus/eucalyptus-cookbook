@@ -34,7 +34,6 @@ ruby_block "Save node list" do
 end
 
 nodes.split().each do |nc_ip|
-  ssh_known_hosts_entry nc_ip
   execute "Register Nodes" do
     command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip}"
   end

@@ -42,7 +42,6 @@ clusters.each do |cluster, info|
 	sc_ip = info["sc-1"]
   end
   
-  ssh_known_hosts_entry sc_ip
   execute "Register SC" do
     command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep #{cluster}-sc-1"
@@ -111,7 +110,6 @@ else
       walrus_ip = node['eucalyptus']['topology']['walrus']
   end
 
-  ssh_known_hosts_entry walrus_ip
   ##### Register Walrus
   execute "Register Walrus" do
     command "#{euca_conf} --register-walrus -P walrus -H #{walrus_ip} -C walrus-1 #{dont_sync_keys}"
