@@ -10,10 +10,12 @@
 # components and groups you want to bootstrap.
 stack_order do
   bootstrap 'frontend::default'
+  bootstrap 'user-console::default'
   bootstrap 'cluster::default'
   bootstrap 'frontend::configure-storage'
   bootstrap 'frontend::full'
   bootstrap 'node::default'
+  bootstrap 'nuke::default'
 end
 
 # Components are logical parts of your application. For instance, a web app
