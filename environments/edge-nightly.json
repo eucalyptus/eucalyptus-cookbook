@@ -21,7 +21,7 @@
       },
       "network": {
         "mode": "EDGE",
-        "config": {
+        "config-json": {
           "InstanceDnsDomain": "eucalyptus.internal",
           "InstanceDnsServers": [
             "8.8.8.8"
