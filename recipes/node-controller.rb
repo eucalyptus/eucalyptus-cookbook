@@ -99,6 +99,14 @@ execute "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
+### Determine local cluster name
+node["eucalyptus"]["topology"]["clusters"].each do |name, info|
+  if info["nodes"].include? node["ipaddress"]
+    node.set["eucalyptus"]["local-cluster-name"] = name
+    node.save
+  end
+end
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create

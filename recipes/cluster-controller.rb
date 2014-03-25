@@ -56,6 +56,17 @@ execute "Stop any running cc process" do
         command "service eucalyptus-cc stop || true"
 end
 
+node["eucalyptus"]["topology"]["clusters"].each do |name, info|
+  log "Found Cluster" do
+    message "Found cluster #{name} with attributes: #{info}"
+    level :info
+  end
+  if info["cc-1"] == node["ipaddress"]
+    node.set["eucalyptus"]["local-cluster-name"] = name
+    node.save
+  end
+end
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
@@ -65,17 +76,18 @@ execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["
 
 ruby_block "Get cluster keys from CLC" do
   block do
-    node.set["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"] = node["ipaddress"]
+    local_cluster_name = node["eucalyptus"]["local-cluster-name"]
     if node["eucalyptus"]["topology"]["clc-1"] != ""
       ### CLC is seperate
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
       clc  = search(:node, "ipaddress:#{clc_ip}").first
-      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = clc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
+      node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = clc["eucalyptus"]["cloud-keys"][local_cluster_name]
     else
-      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
+      node.set["eucalyptus"]["topology"]["clusters"][local_cluster_name]["cc-1"] = node["ipaddress"]
+      node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = node["eucalyptus"]["cloud-keys"][local_cluster_name]
     end
     node.save
-    node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
+    node["eucalyptus"]["cloud-keys"][local_cluster_name].each do |key_name,data|
      file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
      if data.is_a?(String)
        File.open(file_name, 'w') do |file|  
