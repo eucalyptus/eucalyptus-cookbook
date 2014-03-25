@@ -101,6 +101,10 @@ if node['eucalyptus']['install-type'] == 'source'
   end
 end
 
+execute "Clear yum cache" do
+  command "yum clean all"
+end
+
 ## Delete File system artifacts
 directory '/etc/eucalyptus' do
   recursive true
