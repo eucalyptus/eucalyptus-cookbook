@@ -51,11 +51,15 @@ default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
 
 ## Define Topology - Used for registration on CLC
 default["eucalyptus"]["topology"]["clc-1"] = "" 
-default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
-default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
-default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
-default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
-default["eucalyptus"]["topology"]["clusters"]["default"]["das-device"] = "vg01"
+default["eucalyptus"]["topology"]["clusters"] = {}
+##############################################################################
+### Clusters are defined with the following parameters in an environment file
+##############################################################################
+#default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
+#default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
+#default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
+#default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
+#default["eucalyptus"]["topology"]["clusters"]["default"]["das-device"] = "vg01"
 default["eucalyptus"]["topology"]["walrus"] = ""
 default["eucalyptus"]["topology"]["osg"] = ""
 default['eucalyptus']['topology']['riak']['endpoint'] = ""
