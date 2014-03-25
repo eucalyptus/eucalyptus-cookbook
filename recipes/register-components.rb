@@ -139,7 +139,7 @@ if node['eucalyptus']['install-load-balancer']
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default" do
     only_if "#{describe_property} loadbalancing.loadbalancer_emi | grep '{}'" 
   end
 end
@@ -158,7 +158,7 @@ if node['eucalyptus']['install-imaging-worker']
     options node['eucalyptus']['yum-options']
     only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default"
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
     only_if "#{describe_property} imaging.imaging_worker_emi | grep '{}'"
   end
 end
