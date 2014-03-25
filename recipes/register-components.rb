@@ -22,6 +22,7 @@ clusters = node["eucalyptus"]["topology"]["clusters"]
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
 euca_conf = "#{command_prefix}/usr/sbin/euca_conf"
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
+describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
 dont_sync_keys = "--no-scp --no-rsync --no-sync"
 
 
@@ -122,6 +123,7 @@ execute "Wait for credentials with S3 URL populated" do
   cwd node['eucalyptus']['admin-cred-dir']
   retries 10
   retry_delay 50
+  not_if "grep 'export S3_URL' #{node['eucalyptus']['admin-cred-dir']}/eucarc"
 end
 
 ### Register ELB Image
@@ -138,6 +140,8 @@ if node['eucalyptus']['install-load-balancer']
     options node['eucalyptus']['yum-options']
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default"
+    only_if "#{describe_property} loadbalancing.loadbalancer_emi | grep '{}'" 
+  end
 end
 
 ### Register Imaging Service Image
@@ -155,6 +159,8 @@ if node['eucalyptus']['install-imaging-worker']
     only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default"
+    only_if "#{describe_property} imaging.imaging_worker_emi | grep '{}'"
+  end
 end
 
 execute "Set DNS server on CLC" do
