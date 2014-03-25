@@ -23,7 +23,15 @@ service "eucalyptus-nc" do
   action [ :stop ]
 end
 
+service "eucanetd" do
+  action [ :stop ]
+end
+
 service "eucalyptus-cc" do
+  action [ :stop ]
+end
+
+service "eucaconsole" do
   action [ :stop ]
 end
 
