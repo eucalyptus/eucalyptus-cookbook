@@ -33,8 +33,8 @@ VNET_DNS="<%= node["eucalyptus"]["network"]["dns-server"] %>"
 VNET_BROADCAST="<%= node["eucalyptus"]["network"]["broadcast"] %>"
 <% end -%>
 <% if node["eucalyptus"]["network"]["router"] -%>
-    VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
+VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
 <% end -%>
 <% if node["eucalyptus"]["network"]["domain-name"] -%>
-    VNET_DOMAINNAME="<%= node["eucalyptus"]["network"]["domain-name"] %>"
+VNET_DOMAINNAME="<%= node["eucalyptus"]["network"]["domain-name"] %>"
 <% end -%>
