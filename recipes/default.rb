@@ -123,7 +123,7 @@ if node["eucalyptus"]["install-type"] == "source"
   ### Runtime deps
   %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c 
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils 
-    dejavu-serif-fonts device-mapper dhcp41 dhcp41-common drbd drbd83 drbd83-kmod 
+    dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod 
     drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm 
     PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
     openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random 
