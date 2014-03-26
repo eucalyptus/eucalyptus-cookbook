@@ -47,7 +47,7 @@ default["eucalyptus"]["network"]["subnet"] = "172.16.0.0"
 default["eucalyptus"]["network"]["netmask"] = "255.255.0.0"
 default["eucalyptus"]["network"]["addresses-per-net"] = "32"
 default["eucalyptus"]["network"]["dns-server"] = "8.8.8.8"
-default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
+default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd41"
 
 ## Define Topology - Used for registration on CLC
 default["eucalyptus"]["topology"]["clc-1"] = "" 
