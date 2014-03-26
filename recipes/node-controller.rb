@@ -100,10 +100,12 @@ execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Determine local cluster name
-node["eucalyptus"]["topology"]["clusters"].each do |name, info|
-  if info["nodes"].include? node["ipaddress"]
-    node.set["eucalyptus"]["local-cluster-name"] = name
-    node.save
+if not Chef::Config[:solo]
+  node["eucalyptus"]["topology"]["clusters"].each do |name, info|
+    if info["nodes"].include? node["ipaddress"]
+      node.set["eucalyptus"]["local-cluster-name"] = name
+      node.save
+    end
   end
 end
 
