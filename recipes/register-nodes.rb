@@ -18,10 +18,10 @@
 ##
 
 ##### Register nodes
-cluster = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]
-if cluster['nodes'] == ""
+if Chef::Config[:solo]
   nodes = node["ipaddress"]
 else
+  cluster = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]
   nodes = cluster['nodes']
 end
 
