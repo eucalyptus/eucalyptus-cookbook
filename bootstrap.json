@@ -1,16 +1,16 @@
 {
   "nodes": [
     {
-      "groups": ["frontend::default", "frontend::configure-storage", "user-console::default"],
-      "hosts": ["10.0.1.185"]
+      "groups": ["cloud-controller::default", "walrus::default", "cloud-controller::configure-storage", "user-console::default"],
+      "hosts": ["10.111.5.163"]
     },
     {
-      "groups": ["cluster::default"],
-      "hosts": ["10.0.1.186"]
+      "groups": ["cluster-controller::default", "storage-controller::default"],
+      "hosts": ["10.111.5.164"]
     },
     {
       "groups": ["node::default"],
-      "hosts": ["10.0.1.187", "10.0.1.181"]
+      "hosts": ["10.111.5.155", "10.111.5.162", "10.111.5.166", "10.111.5.165", "10.111.5.157", "10.111.5.177", "10.111.5.156", "10.111.5.159"]
     }
   ]
 }
