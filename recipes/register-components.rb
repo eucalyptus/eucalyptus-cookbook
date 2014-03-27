@@ -113,7 +113,7 @@ else
 
   ##### Register Walrus
   execute "Register Walrus" do
-    command "#{euca_conf} --register-walrus -P walrus -H #{walrus_ip} -C walrus-1 #{dont_sync_keys}"
+    command "#{euca_conf} --register-walrusbackend -P walrus -H #{walrus_ip} -C walrus-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep walrus-1"
   end
 end

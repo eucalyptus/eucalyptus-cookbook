@@ -70,9 +70,10 @@ end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
 
-execute "Stop any running cloud process" do
-	command "service eucalyptus-cloud stop || true"
-end
+#execute "Stop any running cloud process" do
+#  command "service eucalyptus-cloud stop || true"
+#  not_if  "ls /usr/share/eucalyptus/eucalyptus-core-4.0.0.jar"
+#end
 
 execute "Clear $EUCALYPTUS/var/run/eucalyptus" do
 	command "rm -rf #{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus/*"

@@ -160,4 +160,5 @@ execute 'clean iscsi sessions' do
   command 'iscsiadm -m session -u'
   action :run
   returns [ 0, 21 ]
+  only_if "which iscsiadm"
 end
