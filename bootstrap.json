@@ -2,15 +2,15 @@
   "nodes": [
     {
       "groups": ["frontend::default", "frontend::configure-storage", "user-console::default"],
-      "hosts": ["10.111.5.163"]
+      "hosts": ["10.0.1.185"]
     },
     {
       "groups": ["cluster::default"],
-      "hosts": ["10.111.5.164"]
+      "hosts": ["10.0.1.186"]
     },
     {
       "groups": ["node::default"],
-      "hosts": ["10.111.5.162", "10.111.5.166", "10.111.5.165", "10.111.5.61"]
+      "hosts": ["10.0.1.187", "10.0.1.181"]
     }
   ]
 }
