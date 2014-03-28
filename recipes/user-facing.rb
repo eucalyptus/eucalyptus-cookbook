@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: user-facing-services
+# Recipe:: user-facing
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##

@@ -10,6 +10,7 @@
 # components and groups you want to bootstrap.
 stack_order do
   bootstrap 'cloud-controller::default'
+  bootstrap 'user-facing::default'
   bootstrap 'walrus::default'
   bootstrap 'user-console::default'
   bootstrap 'cluster-controller::default'
@@ -28,6 +29,14 @@ component 'cloud-controller' do
   end
   group 'configure-storage' do
     recipe 'eucalyptus::configure-storage'
+  end
+end
+
+component 'user-facing' do
+  description "Eucalyptus User Facing Services"
+  versioned_with 'eucalyptus.version'
+  group 'default' do
+    recipe 'eucalyptus::facing'
   end
 end
 

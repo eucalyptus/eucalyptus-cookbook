@@ -74,17 +74,18 @@ clusters.each do |cluster, info|
   end
 end
 
-if node['eucalyptus']['topology']['osg'] == ""
-      osg_ip = node['ipaddress']
+### If this is 4.0 we need to register User facing services
+if Chef::Config[:solo]
+      user_facing = [ node['ipaddress'] ]
   else
-      osg_ip = node['eucalyptus']['topology']['osg']
+      user_facing = node['eucalyptus']['topology']['user-facing']
 end
-### If this is 4.0 we need to register an OSG
-
-execute "Register OSG" do
-  command "#{euca_conf} --register-osg -P osg -H #{osg_ip} -C osg-1 #{dont_sync_keys}"
-  not_if "euca-describe-services | grep osg-1"
-  only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+user_facing.each do |uf_ip|  
+  execute "Register User Facing" do
+    command "#{euca_conf} --register-osg -P osg -H #{uf_ip} -C osg-1 #{dont_sync_keys}"
+    not_if "euca-describe-services | grep osg-1"
+    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+  end
 end
 
 if node['eucalyptus']['network']['mode'] == "EDGE"
