@@ -39,17 +39,20 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   owner "root"
   group "root"
   not_if "ls /etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"]
-  notify :restart, "service[network]", :immediately
+  notifies :run, "execute[network-restart]", :immediately
 end
 
-execute "service network restart"
+execute "network-restart" do
+  command "service network restart"
+  action :nothing
+end 
 
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-nc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    flush_cache :before
+    flush_cache [:before]
   end
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
     yum_package "eucanetd" do

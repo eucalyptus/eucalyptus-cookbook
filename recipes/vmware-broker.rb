@@ -23,6 +23,7 @@
   yum_package pkg do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    flush_cache [:before]
   end
 end
 

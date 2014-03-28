@@ -30,6 +30,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucaconsole" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    flush_cache [:before]
   end
 #else
   ## Source install stuff here

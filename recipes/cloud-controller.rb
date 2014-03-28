@@ -33,7 +33,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    flush_cache :before
+    flush_cache [:before]
   end
 else
   execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
