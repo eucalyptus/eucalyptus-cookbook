@@ -9,6 +9,7 @@
 # When bootstrapping a cluster for the first time, you'll need to specify which
 # components and groups you want to bootstrap.
 stack_order do
+  bootstrap 'cloud-controller::full'
   bootstrap 'cloud-controller::default'
   bootstrap 'user-facing::default'
   bootstrap 'walrus::default'
@@ -26,6 +27,17 @@ component 'cloud-controller' do
   group 'default' do
     recipe 'eucalyptus::cloud-controller'
     recipe 'eucalyptus::register-components'
+  end
+  group 'full' do
+    recipe 'eucalyptus::cloud-controller'
+    recipe 'eucalyptus::user-console'
+    recipe 'eucalyptus::register-components'
+    recipe 'eucalyptus::facing'
+    recipe 'eucalyptus::walrus'
+    recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::register-nodes'
+    recipe 'eucalyptus::storage-controller'
+    recipe 'eucalyptus::configure-storage'
   end
   group 'configure-storage' do
     recipe 'eucalyptus::configure-storage'
