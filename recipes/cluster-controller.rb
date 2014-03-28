@@ -23,6 +23,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    flush_cache :before
   end
 else
   ## Install CC from source from internal repo if it exists
