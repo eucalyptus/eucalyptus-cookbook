@@ -62,9 +62,9 @@ default["eucalyptus"]["topology"]["clusters"] = {}
 #default["eucalyptus"]["topology"]["clusters"]["default"]["das-device"] = "vg01"
 default["eucalyptus"]["topology"]["walrus"] = ""
 default["eucalyptus"]["topology"]["user-facing"] = []
-default['eucalyptus']['topology']['riak']['endpoint'] = ""
-default['eucalyptus']['topology']['riak']['access-key'] = ""
-default['eucalyptus']['topology']['riak']['secret-key'] = ""
+default['eucalyptus']['topology']['riakcs']['endpoint'] = ""
+default['eucalyptus']['topology']['riakcs']['access-key'] = ""
+default['eucalyptus']['topology']['riakcs']['secret-key'] = ""
 
 
 ## CC Specific

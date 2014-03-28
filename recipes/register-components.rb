@@ -99,12 +99,12 @@ if node['eucalyptus']['network']['mode'] == "EDGE"
   end
 end
 
-if node['eucalyptus']['topology']['riak']['endpoint'] != ""
+if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
   ### Setup for riak integration
-  execute "#{modify_property} -p objectstorage.providerclient=s3"
-  execute "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riak']['endpoint']}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['riak']['access-key']}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['riak']['secret-key']}"
+  execute "#{modify_property} -p objectstorage.providerclient=riakcs"
+  execute "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['riakcs']['access-key']}"
+  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['riakcs']['secret-key']}"
 else
   ### Use legacy walrus
 
