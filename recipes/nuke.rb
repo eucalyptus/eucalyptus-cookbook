@@ -79,6 +79,8 @@ yum_repository 'euca2ools-release' do
   action :remove
 end
 
+execute "yum clean all"
+
 if node['eucalyptus']['install-type'] == 'source'
   ### Remove eucalyptus user
   user 'eucalyptus' do

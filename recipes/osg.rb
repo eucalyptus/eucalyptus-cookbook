@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: osg
+# Recipe:: user-facing-services
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
@@ -18,11 +18,13 @@
 ##
 
 
-## Install packages for the OSG
+## Install packages for the User Facing Services
 if node["eucalyptus"]["install-type"] == "packages"
-  yum_package "eucalyptus-osg" do
+  yum_package "eucalyptus-cloud" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :restart, "service[eucalyptus-cloud]", :immediately
+    flush_cache [:before]
   end
 else
   ## Install CC from source from internal repo if it exists

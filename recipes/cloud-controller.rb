@@ -79,7 +79,7 @@ end
 ruby_block "Upload cloud keys Chef Server" do
   block do
     cloud_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys"
-    %w(cloud-cert.pem cloud-pk.pem euca.p12 cc-client-policy.xml sc-client-policy.xml).each do |key_name|
+    %w(cloud-cert.pem cloud-pk.pem euca.p12).each do |key_name|
       cert = Base64.encode64(::File.new("#{cloud_keys_dir}/#{key_name}").read)
       node.set['eucalyptus']['cloud-keys'][key_name] = cert
       node.save
