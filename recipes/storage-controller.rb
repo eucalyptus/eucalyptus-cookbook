@@ -22,6 +22,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-sc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :restart, "service[eucalyptus-cloud]", :immediately
   end
 else
   ## Install CC from source from internal repo if it exists

@@ -17,6 +17,15 @@
 ##    limitations under the License.
 ##
 require 'json'
+
+
+execute "wait-for-credentials" do
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  cwd node['eucalyptus']['admin-cred-dir']
+  retries 10
+  retry_delay 50
+end
+
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"

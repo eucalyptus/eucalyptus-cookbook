@@ -70,15 +70,6 @@ end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
 
-#execute "Stop any running cloud process" do
-#  command "service eucalyptus-cloud stop || true"
-#  not_if  "ls /usr/share/eucalyptus/eucalyptus-core-4.0.0.jar"
-#end
-
-execute "Clear $EUCALYPTUS/var/run/eucalyptus" do
-	command "rm -rf #{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus/*"
-end
-
 execute "Initialize Eucalyptus DB" do
  command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --initialize"
  creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
@@ -101,9 +92,4 @@ service "eucalyptus-cloud" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-execute "Wait for credentials." do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
-  cwd node['eucalyptus']['admin-cred-dir']
-  retries 10
-  retry_delay 50
-end
+include_recipe "eucalyptus::register-components"
