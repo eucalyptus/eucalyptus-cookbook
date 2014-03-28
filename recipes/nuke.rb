@@ -101,6 +101,7 @@ if node['eucalyptus']['install-type'] == 'source'
   directory node['eucalyptus']['home-directory']/source do
     recursive true
     action :delete
+    only_if "ls #{node['eucalyptus']['home-directory']}/source"
   end
 
   yum_repository 'euca-vmware-libs' do
