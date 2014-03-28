@@ -39,6 +39,7 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   owner "root"
   group "root"
   not_if "ls /etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"]
+  notify :restart, "service[network]", :immediately
 end
 
 execute "service network restart"
