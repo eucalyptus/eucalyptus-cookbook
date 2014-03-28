@@ -32,7 +32,7 @@ component 'cloud-controller' do
     recipe 'eucalyptus::cloud-controller'
     recipe 'eucalyptus::user-console'
     recipe 'eucalyptus::register-components'
-    recipe 'eucalyptus::facing'
+    recipe 'eucalyptus::user-facing'
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::register-nodes'
