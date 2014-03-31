@@ -37,6 +37,7 @@ script "install_image" do
   chmod +x install-image.py
   wget http://download.fedoraproject.org/pub/fedora/linux/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.raw.xz -O fedora-20.xz
   xz -d fedora-20.xz
+  source #{node['eucalyptus']['admin-cred-dir']}/eucarc
   ./install-image.py -i fedora-20 -b fedora-20 -n fedora-20
   EOH
 end
