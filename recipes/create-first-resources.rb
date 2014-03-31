@@ -36,8 +36,8 @@ script "install_image" do
   wget https://gist.githubusercontent.com/viglesiasce/9766518/raw -O install-image.py
   chmod +x install-image.py
   wget http://download.fedoraproject.org/pub/fedora/linux/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.raw.xz -O fedora-20.xz
-  xz -d fedora-20.xz fedora-20.raw
-  ./install-image.py -i fedora-20.raw -b fedora-20 -n fedora-20 
+  xz -d fedora-20.xz
+  ./install-image.py -i fedora-20 -b fedora-20 -n fedora-20
   EOH
 end
 
