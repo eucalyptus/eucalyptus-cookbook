@@ -27,7 +27,7 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   group "root"
 end
 
-if node["eucalyptus"]["network"]["bridge-ip"] == ""
+if node["eucalyptus"]["network"]["bridge-ip"] != ""
   bridge_template = "ifcfg-br0-static.erb"
 else
   bridge_template = "ifcfg-br0-dhcp.erb"
