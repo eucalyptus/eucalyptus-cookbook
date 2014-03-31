@@ -43,7 +43,7 @@ end
 
 
 execute "Ensure default image is public" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora-20 | grep emi | awk '{print $2}')" 
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep cirros | grep emi | awk '{print $2}')" 
 end
 
 execute "Wait for resource availability" do
@@ -53,5 +53,5 @@ execute "Wait for resource availability" do
 end
 
 execute "Running an instance" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep fedora-20 | grep emi | cut -f 2)"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep cirros | grep emi | cut -f 2)"
 end
