@@ -26,13 +26,22 @@ execute "Authorizing SSH and ICMP traffic for default security group" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-authorize -P icmp -t -1:-1 -s 0.0.0.0/0 default && euca-authorize -P tcp -p 22 -s 0.0.0.0/0 default"
 end
 
-execute "Install default image" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUSTORE_URL=#{node["eucalyptus"]["eustore-url"]} && eustore-install-image -b my-first-image -i $(eustore-describe-images | egrep \"#{node["eucalyptus"]["default-image"]}.*kvm\" | head -1 | cut -f 1)"
-  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep emi"
+script "install_image" do
+  interpreter "bash"
+  user "root"
+  cwd "/tmp"
+  code <<-EOH
+  wget https://gist.githubusercontent.com/viglesiasce/9766518/raw -O install-image.py
+  chmod +x install-image.py
+  wget http://download.fedoraproject.org/pub/fedora/linux/releases/20/Images/x86_64/Fedora-x86_64-20-20131211.1-sda.raw.xz -O fedora-20.xz
+  xz -d fedora-20.xz fedora-20.raw
+  ./install-image.py -i fedora-20.raw -b fedora-20 -n fedora-20 
+  EOH
 end
 
+
 execute "Ensure default image is public" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep my-first-image | grep emi | awk '{print $2}')" 
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora-20 | grep emi | awk '{print $2}')" 
 end
 
 execute "Wait for resource availability" do
@@ -42,5 +51,5 @@ execute "Wait for resource availability" do
 end
 
 execute "Running an instance" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep my-first-image | grep emi | cut -f 2)"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep fedora-20 | grep emi | cut -f 2)"
 end
