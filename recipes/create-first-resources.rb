@@ -20,6 +20,8 @@
 execute "Add keypair: my-first-keypair" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair && chmod 0600 /root/my-first-keypair"
   not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypair my-first-keypair"
+  retries 10
+  retry_delay 10
 end
 
 execute "Authorizing SSH and ICMP traffic for default security group" do
