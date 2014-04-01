@@ -5,9 +5,59 @@ This cookbook installs and configures Eucalyptus on CentOS 6 physical and virtua
 Requirements
 ------------
 
-#### Chef server config 
-Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
-erchef['s3_url_ttl'] = 3600
+### Environment
+To deploy a distributed topology it is necessary to define an environment with at least these attributes defined:
+- node['eucalyptus']['topology']
+- node['eucalyptus']['network']['config-json']
+
+```
+"default_attributes": {
+    "eucalyptus": {
+      "topology": {
+        "clc-1": "10.111.5.163",
+        "walrus": "10.111.5.163",
+        "user-facing": ["10.111.5.163"],
+        "clusters": {
+          "one": {
+            "cc-1": "10.111.5.164",
+            "sc-1": "10.111.5.164",
+            "storage-backend": "das",
+            "das-device": "vg01",
+            "nodes": "10.111.5.162 10.111.5.166 10.111.5.165 10.111.5.157"
+          },
+          "two": {
+            "cc-1": "10.111.5.155",
+            "sc-1": "10.111.5.155",
+            "storage-backend": "das",
+            "das-device": "vg01",
+            "nodes": "10.111.5.177 10.111.5.156 10.111.5.159"
+          }
+        }
+      },
+      "network": {
+        "mode": "EDGE",
+        "config-json": {
+                  "InstanceDnsDomain" : "eucalyptus.internal",
+                  "InstanceDnsServers": ["10.111.5.163"],
+                  "PublicIps": ["10.111.55.1-10.111.55.220"],
+                  "Subnets": [],
+        "Clusters": [
+           {
+            "Name": "one",
+            "MacPrefix": "d0:0d",
+            "Subnet": {
+                "Name": "172.16.55.0",
+                "Subnet": "172.16.55.0",
+                "Netmask": "255.255.255.0",
+                "Gateway": "172.16.55.1"
+            },
+            "PrivateIps": [ "172.16.55.20-172.16.55.140"]
+            }]
+          }
+        }
+      }
+    }  
+```
 
 #### Platforms
 This cookbook only supports RHEL/CentOS 6 at the time being.
@@ -21,6 +71,10 @@ A Berksfile is included to allow users to easily download the required cookbook 
 - `ntp` - sets up NTP for all Eucalyptus servers
 - `yum` - used for managing repositories
 - `selinux` - disables selinux on Eucalyptus servers
+
+#### Chef server config 
+Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
+erchef['s3_url_ttl'] = 3600
 
 Attributes
 ----------
@@ -92,69 +146,15 @@ Some common attributes are:
 
 Usage
 -----
-#### eucalyptus from packages
+For cloud-in-a-box installs look at:
+[Eucadev](https://github.com/eucalyptus/eucadev)
 
-For a single frontend configuration use a role similar to:
-
-```json
-{
-  "name": "cloud-controller",
-  "description": "",
-  "json_class": "Chef::Role",
-  "default_attributes": {
-    "eucalyptus": {
-      "install-load-balancer": false
-    }
-  },
-  "override_attributes": {
-  },
-  "chef_type": "role",
-  "run_list": [
-    "recipe[eucalyptus]",
-    "recipe[eucalyptus::eutester]",
-    "recipe[eucalyptus::cluster-controller]",
-    "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::storage-controller]",
-    "recipe[eucalyptus::cloud-controller]",
-    "recipe[eucalyptus::register-components]"
-  ],
-  "env_run_lists": {
-  }
-}
-```
-
-
-For a source build use something like:
-```json
-{
-  "name": "cloud-controller-source",
-  "description": "",
-  "json_class": "Chef::Role",
-  "default_attributes": {
-    "eucalyptus": {
-      "install-type": "source",
-      "release-rpm": "http://release-repo.eucalyptus-systems.com/releases/eucalyptus/3.4/centos/6/x86_64/eucalyptus-release-internal-3.4-1.el6.noarch.rpm",
-      "install-load-balancer": false
-    }
-  },
-  "override_attributes": {
-  },
-  "chef_type": "role",
-  "run_list": [
-    "recipe[eucalyptus]",
-    "recipe[eucalyptus::eutester]",
-    "recipe[eucalyptus::cloud-controller]"
-  ],
-  "env_run_lists": {
-  }
-}
-```
+For distributed topologies:
+[Deployment with motherbrain](http://testingclouds.wordpress.com/2014/03/24/install-eucalyptus-4-0-using-motherbrain-and-chef/)
 
 Contributing
 ------------
-TODO: (optional) If this is a public cookbook, detail the process for contributing. If this is a private cookbook, remove this section.
 
-e.g.
 1. Fork the repository on Github
 2. Create a named feature branch (like `add_component_x`)
 3. Write your change
@@ -164,4 +164,6 @@ e.g.
 
 License and Authors
 -------------------
-Authors: TODO: List authors
+Authors:
+
+Vic Iglesias <vic.iglesias@eucalyptus.com>
