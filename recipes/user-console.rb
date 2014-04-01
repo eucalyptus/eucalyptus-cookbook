@@ -26,14 +26,10 @@ yum_repository "eucaconsole" do
    only_if { node['eucalyptus']['user-console-repo'] != '' }
 end
 
-if node["eucalyptus"]["install-type"] == "packages"
-  yum_package "eucaconsole" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-    flush_cache [:before]
-  end
-#else
-  ## Source install stuff here
+yum_package "eucaconsole" do
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+  flush_cache [:before]
 end
 
 service "eucaconsole" do
