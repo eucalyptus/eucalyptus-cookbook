@@ -89,8 +89,8 @@ else
   execute "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
   
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    execute "ln -s #{tools_dir}/eucalyptus-eucanetd /etc/init.d/eucalyptus-eucanetd"
-    execute "chmod +x #{tools_dir}/eucalyptus-eucanetd"
+    execute "ln -s #{tools_dir}/eucanetd /etc/init.d/eucanetd"
+    execute "chmod +x #{tools_dir}/eucanetd"
   end
 end
 
