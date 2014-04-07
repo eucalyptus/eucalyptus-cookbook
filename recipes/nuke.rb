@@ -45,10 +45,14 @@ execute 'Destroy VMs' do
 end
 
 ## Purge all Packages
-%w{euca2ools python-eucadmin.noarch}.each do |pkg|
+%w{euca2ools python-eucadmin.noarch python-requestbuilder}.each do |pkg|
   yum_package pkg do
     action :purge
   end
+end
+
+execute 'remove old euca creds' do
+  command "rm -rf #{node['eucalyptus']['admin-cred-dir']}/euca*"
 end
 
 ## Remove euca packages chef yum_package does not seem to like wildcard
