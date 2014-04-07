@@ -79,8 +79,6 @@ yum_repository 'euca2ools-release' do
   action :remove
 end
 
-execute "yum clean all"
-
 if node['eucalyptus']['install-type'] == 'source'
   ### Remove eucalyptus user
   user 'eucalyptus' do
@@ -165,3 +163,5 @@ execute 'clean iscsi sessions' do
   returns [ 0, 21 ]
   only_if "which iscsiadm"
 end
+
+execute "yum clean all"
