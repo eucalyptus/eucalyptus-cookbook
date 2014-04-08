@@ -11,13 +11,13 @@
 stack_order do
   bootstrap 'cloud-controller::full'
   bootstrap 'cloud-controller::default'
+  bootstrap 'cluster-controller::default'
+  bootstrap 'storage-controller::default'
   bootstrap 'user-facing::default'
   bootstrap 'walrus::default'
   bootstrap 'user-console::default'
-  bootstrap 'cluster-controller::default'
-  bootstrap 'storage-controller::default'
-  bootstrap 'cloud-controller::configure-storage'
   bootstrap 'node::default'
+  bootstrap 'cloud-controller::configure-storage'
   bootstrap 'nuke::default'
 end
 
