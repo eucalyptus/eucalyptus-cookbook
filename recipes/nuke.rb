@@ -169,3 +169,9 @@ execute 'clean iscsi sessions' do
 end
 
 execute "yum clean all"
+
+directory "/var/chef/cache" do
+  recursive true
+  action :delete
+  only_if "ls /var/chef/cache"
+end
