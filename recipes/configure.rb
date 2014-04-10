@@ -19,7 +19,7 @@
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
-
+describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
 if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
   execute "Set OSG providerclient to riakcs" do
     command "#{modify_property} -p objectstorage.providerclient=riakcs"
