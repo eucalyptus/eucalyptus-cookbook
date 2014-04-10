@@ -25,6 +25,8 @@ if node["eucalyptus"]["install-type"] == "packages"
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
   end
+  ### Compat for 3.4.2 and 4.0.0
+  yum_package "dhcp"
 else
   ## Install CC from source from internal repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
