@@ -33,7 +33,7 @@ default["eucalyptus"]["cloud-keys"] = {}
 default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
 default["eucalyptus"]["compile-timeout"] = 7200
 
-default["eucalyptus"]["network"]["mode"] = "EDGE"
+default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 
 ## Networking Config for EDGE
 default["eucalyptus"]["network"]['config-json'] = {}
