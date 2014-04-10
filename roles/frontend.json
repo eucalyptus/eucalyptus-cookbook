@@ -5,10 +5,11 @@
   "chef_type": "role",
   "run_list": [
     "recipe[eucalyptus::cloud-controller]",
+    "recipe[eucalyptus::register-components]",
     "recipe[eucalyptus::cluster-controller]",
     "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::configure-storage]"
+    "recipe[eucalyptus::configure]"
   ]
 }

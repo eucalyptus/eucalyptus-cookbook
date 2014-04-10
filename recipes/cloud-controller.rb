@@ -33,6 +33,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :create, "template[eucalyptus.conf]", :immediately
     flush_cache [:before]
   end
 else
@@ -64,7 +65,13 @@ else
   execute "chmod +x #{tools_dir}/eucalyptus-cloud"
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]["clc-1"]
+  node.save
+end
+
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
   action :create
 end
@@ -92,5 +99,3 @@ service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
-
-include_recipe "eucalyptus::register-components"

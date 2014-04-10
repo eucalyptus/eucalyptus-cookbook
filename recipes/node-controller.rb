@@ -45,7 +45,7 @@ end
 execute "network-restart" do
   command "service network restart"
   action :nothing
-end 
+end
 
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
@@ -87,7 +87,7 @@ else
 
   execute "chmod +x #{tools_dir}/eucalyptus-nc"
   execute "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/eucalyptus-nc-libvirt.pkla"
-  
+
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
     execute "ln -fs #{tools_dir}/eucanetd /etc/init.d/eucanetd"
     execute "chmod +x #{tools_dir}/eucanetd"
@@ -106,10 +106,18 @@ execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Determine local cluster name
 if not Chef::Config[:solo]
-  node["eucalyptus"]["topology"]["clusters"].each do |name, info|
-    if info["nodes"].include? node["ipaddress"]
-      node.set["eucalyptus"]["local-cluster-name"] = name
-      node.save
+  ### Look through each cluster
+  node["eucalyptus"]["topology"]["clusters"].each do |name, cluster_data|
+    ### Try to match all of this NCs interfaces
+    node["network"]["interfaces"].each do |interface, iface_data|
+      ### Look through each of the addresses on the interfaces
+      iface_data["addresses"].each do |address, addr_data|
+        ### If my addresss is in the nodes list for this cluster
+        if cluster_data["nodes"].include?(address)
+          node.set["eucalyptus"]["local-cluster-name"] = name
+          node.save
+        end
+      end
     end
   end
 end
@@ -125,11 +133,10 @@ end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
 
-
 ruby_block "Get node keys from CC" do
   block do
     cc_ip = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"]
-    cc = search(:node, "ipaddress:#{cc_ip}").first
+    cc = search(:node, "addresses:#{cc_ip}").first
     cc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
       file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
       File.open(file_name, 'w') do |file|

@@ -23,6 +23,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-walrus" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :create, "template[eucalyptus.conf]", :immediately
     notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
@@ -31,14 +32,14 @@ else
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus"
     only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus/clc"
-    creates "/etc/init.d/eucalyptus-cloud" 
+    creates "/etc/init.d/eucalyptus-cloud"
     timeout node["eucalyptus"]["compile-timeout"]
   end
   ## Install CLC from open source repo if it exists
   execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
     cwd "#{node["eucalyptus"]["source-directory"]}"
     only_if "ls #{node["eucalyptus"]["source-directory"]}/clc"
-    creates "/etc/init.d/eucalyptus-cloud"  
+    creates "/etc/init.d/eucalyptus-cloud"
     timeout node["eucalyptus"]["compile-timeout"]
   end
   ### Create symlink for eucalyptus-cloud service
@@ -54,8 +55,14 @@ else
   execute "chmod +x #{tools_dir}/eucalyptus-cloud"
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]["walrus"]
+  node.save
+end
+
+template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
 end
 
@@ -66,7 +73,7 @@ ruby_block "Get keys from CLC" do
   block do
     if node["eucalyptus"]["topology"]["clc-1"] != ""
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      clc  = search(:node, "ipaddress:#{clc_ip}").first
+      clc  = search(:node, "addresses:#{clc_ip}").first
       node.set["eucalyptus"]["cloud-keys"] = clc["eucalyptus"]["cloud-keys"]
       node.set["eucalyptus"]["cloud-keys"]["euca.p12"] = clc["eucalyptus"]["cloud-keys"]["euca.p12"]
       node.save

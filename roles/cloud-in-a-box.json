@@ -25,7 +25,7 @@
     "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::configure-storage]"
+    "recipe[eucalyptus::configure]"
   ],
   "env_run_lists": {
   }

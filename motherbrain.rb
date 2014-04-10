@@ -17,7 +17,7 @@ stack_order do
   bootstrap 'walrus::default'
   bootstrap 'user-console::default'
   bootstrap 'node::default'
-  bootstrap 'cloud-controller::configure-storage'
+  bootstrap 'cloud-controller::configure'
   bootstrap 'nuke::default'
 end
 
@@ -37,10 +37,10 @@ component 'cloud-controller' do
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::register-nodes'
     recipe 'eucalyptus::storage-controller'
-    recipe 'eucalyptus::configure-storage'
+    recipe 'eucalyptus::configure'
   end
-  group 'configure-storage' do
-    recipe 'eucalyptus::configure-storage'
+  group 'configure' do
+    recipe 'eucalyptus::configure'
   end
 end
 
@@ -48,7 +48,7 @@ component 'user-facing' do
   description "Eucalyptus User Facing Services"
   versioned_with 'eucalyptus.version'
   group 'default' do
-    recipe 'eucalyptus::facing'
+    recipe 'eucalyptus::user-facing'
   end
 end
 

@@ -17,12 +17,13 @@
 ##    limitations under the License.
 ##
 
-
+include_recipe "eucalyptus::default"
 ## Install packages for the User Facing Services
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :create, "template[eucalyptus.conf]", :immediately
     notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
@@ -54,9 +55,47 @@ else
   execute "chmod +x #{tools_dir}/eucalyptus-cloud"
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
+  bind_addr = node["ipaddress"]
+  node["network"]["interfaces"].each do |if_name, if_info|
+    if_info["addresses"].each do |addr, addr_info|
+      if node["eucalyptus"]["topology"]["user-facing"].include?(addr)
+        bind_addr = addr
+      end
+    end
+  end
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  node.save
+end
+
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
   action :create
+end
+
+ruby_block "Get keys from CLC" do
+  block do
+    if node["eucalyptus"]["topology"]["clc-1"] != ""
+      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+      clc  = search(:node, "addresses:#{clc_ip}").first
+      node.set["eucalyptus"]["cloud-keys"] = clc["eucalyptus"]["cloud-keys"]
+      node.set["eucalyptus"]["cloud-keys"]["euca.p12"] = clc["eucalyptus"]["cloud-keys"]["euca.p12"]
+      node.save
+      node["eucalyptus"]["cloud-keys"].each do |key_name,data|
+        if data.is_a? String
+          file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+          File.open(file_name, 'w') do |file|
+            file.puts Base64.decode64(data)
+          end
+          require 'fileutils'
+          FileUtils.chmod 0700, file_name
+          FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+        end
+     end
+    end
+  end
+  not_if "#{Chef::Config[:solo]}"
 end
 
 execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"

@@ -18,10 +18,37 @@
 ##
 
 include_recipe "eucalyptus::default"
+
+node["eucalyptus"]["topology"]["clusters"].each do |name, info|
+  log "Found Cluster" do
+    message "Found cluster #{name} with attributes: #{info}"
+    level :info
+  end
+  addresses = []
+  node["network"]["interfaces"].each do |interface, info|
+    info["addresses"].each do |address, info|
+      addresses.push(address)
+    end
+  end
+  if addresses.include?(info["cc-1"])
+    node.set["eucalyptus"]["local-cluster-name"] = name
+    node.save
+  else
+    raise "Unable to find cluster controller for cluster: " + name
+  end
+end
+
+### Set bind-addr if necessary
+if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][node["eucalyptus"]["local-cluster-name"]]["sc-1"]
+  node.save
+end
+
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-sc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+    notifies :create, "template[eucalyptus.conf]"
     notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
@@ -53,8 +80,9 @@ else
   execute "chmod +x #{tools_dir}/eucalyptus-cloud"
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
+  path "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
 end
 
@@ -65,7 +93,7 @@ ruby_block "Get cluster keys from CLC" do
   block do
     if node["eucalyptus"]["topology"]["clc-1"] != ""
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      clc  = search(:node, "ipaddress:#{clc_ip}").first
+      clc  = search(:node, "addresses:#{clc_ip}").first
       node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = clc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
       node.set["eucalyptus"]["cloud-keys"]["euca.p12"] = clc["eucalyptus"]["cloud-keys"]["euca.p12"]
       node.save

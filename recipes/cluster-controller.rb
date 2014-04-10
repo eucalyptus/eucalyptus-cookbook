@@ -62,9 +62,17 @@ node["eucalyptus"]["topology"]["clusters"].each do |name, info|
     message "Found cluster #{name} with attributes: #{info}"
     level :info
   end
-  if info["cc-1"] == node["ipaddress"]
+  addresses = []
+  node["network"]["interfaces"].each do |interface, info|
+    info["addresses"].each do |address, info|
+      addresses.push(address)
+    end
+  end
+  if addresses.include?(info["cc-1"])
     node.set["eucalyptus"]["local-cluster-name"] = name
     node.save
+  else
+    raise "Unable to find cluster controller for cluster: " + name
   end
 end
 
@@ -81,7 +89,7 @@ ruby_block "Get cluster keys from CLC" do
     if node["eucalyptus"]["topology"]["clc-1"] != ""
       ### CLC is seperate
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      clc  = search(:node, "ipaddress:#{clc_ip}").first
+      clc  = search(:node, "addresses:#{clc_ip}").first
       node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = clc["eucalyptus"]["cloud-keys"][local_cluster_name]
     else
       node.set["eucalyptus"]["topology"]["clusters"][local_cluster_name]["cc-1"] = node["ipaddress"]
@@ -91,9 +99,9 @@ ruby_block "Get cluster keys from CLC" do
     node["eucalyptus"]["cloud-keys"][local_cluster_name].each do |key_name,data|
      file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
      if data.is_a?(String)
-       File.open(file_name, 'w') do |file|  
+       File.open(file_name, 'w') do |file|
          file.puts Base64.decode64(data)
-       end 
+       end
      end
      require 'fileutils'
      FileUtils.chmod 0700, file_name
