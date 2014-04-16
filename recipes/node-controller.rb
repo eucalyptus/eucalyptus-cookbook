@@ -113,7 +113,7 @@ if not Chef::Config[:solo]
       ### Look through each of the addresses on the interfaces
       iface_data["addresses"].each do |address, addr_data|
         ### If my addresss is in the nodes list for this cluster
-        if cluster_data["nodes"].include?(address)
+        if cluster_data["nodes"].include?(address) and not Chef::Config[:solo]
           node.set["eucalyptus"]["local-cluster-name"] = name
           node.save
         end

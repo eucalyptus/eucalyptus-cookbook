@@ -70,9 +70,11 @@ node["eucalyptus"]["topology"]["clusters"].each do |name, info|
       addresses.push(address)
     end
   end
-  if addresses.include?(info["cc-1"])
-    node.set["eucalyptus"]["local-cluster-name"] = name
-    node.save
+  if addresses.include?(info["cc-1"]) and not Chef::Config[:solo]
+      node.set["eucalyptus"]["local-cluster-name"] = name
+      node.save
+  elsif Chef::Config[:solo]
+    log "Using cluster name: " + node["eucalyptus"]["local-cluster-name"]
   else
     raise "Unable to find cluster controller for cluster: " + name
   end

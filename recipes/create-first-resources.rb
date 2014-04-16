@@ -19,7 +19,7 @@
 #
 execute "Add keypair: my-first-keypair" do
   command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair && chmod 0600 /root/my-first-keypair"
-  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypair my-first-keypair"
+  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypairs my-first-keypair"
   retries 10
   retry_delay 10
 end
@@ -32,6 +32,7 @@ script "install_image" do
   interpreter "bash"
   user "root"
   cwd "/tmp"
+  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep emi"
   code <<-EOH
   wget https://gist.githubusercontent.com/viglesiasce/9766518/raw -O install-image.py
   chmod +x install-image.py
