@@ -20,16 +20,14 @@
 include_recipe "eucalyptus::default"
 
 node["eucalyptus"]["topology"]["clusters"].each do |name, info|
-  log "Found Cluster" do
-    message "Found cluster #{name} with attributes: #{info}"
-    level :info
-  end
+  log "Found cluster #{name} with attributes: #{info}"
   addresses = []
   node["network"]["interfaces"].each do |interface, info|
     info["addresses"].each do |address, info|
       addresses.push(address)
     end
   end
+  log "Found addresses: " + addresses.join(",")
   if addresses.include?(info["cc-1"]) and not Chef::Config[:solo]
     node.set["eucalyptus"]["local-cluster-name"] = name
     node.save
