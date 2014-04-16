@@ -1,6 +1,8 @@
 DEVICE=<%= node["eucalyptus"]["network"]["bridge-interface"] %>
 BOOTPROTO=static
 IPADDR=<%= node["eucalyptus"]["network"]["bridge-ip"] %>
+NETMASK=<%= node["eucalyptus"]["network"]["bridge-netmask"] %>
+GATEWAY=<%= node["eucalyptus"]["network"]["bridge-gateway"] %>
 ONBOOT=yes
 TYPE=Bridge
 PERSISTENT_DHCLIENT=1
