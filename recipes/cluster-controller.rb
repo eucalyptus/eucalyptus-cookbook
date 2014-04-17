@@ -24,6 +24,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
+    notifies :restart, "service[eucalyptus-cc]", :immediately
   end
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
@@ -53,10 +54,6 @@ else
   end
 
   execute "chmod +x #{tools_dir}/eucalyptus-cc"
-end
-
-execute "Stop any running cc process" do
-        command "service eucalyptus-cc stop || true"
 end
 
 node["eucalyptus"]["topology"]["clusters"].each do |name, info|
