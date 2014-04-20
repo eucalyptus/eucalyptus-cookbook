@@ -18,19 +18,12 @@ To deploy a distributed topology it is necessary to define an environment with a
         "walrus": "10.111.5.163",
         "user-facing": ["10.111.5.163"],
         "clusters": {
-          "one": {
+          "default": {
             "cc-1": "10.111.5.164",
             "sc-1": "10.111.5.164",
             "storage-backend": "das",
             "das-device": "vg01",
             "nodes": "10.111.5.162 10.111.5.166 10.111.5.165 10.111.5.157"
-          },
-          "two": {
-            "cc-1": "10.111.5.155",
-            "sc-1": "10.111.5.155",
-            "storage-backend": "das",
-            "das-device": "vg01",
-            "nodes": "10.111.5.177 10.111.5.156 10.111.5.159"
           }
         }
       },
@@ -43,7 +36,7 @@ To deploy a distributed topology it is necessary to define an environment with a
                   "Subnets": [],
         "Clusters": [
            {
-            "Name": "one",
+            "Name": "default",
             "MacPrefix": "d0:0d",
             "Subnet": {
                 "Name": "172.16.55.0",
