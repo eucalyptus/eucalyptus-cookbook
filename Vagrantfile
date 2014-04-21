@@ -1,7 +1,5 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-# Workaround for CHEF-4725
-class<<Vagrant::Util::TemplateRenderer;alias r render;def render(*a);r(*a)<<(a[0]=~/solo$/?"\nlog_location STDOUT":"");end;end
 options = {
   :cores => 2,
   :memory => 3072,
