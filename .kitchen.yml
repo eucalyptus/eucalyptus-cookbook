@@ -18,7 +18,7 @@ platforms:
         cpuexecutioncap: 100
 
 suites:
-  - name: "4.0"
+  - name: ciab
     run_list:
       - recipe[eucalyptus::cloud-controller]
       - recipe[eucalyptus::user-console]
@@ -39,16 +39,18 @@ suites:
         nc:
           hypervisor: qemu
         network:
+          "mode": "EDGE"
           "bridge-ip": "33.33.33.10"
           "public-interface": br0
           "private-interface": br0
           "bridged-nic": eth1
           "config-json":
-             PublicIps: 
+             PublicIps:
                 - "33.33.33.110-33.33.33.160"
              Clusters:
                 - Name: default
-                  PrivateIps: "33.33.33.170-33.33.33.220"
+                  PrivateIps: 
+                     - "33.33.33.170-33.33.33.220"
                   Subnet: 
                      Name: "33.33.33.0"
                      Subnet: "33.33.33.0"
