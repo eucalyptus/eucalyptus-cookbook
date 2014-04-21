@@ -139,10 +139,10 @@ Some common attributes are:
 
 Usage
 -----
-For cloud-in-a-box installs look at:
+For cloud-in-a-box installs look at...
 [Eucadev](https://github.com/eucalyptus/eucadev)
 
-For distributed topologies:
+For distributed topologies...
 [Deployment with motherbrain](http://testingclouds.wordpress.com/2014/03/24/install-eucalyptus-4-0-using-motherbrain-and-chef/)
 
 Contributing
