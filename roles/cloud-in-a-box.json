@@ -6,11 +6,9 @@
     "eucalyptus": {
       "network": {
         "public-interface": "br0",
-        "private-interface": "br0",
+        "private-interface": "br0"
       }
     }
-  },
-  "override_attributes": {
   },
   "chef_type": "role",
   "run_list": [
@@ -24,7 +22,5 @@
     "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::configure]",
     "recipe[eucalyptus::create-first-resources]"
-  ],
-  "env_run_lists": {
-  }
+  ]
 }
