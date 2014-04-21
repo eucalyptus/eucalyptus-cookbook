@@ -1,16 +1,12 @@
 {
   "name": "cloud-in-a-box",
-  "description": "",
+  "description": "Single node deployment",
   "json_class": "Chef::Role",
   "default_attributes": {
     "eucalyptus": {
-      "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/3.4/centos/6/x86_64/",
-      "source-directory": "/opt/eucalyptus-src",
-      "install-load-balancer": true,
       "network": {
         "public-interface": "br0",
-        "private-interface": "br0"
+        "private-interface": "br0",
       }
     }
   },
@@ -20,12 +16,14 @@
   "run_list": [
     "recipe[eucalyptus::cloud-controller]",
     "recipe[eucalyptus::register-components]",
+    "recipe[eucalyptus::user-console]",
+    "recipe[eucalyptus::storage-controller]",
+    "recipe[eucalyptus::walrus]",
     "recipe[eucalyptus::cluster-controller]",
     "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::node-controller]",
-    "recipe[eucalyptus::storage-controller]",
-    "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::configure]"
+    "recipe[eucalyptus::configure]",
+    "recipe[eucalyptus::create-first-resources]"
   ],
   "env_run_lists": {
   }
