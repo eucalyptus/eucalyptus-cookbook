@@ -20,6 +20,7 @@ Vagrant.configure("2") do |config|
                                       "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
                                       "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
+                                      "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
                                       "source-directory" => "/vagrant/eucalyptus-src",
                                       "install-load-balancer" => false,
                                       "install-imaging-worker" => false,
@@ -32,16 +33,15 @@ Vagrant.configure("2") do |config|
                                                                                      "nodes" => "192.168.192.101"}
                                                           }
                                                },
-                                       "network" => {    "mode" => "EDGE",
+                                       "network" => {  "mode" => "EDGE",
                                                        "public-interface" => "br0",
                                                        "private-interface" => "br0",
                                                        "bridged-nic" => "eth1",
                                                        "bridge-ip" => "192.168.192.101",
-                                                       "config-json" => { "InstanceDnsDomain" => "eucalyptus.internal",
-                                                                        "InstanceDnsServers" => ["192.168.192.101"],
-                                                                        "PublicIps" => ["192.168.192.110-192.168.192.160"],
-                                                                        "Clusters" => [{ "Name" => "default",
-                                                                                       "Subnet" => {
+                                                       "config-json" => { "InstanceDnsServers" => ["192.168.192.101"],
+                                                                          "PublicIps" => ["192.168.192.110-192.168.192.160"],
+                                                                          "Clusters" => [{ "Name" => "default",
+                                                                                           "Subnet" => {
                                                                                                "Name" => "192.168.192.0",
                                                                                                "Subnet" => "192.168.192.0",
                                                                                                "Netmask" => "255.255.255.0",
