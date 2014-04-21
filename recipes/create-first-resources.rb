@@ -36,15 +36,15 @@ script "install_image" do
   code <<-EOH
   wget https://gist.githubusercontent.com/viglesiasce/9766518/raw -O install-image.py
   chmod +x install-image.py
-  wget http://euca-vagrant.s3.amazonaws.com/cirrosraw.img
+  wget #{node['eucalyptus']['default-img-url']} -O default.img
   source #{node['eucalyptus']['admin-cred-dir']}/eucarc
-  ./install-image.py -i cirrosraw.img -b cirros -n cirros
+  ./install-image.py -i default.img -b default -n default
   EOH
 end
 
 
 execute "Ensure default image is public" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep cirros | grep emi | awk '{print $2}')" 
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep default | grep emi | awk '{print $2}')" 
 end
 
 execute "Wait for resource availability" do
@@ -54,5 +54,5 @@ execute "Wait for resource availability" do
 end
 
 execute "Running an instance" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep cirros | grep emi | cut -f 2)"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep default | grep emi | cut -f 2)"
 end

@@ -14,6 +14,7 @@ default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-sy
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
 default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
 default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
+default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 
