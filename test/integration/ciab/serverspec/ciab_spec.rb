@@ -11,7 +11,7 @@ end
 
 describe "Eucalyptus CIAB" do
   
-  %w{eucalyptus-cloud eucalyptus-cc 
+  %w{eucalyptus-cloud eucalyptus-cc eucanetd
      eucalyptus-nc eucaconsole eucalyptus-sc
      eucalyptus-walrus}.each do |package_name| 
        describe package(package_name) do
@@ -25,12 +25,21 @@ describe "Eucalyptus CIAB" do
      end
   end
   
-  %w{eucalyptus-cloud eucalyptus-cc
+  %w{eucalyptus-cloud eucalyptus-cc eucanetd
      eucalyptus-nc eucaconsole}.each do |service_name|
      describe service(service_name) do
        it { should be_enabled }
        it { should be_running }
      end
   end   
+
+  describe command('euca-version') do
+    it { should return_stdout /euca2ools.*3\.1\.0/ }
+    it { should return_stdout /eucalyptus.*4\.0\.0/ }
+  end
+
+  describe selinux do
+    it { should be_disabled }
+  end
 
 end
