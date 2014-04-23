@@ -19,22 +19,6 @@
 
 include_recipe "eucalyptus::default"
 
-node["eucalyptus"]["topology"]["clusters"].each do |name, info|
-  log "Found cluster #{name} with attributes: #{info}"
-  addresses = []
-  node["network"]["interfaces"].each do |interface, info|
-    info["addresses"].each do |address, info|
-      addresses.push(address)
-    end
-  end
-  log "Found addresses: " + addresses.join(",")
-  if addresses.include?(info["cc-1"]) and not Chef::Config[:solo]
-    node.set["eucalyptus"]["local-cluster-name"] = name
-    node.save
-  end
-  log "Using cluster name: " + node["eucalyptus"]["local-cluster-name"]
-end
-
 ### Set bind-addr if necessary
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
   node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][node["eucalyptus"]["local-cluster-name"]]["sc-1"]
@@ -59,36 +43,12 @@ template "eucalyptus.conf" do
   action :create
 end
 
-execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
+class Chef::Recipe
+  include KeySync
+end
 
-
-ruby_block "Get cluster keys from CLC" do
-  block do
-    if node["eucalyptus"]["topology"]["clc-1"] != ""
-      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      clc  = search(:node, "addresses:#{clc_ip}").first
-      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = clc["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
-      node.set["eucalyptus"]["cloud-keys"]["euca.p12"] = clc["eucalyptus"]["cloud-keys"]["euca.p12"]
-      node.save
-    else
-      node.set["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]] = node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]]
-      node.save
-    end
-    node["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
-     file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
-     File.open(file_name, 'w') do |file|
-       file.puts Base64.decode64(data)
-     end
-     require 'fileutils'
-     FileUtils.chmod 0700, file_name
-     FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
-    end
-    euca_p12 = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/euca.p12"
-    File.open(euca_p12, 'w') do |file|
-       file.puts Base64.decode64(node["eucalyptus"]["cloud-keys"]["euca.p12"])
-    end
-  end
-  not_if "#{Chef::Config[:solo]}"
+if not Chef::Config[:solo]
+  get_cluster_keys("sc-1")
 end
 
 service "eucalyptus-cloud" do
