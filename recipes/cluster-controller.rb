@@ -29,31 +29,7 @@ if node["eucalyptus"]["install-type"] == "packages"
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
 else
-  ## Install CC from source from internal repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus/"
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster"
-    creates "#{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster/generated"
-    timeout node["eucalyptus"]["compile-timeout"]
-  end
-  ## Install CLC from open source repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["source-directory"]}/"
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/cluster"
-    creates "#{node["eucalyptus"]["source-directory"]}/cluster/generated"
-    timeout node["eucalyptus"]["compile-timeout"]
-  end
-  ### Create symlink for eucalyptus-cloud service
-  tools_dir = "#{node["eucalyptus"]["source-directory"]}/tools"
-  if node['eucalyptus']['source-repo'].end_with?("internal")
-    tools_dir = "#{node["eucalyptus"]["source-directory"]}/eucalyptus/tools"
-  end
-
-  execute "ln -s #{tools_dir}/eucalyptus-cc /etc/init.d/eucalyptus-cc" do
-    creates "/etc/init.d/eucalyptus-cc"
-  end
-
-  execute "chmod +x #{tools_dir}/eucalyptus-cc"
+  include_recipe "eucalyptus::install-source"
 end
 
 node["eucalyptus"]["topology"]["clusters"].each do |name, info|
