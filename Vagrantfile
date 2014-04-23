@@ -8,11 +8,12 @@ Vagrant.configure("2") do |config|
     config.omnibus.chef_version = :latest
     config.berkshelf.enabled = true
     config.vm.provision "shell", path: "eucadev/prep.sh"
+    config.vm.synced_folder ".", "/vagrant", owner: "root", group: "root"
     config.vm.provision :chef_solo do |chef|
       chef.roles_path = "roles"
       chef.add_role "cloud-in-a-box"  
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
-                                      "install-type" => "packages",
+                                      "install-type" => "source",
                                       ## Does not change package version, use "eucalyptus-repo" variable
                                       "source-branch" => "testing",
                                       "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
@@ -22,7 +23,7 @@ Vagrant.configure("2") do |config|
                                       "source-directory" => "/vagrant/eucalyptus-src",
                                       "install-load-balancer" => false,
                                       "install-imaging-worker" => false,
-                                      "nc" => {"hypervisor" => "qemu", "work-size" => "50000"},
+                                      "nc" => {"hypervisor" => "kvm", "work-size" => "50000"},
                                       "topology" => {  "clc-1" => "192.168.192.101", "walrus" => "192.168.192.101", 
                                                        "user-facing" => "192.168.192.101",
                                                        "clusters" => {"default" => { "storage-backend" => "overlay ",
