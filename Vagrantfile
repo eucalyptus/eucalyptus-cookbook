@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
       chef.roles_path = "roles"
       chef.add_role "cloud-in-a-box"  
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
-                                      "install-type" => "source",
+                                      "install-type" => "packages",
                                       ## Does not change package version, use "eucalyptus-repo" variable
                                       "source-branch" => "testing",
                                       "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
                                       "source-directory" => "/vagrant/eucalyptus-src",
                                       "install-load-balancer" => false,
                                       "install-imaging-worker" => false,
-                                      "nc" => {"hypervisor" => "kvm", "work-size" => "50000"},
+                                      "nc" => {"hypervisor" => "qemu", "work-size" => "50000"},
                                       "topology" => {  "clc-1" => "192.168.192.101", "walrus" => "192.168.192.101", 
                                                        "user-facing" => "192.168.192.101",
                                                        "clusters" => {"default" => { "storage-backend" => "overlay ",
