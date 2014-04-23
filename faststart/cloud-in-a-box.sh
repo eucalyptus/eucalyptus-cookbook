@@ -67,6 +67,20 @@ echo "[Precheck] OK, processor supports virtualization"
 echo ""
 echo ""
 
+# Check to see if chef-solo is installed
+echo "[Precheck] Checking if Chef Client is installed"
+which chef-solo
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[INFO] Installing Chef Client"
+    echo ""
+    echo ""
+    curl -L https://www.opscode.com/chef/install.sh | bash
+fi
+echo "[Precheck] OK, Chef Client is installed"
+echo ""
+echo ""
+
 echo "[Precheck] Precheck successful."
 echo ""
 echo ""
@@ -115,13 +129,21 @@ echo "[Prep] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
 rm -rf /var/chef/*
 
+echo "[Prep] Downloading necessary cookbooks"
+# Grab cookbooks from git
+yum install -y git
+rm -rf cookbooks
+mkdir -p cookbooks
+pushd cookbooks
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus
+git clone https://github.com/opscode-cookbooks/yum
+git clone https://github.com/opscode-cookbooks/selinux
+git clone https://github.com/opscode-cookbooks/ntp
+popd
+
 echo "[Prep] Tarring up cookbooks"
 # Tar up the cookbooks for use by chef-solo.
 tar czvf cookbooks.tgz cookbooks
-
-echo "[Prep] Nuking any previous Euca installation"
-# Run the nuke recipe, which gets rid of all traces of Euca.
-chef-solo -r cookbooks.tgz -j nuke.json 1>/tmp/ciab.nuke.out
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
