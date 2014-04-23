@@ -12,10 +12,10 @@ rm -rf /var/chef/*
 tar czvf cookbooks.tgz cookbooks
 
 # Run the nuke recipe, which gets rid of all traces of Euca.
-chef-solo -r cookbooks.tgz -j nuke.json
+chef-solo -r cookbooks.tgz -j nuke.json 1>/tmp/ciab.nuke.out
 
 # Install Euca and start it up in the cloud-in-a-box configuration.
-chef-solo -r cookbooks.tgz -j ciab.json
+chef-solo -r cookbooks.tgz -j ciab.json 1>/tmp/ciab.install.out
 
 # The one-liner version, for reference:
 # chef-solo -r cookbooks.tgz -j nuke.json; rm -rf /var/chef/*;tar czvf cookbooks.tgz cookbooks; chef-solo -r cookbooks.tgz -j ciab.json

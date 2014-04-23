@@ -6,15 +6,15 @@
       "install-load-balancer": false,
       "install-imaging-worker": false,
       "topology": {
-        "clc-1": "192.168.1.160",
-        "walrus": "192.168.1.160",
-        "user-facing": ["192.168.1.160"],
+        "clc-1": "IPADDR",
+        "walrus": "IPADDR",
+        "user-facing": ["IPADDR"],
         "clusters": {
           "default": {
-            "cc-1": "192.168.1.160",
-            "sc-1": "192.168.1.160",
+            "cc-1": "IPADDR",
+            "sc-1": "IPADDR",
             "storage-backend": "overlay",
-            "nodes": "192.168.1.160"
+            "nodes": "IPADDR"
           }
         }
       },
@@ -23,12 +23,12 @@
         "public-interface": "br0",
         "private-interface": "br0",
         "bridged-nic":"eth0", 
-        "bridge-ip": "192.168.1.160",
+        "bridge-ip": "IPADDR",
         "bridge-netmask": "NETMASK",
         "bridge-gateway": "GATEWAY",
         "config-json": {
           "InstanceDnsDomain" : "eucalyptus.internal",
-          "InstanceDnsServers": ["192.168.1.160"],
+          "InstanceDnsServers": ["IPADDR"],
           "PublicIps": ["PUBLICIPS1-PUBLICIPS2"],
           "Clusters": [
             {

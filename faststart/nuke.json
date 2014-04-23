@@ -1,0 +1,7 @@
+{
+  "run_list": [
+    "recipe[eucalyptus::nuke]"
+  ]
+}
+
+
