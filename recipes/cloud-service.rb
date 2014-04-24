@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: default
+# Recipe:: cloud-service
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
@@ -16,39 +16,41 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+#
+
 include_recipe "eucalyptus::default"
-## Install packages for the Walrus
+## Install packages for the User Facing Services
 if node["eucalyptus"]["install-type"] == "packages"
-  yum_package "eucalyptus-walrus" do
+  yum_package "eucalyptus-cloud" do
     action :upgrade
     options node['eucalyptus']['yum-options']
     notifies :create, "template[eucalyptus.conf]", :immediately
-    notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
 else
   include_recipe "eucalyptus::install-source"
 end
 
+yum_package "euca2ools" do
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+end
+
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]["walrus"]
+  bind_addr = node["ipaddress"]
+  node["network"]["interfaces"].each do |if_name, if_info|
+    if_info["addresses"].each do |addr, addr_info|
+      if node["eucalyptus"]["topology"]["user-facing"].include?(addr)
+        bind_addr = addr
+      end
+    end
+  end
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
   node.save
 end
 
 template "eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
   path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
+  source "eucalyptus.conf.erb"
   action :create
-end
-
-ruby_block "Get cloud keys for walrus service" do
-  block do
-    Eucalyptus::KeySync.get_cloud_keys(node)
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
-service "eucalyptus-cloud" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
 end

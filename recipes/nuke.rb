@@ -17,7 +17,6 @@
 ##    limitations under the License.
 ##
 
-
 ## Stop all euca components
 service "eucalyptus-nc" do
   action [ :stop ]
