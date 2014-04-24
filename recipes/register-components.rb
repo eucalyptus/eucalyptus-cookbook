@@ -22,8 +22,8 @@ require 'json'
 execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
-  retries 10
-  retry_delay 50
+  retries 15
+  retry_delay 20
 end
 
 ##### Register clusters

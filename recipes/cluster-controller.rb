@@ -38,12 +38,11 @@ template "eucalyptus.conf" do
   action :create
 end
 
-class Chef::Recipe
-  include KeySync
-end
-
-if not Chef::Config[:solo]
-  get_cluster_keys("cc-1")
+ruby_block "Sync CC keys" do
+  block do
+    Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
+  end
+  not_if "#{Chef::Config[:solo]}"
 end
 
 service "eucalyptus-cc" do

@@ -16,7 +16,6 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-
 include_recipe "eucalyptus::default"
 
 ### Set bind-addr if necessary
@@ -37,18 +36,17 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+ruby_block "Sync SC keys" do
+  block do
+    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+  end
+  not_if "#{Chef::Config[:solo]}"
+end
+
 template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   path "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
-end
-
-class Chef::Recipe
-  include KeySync
-end
-
-if not Chef::Config[:solo]
-  get_cluster_keys("sc-1")
 end
 
 service "eucalyptus-cloud" do

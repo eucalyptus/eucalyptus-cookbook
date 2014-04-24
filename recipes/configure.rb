@@ -23,8 +23,8 @@ describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
 if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
   execute "Set OSG providerclient to riakcs" do
     command "#{modify_property} -p objectstorage.providerclient=riakcs"
-    retries 30
-    retry_delay 10
+    retries 15
+    retry_delay 20
   end
   execute "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
   execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['riakcs']['access-key']}"
@@ -33,16 +33,16 @@ else
   execute "Set OSG providerclient" do
     command "#{modify_property} -p objectstorage.providerclient=walrus"
     only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
-    retries 30
-    retry_delay 10
+    retries 15
+    retry_delay 20
   end
 end
 
 execute "Wait for credentials with S3 URL populated" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip && grep 'export S3_URL' eucarc"
   cwd node['eucalyptus']['admin-cred-dir']
-  retries 30
-  retry_delay 10
+  retries 15
+  retry_delay 20
   not_if "grep 'export S3_URL' #{node['eucalyptus']['admin-cred-dir']}/eucarc"
 end
 
@@ -55,16 +55,16 @@ clusters.each do |cluster, info|
   ### Set backend
   execute "Set storage backend" do
      command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{info["storage-backend"]} | grep #{info["storage-backend"]}"
-     retries 30
-     retry_delay 10
+     retries 15
+     retry_delay 20
   end
   ### Configure backend
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
       command "#{modify_property} -p #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
-      retries 30
-      retry_delay 10
+      retries 15
+      retry_delay 20
     end
   end
 end
@@ -105,4 +105,3 @@ if node['eucalyptus']['install-imaging-worker']
     only_if "#{describe_property} imaging.imaging_worker_emi | grep 'NULL'"
   end
 end
-
