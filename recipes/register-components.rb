@@ -58,7 +58,7 @@ clusters.each do |cluster, info|
   end
   #### Sync cluster keys
   cluster_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{cluster}"
-  ruby_block "Upload cloud keys Chef Server" do
+  ruby_block "Upload cluster keys Chef Server" do
     block do
       %w(cloud-cert.pem cluster-cert.pem cluster-pk.pem node-cert.pem node-pk.pem vtunpass).each do |key_name|
         cert = Base64.encode64(::File.new("#{cluster_keys_dir}/#{key_name}").read)
