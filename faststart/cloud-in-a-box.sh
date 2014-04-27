@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TODOs:
-#   * [Precheck] check for presence of wget
+#   * [Precheck] replace wget with curl and check for curl
 #   * come up with a timestamp for the master log file
 #   * send all output to the master log file
 #   * import a larger image than the cirros starter
