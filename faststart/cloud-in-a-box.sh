@@ -160,7 +160,7 @@ tar czvf cookbooks.tgz cookbooks
 #ciab_privateips2="192.168.1.180"
 
 # Copy the CIAB template over to be the active CIAB configuration file.
-cp -f eucalyptus/faststart/ciab-template.json ciab.json 
+cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
 
 # Perform variable interpolation in the CIAB template.
 sed -i "s/IPADDR/$ciab_ipaddr/g" ciab.json
