@@ -29,80 +29,18 @@ if node["eucalyptus"]["install-type"] == "packages"
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
 else
-  ## Install CC from source from internal repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus/"
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster"
-    creates "#{node["eucalyptus"]["source-directory"]}/eucalyptus/cluster/generated"
-    timeout node["eucalyptus"]["compile-timeout"]
-  end
-  ## Install CLC from open source repo if it exists
-  execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-    cwd "#{node["eucalyptus"]["source-directory"]}/"
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/cluster"
-    creates "#{node["eucalyptus"]["source-directory"]}/cluster/generated"
-    timeout node["eucalyptus"]["compile-timeout"]
-  end
-  ### Create symlink for eucalyptus-cloud service
-  tools_dir = "#{node["eucalyptus"]["source-directory"]}/tools"
-  if node['eucalyptus']['source-repo'].end_with?("internal")
-    tools_dir = "#{node["eucalyptus"]["source-directory"]}/eucalyptus/tools"
-  end
-
-  execute "ln -s #{tools_dir}/eucalyptus-cc /etc/init.d/eucalyptus-cc" do
-    creates "/etc/init.d/eucalyptus-cc"
-  end
-
-  execute "chmod +x #{tools_dir}/eucalyptus-cc"
+  include_recipe "eucalyptus::install-source"
 end
 
-node["eucalyptus"]["topology"]["clusters"].each do |name, info|
-  log "Found cluster #{name} with attributes: #{info}"
-  addresses = []
-  node["network"]["interfaces"].each do |interface, info|
-    info["addresses"].each do |address, info|
-      addresses.push(address)
-    end
-  end
-  log "Found addresses: " + addresses.join(",")
-  if addresses.include?(info["cc-1"]) and not Chef::Config[:solo]
-      node.set["eucalyptus"]["local-cluster-name"] = name
-      node.save
-  end
-  log "Using cluster name: " + node["eucalyptus"]["local-cluster-name"]
-end
-
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
   action :create
 end
 
-execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
-
-ruby_block "Get cluster keys from CLC" do
+ruby_block "Sync CC keys" do
   block do
-    local_cluster_name = node["eucalyptus"]["local-cluster-name"]
-    if node["eucalyptus"]["topology"]["clc-1"] != ""
-      ### CLC is seperate
-      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      clc  = search(:node, "addresses:#{clc_ip}").first
-      node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = clc["eucalyptus"]["cloud-keys"][local_cluster_name]
-    else
-      node.set["eucalyptus"]["topology"]["clusters"][local_cluster_name]["cc-1"] = node["ipaddress"]
-      node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = node["eucalyptus"]["cloud-keys"][local_cluster_name]
-    end
-    node.save
-    node["eucalyptus"]["cloud-keys"][local_cluster_name].each do |key_name,data|
-     file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
-     if data.is_a?(String)
-       File.open(file_name, 'w') do |file|
-         file.puts Base64.decode64(data)
-       end
-     end
-     require 'fileutils'
-     FileUtils.chmod 0700, file_name
-     FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
-    end
+    Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
   end
   not_if "#{Chef::Config[:solo]}"
 end

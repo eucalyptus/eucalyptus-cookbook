@@ -1,0 +1,45 @@
+require 'serverspec'
+
+include Serverspec::Helper::Exec
+include Serverspec::Helper::DetectOS
+
+RSpec.configure do |c|
+  c.before :all do
+    c.path = '/sbin:/usr/sbin'
+  end
+end
+
+describe "Eucalyptus CIAB" do
+  
+  %w{eucalyptus-cloud eucalyptus-cc eucanetd
+     eucalyptus-nc eucaconsole eucalyptus-sc
+     eucalyptus-walrus}.each do |package_name| 
+       describe package(package_name) do
+         it { should be_installed }
+       end
+  end
+
+  %w{8773 8774 8775 8888}.each do |port_number|
+     describe port(port_number) do
+       it { should be_listening }
+     end
+  end
+  
+  %w{eucalyptus-cloud eucalyptus-cc eucanetd
+     eucalyptus-nc eucaconsole}.each do |service_name|
+     describe service(service_name) do
+       it { should be_enabled }
+       it { should be_running }
+     end
+  end   
+
+  describe command('euca-version') do
+    it { should return_stdout /euca2ools.*3\.1\.0/ }
+    it { should return_stdout /eucalyptus.*4\.0\.0/ }
+  end
+
+  describe selinux do
+    it { should be_disabled }
+  end
+
+end

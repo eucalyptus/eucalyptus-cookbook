@@ -1,0 +1,69 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_solo
+
+platforms:
+  - name: centos-6.4
+    driver_config:
+      box: euca-deps
+      box_url: https://vagrantcloud.com/viglesiasce/euca-deps/version/1/provider/virtualbox.box
+      network:
+        - [private_network, ip: "33.33.33.10"]
+      customize:
+        cpus: 2
+        memory: 3024
+        cpuexecutioncap: 100
+
+suites:
+  - name: ciab
+    run_list:
+      - recipe[eucalyptus::cloud-controller]
+      - recipe[eucalyptus::user-console]
+      - recipe[eucalyptus::register-components]
+      - recipe[eucalyptus::walrus]
+      - recipe[eucalyptus::cluster-controller]
+      - recipe[eucalyptus::storage-controller]
+      - recipe[eucalyptus::register-nodes]
+      - recipe[eucalyptus::node-controller]
+      - recipe[eucalyptus::configure]
+    attributes:
+      eucalyptus: 
+        "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/"
+        "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/"
+        "yum-options": "--nogpg"
+        "install-load-balancer": false
+        "install-imaging-worker": false
+        nc:
+          hypervisor: qemu
+        network:
+          "mode": "EDGE"
+          "bridge-ip": "33.33.33.10"
+          "public-interface": br0
+          "private-interface": br0
+          "bridged-nic": eth1
+          "config-json":
+             PublicIps:
+                - "33.33.33.110-33.33.33.160"
+             Clusters:
+                - Name: default
+                  PrivateIps: 
+                     - "33.33.33.170-33.33.33.220"
+                  Subnet: 
+                     Name: "33.33.33.0"
+                     Subnet: "33.33.33.0"
+                     Netmask: "255.255.255.0"
+                     Gateway: "33.33.33.1"
+        topology:
+          "clc-1": "33.33.33.10"
+          "walrus": "33.33.33.10"
+          "user-facing":
+             - "33.33.33.10"
+          clusters:
+            default:
+              "storage-backend": overlay
+              "cc-1": "33.33.33.10"
+              "sc-1": "33.33.33.10"
+              "nodes": "33.33.33.10"

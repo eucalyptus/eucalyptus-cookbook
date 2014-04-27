@@ -1,7 +1,5 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-# Workaround for CHEF-4725
-class<<Vagrant::Util::TemplateRenderer;alias r render;def render(*a);r(*a)<<(a[0]=~/solo$/?"\nlog_location STDOUT":"");end;end
 options = {
   :cores => 2,
   :memory => 3072,
@@ -10,6 +8,7 @@ Vagrant.configure("2") do |config|
     config.omnibus.chef_version = :latest
     config.berkshelf.enabled = true
     config.vm.provision "shell", path: "eucadev/prep.sh"
+    config.vm.synced_folder ".", "/vagrant", owner: "root", group: "root"
     config.vm.provision :chef_solo do |chef|
       chef.roles_path = "roles"
       chef.add_role "cloud-in-a-box"  

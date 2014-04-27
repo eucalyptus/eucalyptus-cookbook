@@ -1,0 +1,106 @@
+#
+# Cookbook Name:: eucalyptus
+# Library:: keys-sync
+#
+#Copyright [2014] [Eucalyptus Systems]
+##
+##Licensed under the Apache License, Version 2.0 (the "License");
+##you may not use this file except in compliance with the License.
+##You may obtain a copy of the License at
+##
+##    http://www.apache.org/licenses/LICENSE-2.0
+##
+##    Unless required by applicable law or agreed to in writing, software
+##    distributed under the License is distributed on an "AS IS" BASIS,
+##    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+##    See the License for the specific language governing permissions and
+##    limitations under the License.
+##
+#
+require "chef/search/query"
+require "chef/log"
+require 'fileutils'
+
+module Eucalyptus
+  module KeySync
+    def self.get_cluster_keys(node, component)
+      node["eucalyptus"]["topology"]["clusters"].each do |name, info|
+        Chef::Log.info "Found cluster #{name} with attributes: #{info}"
+        addresses = []
+        node["network"]["interfaces"].each do |interface, info|
+          info["addresses"].each do |address, info|
+            addresses.push(address)
+          end
+        end
+        Chef::Log.info "Found addresses: " + addresses.join(",")
+        if addresses.include?(info[component]) and not Chef::Config[:solo]
+            node.set["eucalyptus"]["local-cluster-name"] = name
+            node.save
+        end
+        Chef::Log.info "Using cluster name: " + node["eucalyptus"]["local-cluster-name"]
+      end
+
+      local_cluster_name = node["eucalyptus"]["local-cluster-name"]
+      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+      Chef::Log.info "Getting keys from CLC: " + clc_ip
+      clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first
+      cluster_keys = clc.first.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
+      euca_p12 = clc.first.attributes["eucalyptus"]["cloud-keys"]["euca.p12"]
+      node.set["eucalyptus"]["cloud-keys"][local_cluster_name] = cluster_keys
+      node.set["eucalyptus"]["cloud-keys"]["euca.p12"] = euca_p12
+      node.save
+
+      ### Write cluster keys to disk
+      node["eucalyptus"]["cloud-keys"][local_cluster_name].each do |key_name,data|
+       file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+       if data.is_a?(String)
+         File.open(file_name, 'w') do |file|
+           file.puts Base64.decode64(data)
+         end
+       end
+       FileUtils.chmod 0700, file_name
+       FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+      end
+
+      ### Also put in place euca.p12
+      file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/euca.p12"
+      File.open(file_name, 'w') do |file|
+        file.puts Base64.decode64(node["eucalyptus"]["cloud-keys"]["euca.p12"])
+      end
+      FileUtils.chmod 0700, file_name
+      FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+    end
+
+    def self.get_node_keys(node)
+      cc_ip = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"]
+      Chef::Log.info "Getting keys from CC: " + cc_ip
+      cc = Chef::Search::Query.new.search(:node, "addresses:#{cc_ip}").first
+      cc.first.attributes["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
+        file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+        File.open(file_name, 'w') do |file|
+          file.puts Base64.decode64(data)
+        end
+        FileUtils.chmod 0700, file_name
+        FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+      end
+    end
+
+    def self.get_cloud_keys(node)
+      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+      Chef::Log.info "Getting keys from CLC: " + clc_ip
+      clc  = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first
+      node.set["eucalyptus"]["cloud-keys"] = clc.first.attributes["eucalyptus"]["cloud-keys"]
+      node.save
+      node["eucalyptus"]["cloud-keys"].each do |key_name,data|
+        if data.is_a? String
+          file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
+          File.open(file_name, 'w') do |file|
+            file.puts Base64.decode64(data)
+          end
+          FileUtils.chmod 0700, file_name
+          FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
+        end
+      end
+    end
+  end
+end

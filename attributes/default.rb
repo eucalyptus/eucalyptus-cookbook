@@ -8,6 +8,7 @@ default['eucalyptus']['load-balancer-repo'] = ""
 default['eucalyptus']['install-load-balancer'] = true
 default['eucalyptus']['imaging-worker-repo'] = ""
 default['eucalyptus']['install-imaging-worker'] = true
+default["eucalyptus"]["install-user-console"] = true
 default['eucalyptus']['user-console-repo'] = ""
 default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
 default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/euca-master-plugin-build-bootstrap/centos/$releasever/$basearch/"

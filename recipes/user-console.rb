@@ -16,23 +16,22 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-
-
 ## Install packages for the user-console
+if node["eucalyptus"]["install-user-console"]
+  yum_repository "eucaconsole" do
+    description "Eucalyptus Console Repo"
+    url node["eucalyptus"]["user-console-repo"]
+    only_if { node['eucalyptus']['user-console-repo'] != '' }
+  end
 
-yum_repository "eucaconsole" do
-   description "Eucalyptus Console Repo"
-   url node["eucalyptus"]["user-console-repo"]
-   only_if { node['eucalyptus']['user-console-repo'] != '' }
-end
+  yum_package "eucaconsole" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+    flush_cache [:before]
+  end
 
-yum_package "eucaconsole" do
-  action :upgrade
-  options node['eucalyptus']['yum-options']
-  flush_cache [:before]
-end
-
-service "eucaconsole" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
+  service "eucaconsole" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end
