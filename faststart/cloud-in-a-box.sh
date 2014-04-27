@@ -5,7 +5,9 @@
 #   * valid ciab.json runlist.
 
 # TODOs:
-#   * come up with a timestamp for the log file
+#   * come up with a timestamp for the master log file
+#   * send all output to the master log file
+#   * import a larger image than the cirros starter
 #   * pull the raw ciab-template file directly from Github
 #   * setup an interactive mode that asks all the necessary questions
 #   * setup an automated mode that reads the ciab.json file directly
@@ -191,6 +193,8 @@ echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
 echo "tail -f /tmp/ciab.install.out"
+echo ""
+echo "Install in progress..."
 
 chef-solo -r cookbooks.tgz -j ciab.json 1>/tmp/ciab.install.out
 
@@ -204,4 +208,23 @@ fi
 echo ""
 echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
+echo ""
+echo "We've launched a simple instance for you. To start exploring your new Eucalyptus cloud,"
+echo "you should:"
+echo ""
+echo "Source your new credentials:"
+echo "  source ~/.eucarc"
+echo ""
+echo "Get a list of your running cloud instances:"
+echo "  euca-describe-instances"
+echo ""
+echo "Get a list of your available cloud images:"
+echo ""
+echo "  euca-describe-images"
+echo ""
+echo "For more information, consult the Eucalyptus User Guide at:"
+echo "  https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#shared/user_section.html"
+echo ""
+echo "Thanks for installating Eucalyptus!"
+echo ""
 exit 0
