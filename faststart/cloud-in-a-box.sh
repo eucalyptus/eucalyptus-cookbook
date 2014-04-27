@@ -97,20 +97,43 @@ echo ""
 ###############################################################################
 # SECTION 2: USER INPUT
 #
-# For now, we're going to harcode the variables to make sure that the 
-# template replacement works properly.
-#
 ###############################################################################
 
+echo ""
+echo ""
+echo "Welcome to the Faststart installer!"
+
+echo "We're about to turn this system into a single-system Eucalyptus cloud."
+echo "To do that, we need to get a few answers from you."
+echo "(NOTE: we're not validating any of these inputs yet.)"
+
+echo ""
+echo "What's the IP address of this host? (example: 192.168.1.100) (Yes, I know: we should detect this.)"
+read ciab_ipaddr
+echo "What's the gateway for this host? (example: 192.168.1.1) (Yes, we should detect this too.)"
+read ciab_gateway
+echo "What's the subnet for this host? (example: 192.168.1.0) (Yes, we should also detect this.)"
+read ciab_subnet
+echo "What's the netmask for this host? (example: 255.255.255.0) (Yes, we should be able to compute this.)"
+read ciab_netmask
+echo "What's the first address of your public IP range?"
+read ciab_publicips1
+echo "What's the last address of your public IP range?"
+read ciab_publicips2
+echo "What's the first address of your private IP range?"
+read ciab_privateips1
+echo "What's the last address of your private IP range?"
+read ciab_privateips2
+
 # Set the IP addresses.
-ciab_ipaddr="192.168.1.160"
-ciab_netmask="255.255.255.0"
-ciab_gateway="192.168.1.1"
-ciab_subnet="192.168.1.0"
-ciab_publicips1="192.168.1.161"
-ciab_publicips2="192.168.1.170"
-ciab_privateips1="192.168.1.171"
-ciab_privateips2="192.168.1.180"
+#ciab_ipaddr="192.168.1.160"
+#ciab_netmask="255.255.255.0"
+#ciab_gateway="192.168.1.1"
+#ciab_subnet="192.168.1.0"
+#ciab_publicips1="192.168.1.161"
+#ciab_publicips2="192.168.1.170"
+#ciab_privateips1="192.168.1.171"
+#ciab_privateips2="192.168.1.180"
 
 # Copy the CIAB template over to be the active CIAB configuration file.
 cp -f ciab-template.json ciab.json 
