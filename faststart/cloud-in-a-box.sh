@@ -210,7 +210,7 @@ echo "We've launched a simple instance for you. To start exploring your new Euca
 echo "you should:"
 echo ""
 echo "Source your new credentials:"
-echo "  source ~/.eucarc"
+echo "  source ~/eucarc"
 echo ""
 echo "Get a list of your running cloud instances:"
 echo "  euca-describe-instances"
