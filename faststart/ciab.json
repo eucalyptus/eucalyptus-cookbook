@@ -24,23 +24,23 @@
         "private-interface": "br0",
         "bridged-nic":"eth0", 
         "bridge-ip": "192.168.1.160",
-        "bridge-netmask": "NETMASK",
-        "bridge-gateway": "GATEWAY",
+        "bridge-netmask": "255.255.255.0",
+        "bridge-gateway": "192.168.1.1",
         "config-json": {
           "InstanceDnsDomain" : "eucalyptus.internal",
           "InstanceDnsServers": ["192.168.1.160"],
-          "PublicIps": ["PUBLICIPS1-PUBLICIPS2"],
+          "PublicIps": ["192.168.1.161-192.168.1.170"],
           "Clusters": [
             {
               "Name": "default",
               "MacPrefix": "d0:0d",
               "Subnet": {
-                "Name": "SUBNET",
-                "Subnet": "SUBNET",
-                "Netmask": "NETMASK",
-                "Gateway": "GATEWAY"
+                "Name": "192.168.1.0",
+                "Subnet": "192.168.1.0",
+                "Netmask": "255.255.255.0",
+                "Gateway": "192.168.1.1"
               },
-              "PrivateIps": [ "PRIVATEIPS1-PRIVATEIPS2"]
+              "PrivateIps": [ "192.168.1.171-192.168.1.180"]
             }
           ]
         }

@@ -1,9 +1,18 @@
 #!/bin/bash
 
 # Assumes:
-#   1. valid cookbooks in ./cookbooks directory;
-#   2. valid nuke.json runlist;
-#   3. valid ciab.json runlist.
+#   * valid nuke.json runlist;
+#   * valid ciab.json runlist.
+
+# TODOs:
+#   * come up with a timestamp for the log file
+#   * pull the raw ciab-template file directly from Github
+#   * setup an interactive mode that asks all the necessary questions
+#   * setup an automated mode that reads the ciab.json file directly
+#   * switch to disable "nuke"
+#   * add successful run time
+#   * add an error parser to pull and report any FATAL chef error, then
+#     urlencode and send error message upstream
 
 ###############################################################################
 # SECTION 1: PRECHECK.
@@ -40,7 +49,7 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/docs/tipoftheday.html?fserror=OS_NOT_SUPPORTED -O /dev/null
+    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED -O /dev/null
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -60,7 +69,7 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/docs/tipoftheday.html?fserror=VIRT_NOT_SUPPORTED -O /dev/null
+    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED -O /dev/null
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
@@ -91,8 +100,6 @@ echo ""
 # For now, we're going to harcode the variables to make sure that the 
 # template replacement works properly.
 #
-# TODO: setup an interactive mode that asks all the necessary questions
-# TODO: setup an automated mode that reads the ciab.json file directly
 ###############################################################################
 
 # Set the IP addresses.
@@ -121,8 +128,6 @@ sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" ciab.json
 ###############################################################################
 # SECTION 3: PREP THE INSTALLATION
 #
-# TODO: Add a confirm for interactive mode: "this will blow away any
-# current Eucalyptus installation on this machine, are you sure?"
 ###############################################################################
 
 echo "[Prep] Removing old Chef templates"
