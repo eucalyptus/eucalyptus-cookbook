@@ -31,12 +31,7 @@ end
 
 ruby_block "Upload cloud keys Chef Server" do
   block do
-    cloud_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys"
-    %w(cloud-cert.pem cloud-pk.pem euca.p12).each do |key_name|
-      cert = Base64.encode64(::File.new("#{cloud_keys_dir}/#{key_name}").read)
-      node.set['eucalyptus']['cloud-keys'][key_name] = cert
-      node.save
-    end
+    Eucalyptus::KeySync.upload_cloud_keys(node)
   end
   not_if "#{Chef::Config[:solo]}"
 end

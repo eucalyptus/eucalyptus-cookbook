@@ -23,6 +23,14 @@ require 'fileutils'
 
 module Eucalyptus
   module KeySync
+    def self.upload_cloud_keys(node)
+      cloud_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys"
+      %w(cloud-cert.pem cloud-pk.pem euca.p12).each do |key_name|
+        cert = Base64.encode64(::File.new("#{cloud_keys_dir}/#{key_name}").read)
+        node.set['eucalyptus']['cloud-keys'][key_name] = cert
+        node.save
+      end
+    end
     def self.get_cluster_keys(node, component)
       node["eucalyptus"]["topology"]["clusters"].each do |name, info|
         Chef::Log.info "Found cluster #{name} with attributes: #{info}"
