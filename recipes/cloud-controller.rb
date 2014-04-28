@@ -22,6 +22,19 @@ yum_package "unzip" do
   options node['eucalyptus']['yum-options']
 end
 
+if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
+  bind_addr = node["ipaddress"]
+  node["network"]["interfaces"].each do |if_name, if_info|
+    if_info["addresses"].each do |addr, addr_info|
+      if node["eucalyptus"]["topology"]["clc-1"].include?(addr)
+        bind_addr = addr
+      end
+    end
+  end
+  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  node.save
+end
+
 include_recipe "eucalyptus::cloud-service"
 
 execute "Initialize Eucalyptus DB" do
