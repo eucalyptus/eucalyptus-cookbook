@@ -82,7 +82,7 @@ if Chef::Config[:solo]
 end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
-    command "#{euca_conf} --register-osg -P objectstorage -H #{uf_ip} -C osg-#{uf_ip} #{dont_sync_keys}"
+    command "#{euca_conf} --register-osg #{uf_ip} #{dont_sync_keys}"
     not_if "euca-describe-services | grep osg-#{uf_ip}"
     only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
