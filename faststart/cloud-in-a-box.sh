@@ -152,12 +152,18 @@ read ciab_privateips2
 
 echo "[Prep] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
-rm -rf /var/chef/*
+rm -rf /var/chef/* 1>$LOGFILE
 
 echo "[Prep] Downloading necessary cookbooks"
 # Grab cookbooks from git
-yum install -y git
+yum install -y git 1>$LOGFILE
 if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
+        exit 24
 fi
 rm -rf cookbooks
 mkdir -p cookbooks
