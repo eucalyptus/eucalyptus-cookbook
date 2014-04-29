@@ -159,7 +159,7 @@ echo "[Prep] Downloading necessary cookbooks"
 yum install -y git 1>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
-        echo "[FATAL] Failed to install git!
+        echo "[FATAL] Failed to install git!"
         echo ""
         echo "Failed to install git. See $LOGFILE for details."
         curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
