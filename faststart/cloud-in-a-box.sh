@@ -1,13 +1,11 @@
 #!/bin/bash
 
 # TODOs:
-#   * come up with a timestamp for the master log file
-#   * import a larger image than the cirros starter
-#   * pull the raw ciab-template file directly from Github
-#   * setup an interactive mode that asks all the necessary questions
+#   * Pull IP info properly
+#   * Check IP addresses for correctness
+#   * instructions for importing a larger image than the cirros starter
 #   * setup an automated mode that reads the ciab.json file directly
 #   * switch to disable "nuke"
-#   * add successful run time
 #   * add an error parser to pull and report any FATAL chef error, then
 #     urlencode and send error message upstream
 
@@ -27,6 +25,7 @@ echo ""
 echo "[Precheck] Checking root"
 ciab_user=`whoami`
 if [ "$ciab_user" != 'root' ]; then
+    echo "======"
     echo "[FATAL] Not running as root"
     echo ""
     echo "Please run Eucalyptus Faststart as the root user."
@@ -34,20 +33,10 @@ if [ "$ciab_user" != 'root' ]; then
 fi
 echo "[Precheck] OK, running as root"
 echo ""
-echo ""
-
-# Check to make sure curl is installed.
-# If the user is following directions, they should be using
-# curl already to fetch the script -- but can't guarantee that.
-echo "[Precheck] Checking curl version"
-curl --version 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-  echo "Nope!"
-fi
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
-grep "6.5" /etc/redhat-release 
+grep "6.5" /etc/redhat-release 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
@@ -62,11 +51,28 @@ if [ "$?" != "0" ]; then
 fi
 echo "[Precheck] OK, OS is supported"
 echo ""
+
+# Check to make sure curl is installed.
+# If the user is following directions, they should be using
+# curl already to fetch the script -- but can't guarantee that.
+echo "[Precheck] Checking curl version"
+curl --version 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+    yum -y install curl 1>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "======"
+        echo "[FATAL] Could not install curl"
+        echo ""
+        echo "Failed to install curl. See $LOGFILE for details."
+        exit 7
+    fi
+fi
+echo "[Precheck] OK, curl is up to date"
 echo ""
 
 # Check to see if kvm is supported by the hardware.
 echo "[Precheck] Checking hardware virtualization"
-egrep '^flags.*(vmx|svm)' /proc/cpuinfo
+egrep '^flags.*(vmx|svm)' /proc/cpuinfo 1>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[FATAL] Processor doesn't support virtualization"
@@ -82,20 +88,26 @@ if [ "$?" != "0" ]; then
 fi
 echo "[Precheck] OK, processor supports virtualization"
 echo ""
-echo ""
 
 # Check to see if chef-solo is installed
 echo "[Precheck] Checking if Chef Client is installed"
 which chef-solo
 if [ "$?" != "0" ]; then
     echo "====="
-    echo "[INFO] Installing Chef Client"
+    echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Chef install failed!"
+        echo ""
+        echo "Failed to install Chef. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> $LOGFILE
+        exit 22
+    fi
 fi
 echo "[Precheck] OK, Chef Client is installed"
-echo ""
 echo ""
 
 echo "[Precheck] Precheck successful."
@@ -107,7 +119,7 @@ echo ""
 #
 ###############################################################################
 
-echo ""
+echo "====="
 echo ""
 echo "Welcome to the Faststart installer!"
 
@@ -140,33 +152,63 @@ read ciab_privateips2
 
 echo "[Prep] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
-rm -rf /var/chef/*
+rm -rf /var/chef/* 1>$LOGFILE
 
 echo "[Prep] Downloading necessary cookbooks"
 # Grab cookbooks from git
-yum install -y git
+yum install -y git 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!"
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
+        exit 24
+fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus
-git clone https://github.com/opscode-cookbooks/yum
-git clone https://github.com/opscode-cookbooks/selinux
-git clone https://github.com/opscode-cookbooks/ntp
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
+        echo ""
+        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch yum cookbook!"
+        echo ""
+        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch selinux cookbook!"
+        echo ""
+        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch ntp cookbook!"
+        echo ""
+        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        exit 25
+fi
 popd
 
 echo "[Prep] Tarring up cookbooks"
 # Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks
-
-# Set the IP addresses.
-#ciab_ipaddr="192.168.1.160"
-#ciab_netmask="255.255.255.0"
-#ciab_gateway="192.168.1.1"
-#ciab_subnet="192.168.1.0"
-#ciab_publicips1="192.168.1.161"
-#ciab_publicips2="192.168.1.170"
-#ciab_privateips1="192.168.1.171"
-#ciab_privateips2="192.168.1.180"
+tar czvf cookbooks.tgz cookbooks 1>$LOGFILE
 
 # Copy the CIAB template over to be the active CIAB configuration file.
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
