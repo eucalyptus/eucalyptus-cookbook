@@ -187,6 +187,7 @@ if [ "$?" != "0" ]; then
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
+if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch selinux cookbook!"
         echo ""
