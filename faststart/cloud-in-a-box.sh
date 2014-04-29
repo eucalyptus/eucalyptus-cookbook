@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # TODOs:
-#   * [Precheck] replace wget with curl and check for curl
 #   * come up with a timestamp for the master log file
-#   * send all output to the master log file
 #   * import a larger image than the cirros starter
 #   * pull the raw ciab-template file directly from Github
 #   * setup an interactive mode that asks all the necessary questions
@@ -19,6 +17,8 @@
 # Any immediately diagnosable condition that might prevent Euca from being
 # properly installed should be checked here.
 ###############################################################################
+
+LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
 
 echo ""
 echo ""
@@ -36,6 +36,15 @@ echo "[Precheck] OK, running as root"
 echo ""
 echo ""
 
+# Check to make sure curl is installed.
+# If the user is following directions, they should be using
+# curl already to fetch the script -- but can't guarantee that.
+echo "[Precheck] Checking curl version"
+curl --version 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+  echo "Nope!"
+fi
+
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
 grep "6.5" /etc/redhat-release 
@@ -48,7 +57,7 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED -O /dev/null
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED >> $LOGFILE
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -68,7 +77,7 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED -O /dev/null
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED >> $LOGFILE
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
@@ -189,16 +198,16 @@ echo "Please note: this installation will take a while. Go grab a cup of coffee.
 echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
-echo "tail -f /tmp/ciab.install.out"
+echo "  tail -f $LOGFILE"
 echo ""
 echo "Install in progress..."
 
-chef-solo -r cookbooks.tgz -j ciab.json 1>/tmp/ciab.install.out
+chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE
 
 if [ "$?" != "0" ]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
-    echo "Eucalyptus installation failed. Please consult the file /tmp/ciab.install.out for details."
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
     exit 99
 fi
 
