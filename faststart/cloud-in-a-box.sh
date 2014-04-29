@@ -1,13 +1,24 @@
 #!/bin/bash
 
+
+###############################################################################
 # TODOs:
-#   * Pull IP info properly
+#   * Test on a new full centos install
+#   * detect PackageKit and error with a nice message 
+#   * Timer: 'your Euca install took x minutes!'
+#   * Option to pastebin the errors:
+#     http://askubuntu.com/questions/186371/how-to-submit-a-file-to-paste-ubuntu-com-without-graphical-interface
+#   * Docs: Note that we only support Class C subnets with Faststart
+#   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
+#   * Add nuke by default, right before install, and get "OK" to continue
+#   * Pull IP and interface info -- die on active wlan0 with a recommendation to use
+#     eucadev for laptops instead
 #   * Check IP addresses for correctness
 #   * instructions for importing a larger image than the cirros starter
 #   * setup an automated mode that reads the ciab.json file directly
-#   * switch to disable "nuke"
 #   * add an error parser to pull and report any FATAL chef error, then
 #     urlencode and send error message upstream
+###############################################################################
 
 ###############################################################################
 # SECTION 1: PRECHECK.
@@ -109,6 +120,25 @@ if [ "$?" != "0" ]; then
 fi
 echo "[Precheck] OK, Chef Client is installed"
 echo ""
+
+# Get info about the network interface.
+# echo "[Precheck] Identifying primary network interface"
+# The goal is to walk through the likeliest primary interfaces,
+# and when we find an address, assume that we should be using
+# the addr, bcast, and mask data.
+
+# TODO: uncomment and fix this code
+#if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
+#    echo "no way, wlan0 is bad!"
+#elif [ "$(ifconfig em1 | grep 'inet addr')" ]; then
+#    echo "em1 found"
+#elif [ "$(ifconfig eth0 | grep 'inet addr')" ]; then
+#    echo "eth0 found"
+#elif [ "$(ifconfig br0 | grep 'inet addr')" ]; then
+#    echo "br0 found"
+#else 
+#    echo "No primary interface found!"
+#fi
 
 echo "[Precheck] Precheck successful."
 echo ""
