@@ -2,7 +2,6 @@
 
 # TODOs:
 #   * come up with a timestamp for the master log file
-#   * send all output to the master log file
 #   * import a larger image than the cirros starter
 #   * pull the raw ciab-template file directly from Github
 #   * setup an interactive mode that asks all the necessary questions
@@ -19,7 +18,7 @@
 # properly installed should be checked here.
 ###############################################################################
 
-LOGFILE='/tmp/euca-log.out'
+LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
 
 echo ""
 echo ""
@@ -199,7 +198,7 @@ echo "Please note: this installation will take a while. Go grab a cup of coffee.
 echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
-echo "tail -f /tmp/ciab.install.out"
+echo "  tail -f $LOGFILE"
 echo ""
 echo "Install in progress..."
 
@@ -208,7 +207,7 @@ chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
-    echo "Eucalyptus installation failed. Please consult the file /tmp/ciab.install.out for details."
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
     exit 99
 fi
 
