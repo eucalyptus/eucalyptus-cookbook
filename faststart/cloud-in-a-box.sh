@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 ###############################################################################
 # TODOs:
 #   * Test on a new full centos install
@@ -21,13 +20,42 @@
 ###############################################################################
 
 ###############################################################################
+# SECTION 0: FUNCTION CALLS.
+# 
+# Any immediately diagnosable condition that might prevent Euca from being
+# properly installed should be checked here.
+###############################################################################
+
+function timer()
+{
+    if [[ $# -eq 0 ]]; then
+        echo $(date '+%s')
+    else
+        local  stime=$1
+        etime=$(date '+%s')
+
+        if [[ -z "$stime" ]]; then stime=$etime; fi
+
+        dt=$((etime - stime))
+        ds=$((dt % 60))
+        dm=$(((dt / 60) % 60))
+        dh=$((dt / 3600))
+        printf '%d:%02d:%02d' $dh $dm $ds
+    fi
+}
+
+###############################################################################
 # SECTION 1: PRECHECK.
 # 
 # Any immediately diagnosable condition that might prevent Euca from being
 # properly installed should be checked here.
 ###############################################################################
 
+# Invoke timer start.
+t=$(timer)
+
 LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
+STARTTIME=
 
 echo ""
 echo ""
@@ -286,6 +314,8 @@ fi
 echo ""
 echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
+printf 'Time to install: %s\n' $(timer $t)
+
 echo ""
 echo "We've launched a simple instance for you. To start exploring your new Eucalyptus cloud,"
 echo "you should:"
