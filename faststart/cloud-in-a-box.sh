@@ -1,17 +1,24 @@
 #!/bin/bash
 
+
+###############################################################################
 # TODOs:
-#   * [Precheck] replace wget with curl and check for curl
-#   * come up with a timestamp for the master log file
-#   * send all output to the master log file
-#   * import a larger image than the cirros starter
-#   * pull the raw ciab-template file directly from Github
-#   * setup an interactive mode that asks all the necessary questions
+#   * Test on a new full centos install
+#   * detect PackageKit and error with a nice message 
+#   * Timer: 'your Euca install took x minutes!'
+#   * Option to pastebin the errors:
+#     http://askubuntu.com/questions/186371/how-to-submit-a-file-to-paste-ubuntu-com-without-graphical-interface
+#   * Docs: Note that we only support Class C subnets with Faststart
+#   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
+#   * Add nuke by default, right before install, and get "OK" to continue
+#   * Pull IP and interface info -- die on active wlan0 with a recommendation to use
+#     eucadev for laptops instead
+#   * Check IP addresses for correctness
+#   * instructions for importing a larger image than the cirros starter
 #   * setup an automated mode that reads the ciab.json file directly
-#   * switch to disable "nuke"
-#   * add successful run time
 #   * add an error parser to pull and report any FATAL chef error, then
 #     urlencode and send error message upstream
+###############################################################################
 
 ###############################################################################
 # SECTION 1: PRECHECK.
@@ -20,6 +27,8 @@
 # properly installed should be checked here.
 ###############################################################################
 
+LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
+
 echo ""
 echo ""
 
@@ -27,6 +36,7 @@ echo ""
 echo "[Precheck] Checking root"
 ciab_user=`whoami`
 if [ "$ciab_user" != 'root' ]; then
+    echo "======"
     echo "[FATAL] Not running as root"
     echo ""
     echo "Please run Eucalyptus Faststart as the root user."
@@ -34,11 +44,10 @@ if [ "$ciab_user" != 'root' ]; then
 fi
 echo "[Precheck] OK, running as root"
 echo ""
-echo ""
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
-grep "6.5" /etc/redhat-release 
+grep "6.5" /etc/redhat-release 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
@@ -48,16 +57,33 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED -O /dev/null
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED >> $LOGFILE
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
 echo ""
+
+# Check to make sure curl is installed.
+# If the user is following directions, they should be using
+# curl already to fetch the script -- but can't guarantee that.
+echo "[Precheck] Checking curl version"
+curl --version 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+    yum -y install curl 1>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "======"
+        echo "[FATAL] Could not install curl"
+        echo ""
+        echo "Failed to install curl. See $LOGFILE for details."
+        exit 7
+    fi
+fi
+echo "[Precheck] OK, curl is up to date"
 echo ""
 
 # Check to see if kvm is supported by the hardware.
 echo "[Precheck] Checking hardware virtualization"
-egrep '^flags.*(vmx|svm)' /proc/cpuinfo
+egrep '^flags.*(vmx|svm)' /proc/cpuinfo 1>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[FATAL] Processor doesn't support virtualization"
@@ -68,11 +94,10 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    wget -q https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED -O /dev/null
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED >> $LOGFILE
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
-echo ""
 echo ""
 
 # Check to see if chef-solo is installed
@@ -80,14 +105,40 @@ echo "[Precheck] Checking if Chef Client is installed"
 which chef-solo
 if [ "$?" != "0" ]; then
     echo "====="
-    echo "[INFO] Installing Chef Client"
+    echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Chef install failed!"
+        echo ""
+        echo "Failed to install Chef. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> $LOGFILE
+        exit 22
+    fi
 fi
 echo "[Precheck] OK, Chef Client is installed"
 echo ""
-echo ""
+
+# Get info about the network interface.
+# echo "[Precheck] Identifying primary network interface"
+# The goal is to walk through the likeliest primary interfaces,
+# and when we find an address, assume that we should be using
+# the addr, bcast, and mask data.
+
+# TODO: uncomment and fix this code
+#if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
+#    echo "no way, wlan0 is bad!"
+#elif [ "$(ifconfig em1 | grep 'inet addr')" ]; then
+#    echo "em1 found"
+#elif [ "$(ifconfig eth0 | grep 'inet addr')" ]; then
+#    echo "eth0 found"
+#elif [ "$(ifconfig br0 | grep 'inet addr')" ]; then
+#    echo "br0 found"
+#else 
+#    echo "No primary interface found!"
+#fi
 
 echo "[Precheck] Precheck successful."
 echo ""
@@ -98,7 +149,7 @@ echo ""
 #
 ###############################################################################
 
-echo ""
+echo "====="
 echo ""
 echo "Welcome to the Faststart installer!"
 
@@ -131,33 +182,63 @@ read ciab_privateips2
 
 echo "[Prep] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
-rm -rf /var/chef/*
+rm -rf /var/chef/* 1>$LOGFILE
 
 echo "[Prep] Downloading necessary cookbooks"
 # Grab cookbooks from git
-yum install -y git
+yum install -y git 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!"
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
+        exit 24
+fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus
-git clone https://github.com/opscode-cookbooks/yum
-git clone https://github.com/opscode-cookbooks/selinux
-git clone https://github.com/opscode-cookbooks/ntp
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
+        echo ""
+        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch yum cookbook!"
+        echo ""
+        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch selinux cookbook!"
+        echo ""
+        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch ntp cookbook!"
+        echo ""
+        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        exit 25
+fi
 popd
 
 echo "[Prep] Tarring up cookbooks"
 # Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks
-
-# Set the IP addresses.
-#ciab_ipaddr="192.168.1.160"
-#ciab_netmask="255.255.255.0"
-#ciab_gateway="192.168.1.1"
-#ciab_subnet="192.168.1.0"
-#ciab_publicips1="192.168.1.161"
-#ciab_publicips2="192.168.1.170"
-#ciab_privateips1="192.168.1.171"
-#ciab_privateips2="192.168.1.180"
+tar czvf cookbooks.tgz cookbooks 1>$LOGFILE
 
 # Copy the CIAB template over to be the active CIAB configuration file.
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
@@ -189,16 +270,16 @@ echo "Please note: this installation will take a while. Go grab a cup of coffee.
 echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
-echo "tail -f /tmp/ciab.install.out"
+echo "  tail -f $LOGFILE"
 echo ""
 echo "Install in progress..."
 
-chef-solo -r cookbooks.tgz -j ciab.json 1>/tmp/ciab.install.out
+chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE
 
 if [ "$?" != "0" ]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
-    echo "Eucalyptus installation failed. Please consult the file /tmp/ciab.install.out for details."
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
     exit 99
 fi
 
