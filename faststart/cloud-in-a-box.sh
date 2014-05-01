@@ -18,8 +18,6 @@
 ###############################################################################
 # SECTION 0: FUNCTIONS.
 # 
-# Any immediately diagnosable condition that might prevent Euca from being
-# properly installed should be checked here.
 ###############################################################################
 
 function valid_ip()
