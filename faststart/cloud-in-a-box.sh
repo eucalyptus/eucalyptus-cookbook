@@ -255,6 +255,22 @@ fi
 echo "[Precheck] OK, network interfaces checked."
 echo ""
 
+echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
+echo "To see the update in progress, run the following command in another terminal:"
+echo ""
+echo "  tail -f $LOGFILE"
+echo ""
+echo "[Precheck] Package update in progress..."
+yum -y update
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[FATAL] Chef install failed!"
+    echo ""
+    echo "Failed to install Chef. See $LOGFILE for details."
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FULL_YUM_UPDATE_FAILED >> $LOGFILE
+    exit 24
+fi
+
 echo "[Precheck] Precheck successful."
 echo ""
 echo ""
