@@ -6,6 +6,7 @@
 #     (Just like install.openshift.com does.)
 #   * Add spinners
 #   * Add DHCP check and fail with error
+#   * Test NetworkManager. Does this break things if eth0 is set properly?
 #   * Section borders between Precheck / Prep / Install / Post-install
 #   * Test on a new full centos install
 #   * detect PackageKit and error with a nice message 
@@ -105,6 +106,19 @@ if [ "$?" != "0" ]; then
 fi
 echo "[Precheck] OK, OS is supported"
 echo ""
+
+# Check to see if PackageKit is enabled. If it is, abort and advise.
+grep "enabled=1" /etc/yum/pluginconf.d/refresh-packagekit.conf
+if [ "$?" == "0" ]; then
+    echo "====="
+    echo "[FATAL] PackageKit is enabled"
+    echo ""
+    echo "PackageKit is enabled on this system, which may prevent Faststart from running properly."
+    echo "Please disable or uninstall it. Run the following command, as root, to disable PackageKit:
+    echo "
+    echo "  sed -i s/enabled=1/enabled=0/g /etc/yum/pluginconf.d/refresh-packagekit.conf"
+    echo ""
+fi
 
 # Check to make sure curl is installed.
 # If the user is following directions, they should be using
