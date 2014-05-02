@@ -2,6 +2,11 @@
 
 ###############################################################################
 # TODOs:
+#   * Text with very clear requirements (web) (make it look like a terminal!)
+#     (Just like install.openshift.com does.)
+#   * Add spinners
+#   * Add DHCP check and fail with error
+#   * Section borders between Precheck / Prep / Install / Post-install
 #   * Test on a new full centos install
 #   * detect PackageKit and error with a nice message 
 #   * Option to pastebin the errors:
