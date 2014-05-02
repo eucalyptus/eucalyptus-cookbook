@@ -32,17 +32,17 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-template "eucalyptus.conf" do
-  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
-  source "eucalyptus.conf.erb"
-  action :create
-end
-
 ruby_block "Sync CC keys" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
   end
   not_if "#{Chef::Config[:solo]}"
+end
+
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
+  source "eucalyptus.conf.erb"
+  action :create
 end
 
 service "eucalyptus-cc" do
