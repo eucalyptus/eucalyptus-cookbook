@@ -75,7 +75,7 @@ execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Ensure hostname resolves
-execute "echo \"#{node[:ipaddress]} #{node[:fqdn]}\" >> /etc/hosts"
+execute "echo \"#{node[:ipaddress]} \`hostname --fqd\`\" >> /etc/hosts"
 
 ### Determine local cluster name
 if not Chef::Config[:solo]
