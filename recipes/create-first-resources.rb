@@ -34,9 +34,9 @@ script "install_image" do
   cwd "/tmp"
   not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep emi"
   code <<-EOH
-  wget https://gist.githubusercontent.com/viglesiasce/9766518/raw -O install-image.py
+  curl https://gist.githubusercontent.com/viglesiasce/9766518/raw > install-image.py
   chmod +x install-image.py
-  wget #{node['eucalyptus']['default-img-url']} -O default.img
+  curl #{node['eucalyptus']['default-img-url']} > default.img
   source #{node['eucalyptus']['admin-cred-dir']}/eucarc
   ./install-image.py -i default.img -b default -n default
   EOH
