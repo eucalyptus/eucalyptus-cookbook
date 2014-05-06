@@ -42,4 +42,7 @@ describe "Eucalyptus CIAB" do
     it { should be_disabled }
   end
 
+  describe command('ping -c 1 `hostname --fqd`') do
+    it { should return_exit_status 0 }
+  end
 end
