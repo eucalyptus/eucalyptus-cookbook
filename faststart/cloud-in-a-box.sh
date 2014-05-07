@@ -5,8 +5,9 @@
 #   * Text with very clear requirements (web) (make it look like a terminal!)
 #     (Just like install.openshift.com does.)
 #   * Add spinners
-#   * Add DHCP check and fail with error
-#   * Test NetworkManager. Does this break things if eth0 is set properly?
+#   * Fail on detection of NetworkManager or PackageKit
+#   * Add loop to allow re-entry of network parameters (are these correct?)
+#   * Add DHCP check and fail with errora
 #   * Section borders between Precheck / Prep / Install / Post-install
 #   * Test on a new full centos install
 #   * detect PackageKit and error with a nice message 
@@ -495,6 +496,6 @@ echo ""
 echo "For more information, consult the Eucalyptus User Guide at:"
 echo "  https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#shared/user_section.html"
 echo ""
-echo "Thanks for installating Eucalyptus!"
+echo "Thanks for installing Eucalyptus!"
 echo ""
 exit 0
