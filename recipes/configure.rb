@@ -46,6 +46,14 @@ execute "Wait for credentials with S3 URL populated" do
   not_if "grep 'export S3_URL' #{node['eucalyptus']['admin-cred-dir']}/eucarc"
 end
 
+execute "Wait for credentials with EC2 URL populated" do
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip && grep 'export EC2_URL' eucarc"
+  cwd node['eucalyptus']['admin-cred-dir']
+  retries 15
+  retry_delay 20
+  not_if "grep 'export EC2_URL' #{node['eucalyptus']['admin-cred-dir']}/eucarc"
+end
+
 execute "Set DNS server on CLC" do
   command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
