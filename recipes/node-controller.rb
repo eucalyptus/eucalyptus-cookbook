@@ -59,6 +59,15 @@ if node["eucalyptus"]["install-type"] == "packages"
       action :upgrade
       options node['eucalyptus']['yum-options']
     end
+    execute "Set ip_forward sysctl values on NC" do
+      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+    end
+    execute "Set bridge-nf-call-iptables sysctl values on NC" do
+      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+    end
+    execute "Reload sysctl values on NC" do
+      command "sysctl -p"
+    end
   end
 else
   include_recipe "eucalyptus::install-source"
@@ -75,7 +84,7 @@ execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Ensure hostname resolves
-execute "echo \"#{node[:ipaddress]}   #{node[:hostname]}\" >> /etc/hosts"
+execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts"
 
 ### Determine local cluster name
 if not Chef::Config[:solo]
@@ -98,10 +107,6 @@ end
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
-end
-
-if Chef::Config[:solo]
-  node.default["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] = node["ipaddress"]
 end
 
 ruby_block "Get node keys from CC" do

@@ -26,9 +26,9 @@ suites:
       - recipe[eucalyptus::walrus]
       - recipe[eucalyptus::cluster-controller]
       - recipe[eucalyptus::storage-controller]
-      - recipe[eucalyptus::register-nodes]
       - recipe[eucalyptus::node-controller]
       - recipe[eucalyptus::configure]
+      - recipe[eucalyptus::create-first-resources]
     attributes:
       eucalyptus: 
         "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/"
