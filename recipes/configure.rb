@@ -105,3 +105,7 @@ if node['eucalyptus']['install-imaging-worker']
     only_if "#{describe_property} imaging.imaging_worker_emi | grep 'NULL'"
   end
 end
+
+node['eucalyptus']['system-properties'].each do |key, value|
+  execute "#{modify_property} -p #{key}=\"#{value}\""
+end

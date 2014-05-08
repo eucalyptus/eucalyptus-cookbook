@@ -37,9 +37,12 @@ default["eucalyptus"]["compile-timeout"] = 7200
 default["eucalyptus"]["network"]["metadata-use-private-ip"] = "N"
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 
+### System properties
+### this will be ingressed at configure time
+default["eucalyptus"]["system-properties"] = {}
+
 ## Networking Config for EDGE
 default["eucalyptus"]["network"]['config-json'] = {}
-
 ## Networking config for managed modes
 default["eucalyptus"]["network"]["private-interface"] = "eth0"
 default["eucalyptus"]["network"]["public-interface"] = "eth0"
