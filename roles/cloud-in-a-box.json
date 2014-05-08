@@ -18,7 +18,6 @@
     "recipe[eucalyptus::storage-controller]",
     "recipe[eucalyptus::walrus]",
     "recipe[eucalyptus::cluster-controller]",
-    "recipe[eucalyptus::register-nodes]",
     "recipe[eucalyptus::node-controller]",
     "recipe[eucalyptus::configure]",
     "recipe[eucalyptus::create-first-resources]"

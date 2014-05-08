@@ -142,6 +142,17 @@ directory '/var/run/eucalyptus' do
   only_if 'ls /var/run/eucalyptus'
 end
 
+bash "Remove devmapper and losetup entries" do
+  code <<-EOH
+  dmsetup table | grep euca | cut -d':' -f 1 | sort | uniq | xargs -L 1 dmsetup remove
+  losetup -a | cut -d':' -f 1 | xargs -L 1 losetup -d
+  losetup -a | grep euca
+  EOH
+  returns 1
+  retries 4
+  retry_delay 2
+end
+
 directory '/var/lib/eucalyptus' do
   recursive true
   action :delete
