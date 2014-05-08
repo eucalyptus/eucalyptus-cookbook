@@ -40,12 +40,12 @@ module Eucalyptus
             addresses.push(address)
           end
         end
-        Chef::Log.info "Found addresses: " + addresses.join(",")
+        Chef::Log.info "Found addresses: " + addresses.join("  ")
         if addresses.include?(info[component]) and not Chef::Config[:solo]
+            Chef::Log.info "Setting cluster name to: " + name
             node.set["eucalyptus"]["local-cluster-name"] = name
             node.save
         end
-        Chef::Log.info "Using cluster name: " + node["eucalyptus"]["local-cluster-name"]
       end
 
       local_cluster_name = node["eucalyptus"]["local-cluster-name"]

@@ -100,10 +100,6 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
   action :create
 end
 
-if Chef::Config[:solo]
-  node.default["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] = node["ipaddress"]
-end
-
 ruby_block "Get node keys from CC" do
   block do
     Eucalyptus::KeySync.get_node_keys(node)

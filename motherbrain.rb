@@ -35,7 +35,6 @@ component 'cloud-controller' do
     recipe 'eucalyptus::user-facing'
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
-    recipe 'eucalyptus::register-nodes'
     recipe 'eucalyptus::storage-controller'
     recipe 'eucalyptus::configure'
   end
@@ -65,7 +64,6 @@ component 'cluster-controller' do
   versioned_with 'eucalyptus.version'
   group 'default' do
     recipe 'eucalyptus::cluster-controller'
-    recipe 'eucalyptus::register-nodes'
   end
 end
 
