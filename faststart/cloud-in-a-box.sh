@@ -8,7 +8,6 @@
 #   * Add spinners
 #   * Add console to recipe listing (KEY!)
 #   * metrics: add timestamp to all errors and completion
-#   * Fail on detection of NetworkManager or PackageKit
 #   * Add loop to allow re-entry of network parameters (are these correct?)
 #   * Add DHCP check and fail with errora
 #   * Section borders between Precheck / Prep / Install / Post-install
@@ -112,16 +111,26 @@ echo "[Precheck] OK, OS is supported"
 echo ""
 
 # Check to see if PackageKit is enabled. If it is, abort and advise.
-grep "enabled=1" /etc/yum/pluginconf.d/refresh-packagekit.conf
+rpm -q PackageKit
 if [ "$?" == "0" ]; then
     echo "====="
-    echo "[FATAL] PackageKit is enabled"
+    echo "[FATAL] PackageKit detected"
     echo ""
-    echo "PackageKit is enabled on this system, which may prevent Faststart from running properly."
-    echo "Please disable or uninstall it. Run the following command, as root, to disable PackageKit:
-    echo "
-    echo "  sed -i s/enabled=1/enabled=0/g /etc/yum/pluginconf.d/refresh-packagekit.conf"
+    echo "The presence of PackageKit indicates that you've installed a Desktop environment."
+    echo "Please run Faststart on a minimal OS without a Desktop environment installed."
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
+    exit 12
+
+# Check to see if NetworkManager is enabled. If it is, abort and advise.
+rpm -q NetworkManager
+if [ "$?" == "0" ]; then
+    echo "====="
+    echo "[FATAL] NetworkManager detected"
     echo ""
+    echo "The presence of NetworkManager indicates that you've installed a Desktop environment."
+    echo "Please run Faststart on a minimal OS without a Desktop environment installed."
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
+    exit 12
 fi
 
 # Check to make sure curl is installed.
@@ -136,7 +145,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Could not install curl"
         echo ""
         echo "Failed to install curl. See $LOGFILE for details."
-        exit 7
+        exit 15
     fi
 fi
 echo "[Precheck] OK, curl is up to date"
@@ -205,7 +214,10 @@ if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
     echo ""
     echo "Your primary network interface appears to be a wireless interface."
     echo "Faststart is intended for systems with a fixed ethernet connection and"
-    echo "a static IP address. Consider trying eucadev instead:"
+    echo "a static IP address. Please reconfigure your system."
+    echo ""
+    echo "If you want to run a virtual version of Eucalyptus on a laptop,"
+    echo "consider trying eucadev instead:"
     echo ""
     echo "  https://github.com/eucalyptus/eucadev"
     echo ""
@@ -238,7 +250,7 @@ elif [ "$(ifconfig br0 | grep 'inet addr')" ]; then
         echo ""
         echo "No active ethernet interface was found. Please check your network configuration"
         echo "and make sure that an ethernet interface is set up as your primary network"
-        echo "interface, and that it's connected to the internet."
+        echo "interface, and that it is connected to the internet."
         echo ""
         echo "It's possible that you're using a non-standard network interface (we expect"
         echo "eth0 or em1)."
@@ -386,7 +398,7 @@ if [ "$?" != "0" ]; then
         echo ""
         echo "Failed to install git. See $LOGFILE for details."
         curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
-        exit 24
+        exit 25
 fi
 rm -rf cookbooks
 mkdir -p cookbooks
@@ -424,7 +436,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch ntp cookbook!"
         echo ""
         echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP >> $LOGFILE
         exit 25
 fi
 popd
@@ -474,13 +486,16 @@ if [ "$?" != "0" ]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> $LOGFILE
     exit 99
 fi
 
 echo ""
 echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
-printf 'Time to install: %s\n' $(timer $t)
+$total_time = $(timer $t)
+printf 'Time to install: %s\n' $total_time
+curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time >> $LOGFILE
 
 echo ""
 echo "We've launched a simple instance for you. To start exploring your new Eucalyptus cloud,"
