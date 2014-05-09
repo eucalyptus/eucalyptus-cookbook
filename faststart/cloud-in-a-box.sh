@@ -25,10 +25,52 @@
 ###############################################################################
 
 ###############################################################################
-# SECTION 0: FUNCTIONS.
+# SECTION 0: FUNCTIONS AND CONSTANTS.
 # 
 ###############################################################################
 
+# Hooray for the coffee cup!
+IMGS=(
+"
+   ( (     \n\
+    ) )    \n\
+  ........ \n\
+  |      |]\n\
+  \      / \n\
+   ------  \n
+" "
+   ) )     \n\
+    ( (    \n\
+  ........ \n\
+  |      |]\n\
+  \      / \n\
+   ------  \n
+" )
+IMG_REFRESH="0.5"
+LINES_PER_IMG=$(( $(echo $IMGS[0] | sed 's/\\n/\n/g' | wc -l) + 1 ))
+
+# Output loop for coffee cup
+function tput_loop() 
+{ 
+    for((x=0; x < $LINES_PER_IMG; x++)); do tput $1; done; 
+}
+
+# Let's have some coffee!
+coffee() 
+{
+    local pid=$1
+    IFS='%'
+    tput civis
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do for x in "${IMGS[@]}"; do
+        echo -ne $x
+        tput_loop "cuu1"
+        sleep $IMG_REFRESH
+    done; done
+    tput_loop "cud1"
+    tput cvvis
+}
+
+# Check IP inputs to make sure they're valid
 function valid_ip()
 {
     local  ip=$1
@@ -46,6 +88,7 @@ function valid_ip()
     return $stat
 }
 
+# Timer check for runtime of the installation
 function timer()
 {
     if [[ $# -eq 0 ]]; then
@@ -472,17 +515,24 @@ echo ""
 echo ""
 echo "[Installing Eucalyptus]"
 echo ""
-echo "Please note: this installation will take a while. Go grab a cup of coffee."
 echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
 echo ""
-echo "Install in progress..."
+echo "Note: this install might take a while. Go have a cup of coffee!"
+echo ""
 
-chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE
+# To make the spinner work, we need to launch in a subshell.  Since we 
+# can't get variables from the subshell scope, we'll write success or
+# failure to a file, and then succeed or fail based on whether the file
+# exists or not.
 
-if [ "$?" != "0" ]; then
+rm -f faststart-successful.log
+(chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE && echo "success" > faststart-successful.log) &
+coffee $!
+
+if [[ ! -f faststart-successful.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
@@ -517,3 +567,4 @@ echo ""
 echo "Thanks for installing Eucalyptus!"
 echo ""
 exit 0
+
