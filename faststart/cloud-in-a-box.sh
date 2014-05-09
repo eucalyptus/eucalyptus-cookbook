@@ -155,14 +155,16 @@ echo ""
 
 # Check to see if PackageKit is enabled. If it is, abort and advise.
 rpm -q PackageKit
+
 if [ "$?" == "0" ]; then
     echo "====="
     echo "[FATAL] PackageKit detected"
     echo ""
-    echo "The presence of PackageKit indicates that you've installed a Desktop environment."
+    echo "The presence of PackageKit indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
     curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
     exit 12
+fi
 
 # Check to see if NetworkManager is enabled. If it is, abort and advise.
 rpm -q NetworkManager
@@ -170,7 +172,7 @@ if [ "$?" == "0" ]; then
     echo "====="
     echo "[FATAL] NetworkManager detected"
     echo ""
-    echo "The presence of NetworkManager indicates that you've installed a Desktop environment."
+    echo "The presence of NetworkManager indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
     curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
     exit 12
