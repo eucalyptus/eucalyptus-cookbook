@@ -4,16 +4,19 @@
 # TODOs:
 #   * Text with very clear requirements (web) (make it look like a terminal!)
 #     (Just like install.openshift.com does.)
+#   * Insert UUID and tipoftheday
 #   * Add spinners
+#   * Add console to recipe listing (KEY!)
+#   * metrics: add timestamp to all errors and completion
 #   * Fail on detection of NetworkManager or PackageKit
 #   * Add loop to allow re-entry of network parameters (are these correct?)
 #   * Add DHCP check and fail with errora
 #   * Section borders between Precheck / Prep / Install / Post-install
 #   * Test on a new full centos install
 #   * detect PackageKit and error with a nice message 
-#   * Option to pastebin the errors:
+#   * Option to public pastebin the errors:
 #     http://askubuntu.com/questions/186371/how-to-submit-a-file-to-paste-ubuntu-com-without-graphical-interface
-#   * Docs: Note that we only support Class C subnets with Faststart
+#     (and nice messaging about helping the community)
 #   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
 #   * Add nuke by default, right before install, and get "OK" to continue
 #   * instructions for importing a larger image than the cirros starter
