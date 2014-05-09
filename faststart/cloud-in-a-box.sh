@@ -147,7 +147,7 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
     echo ""
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED >> /dev/null
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -162,7 +162,7 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of PackageKit indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> /dev/null
     exit 12
 fi
 
@@ -174,7 +174,7 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of NetworkManager indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED >> /dev/null
     exit 12
 fi
 
@@ -209,7 +209,7 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED >> /dev/null
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
@@ -229,7 +229,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Chef install failed!"
         echo ""
         echo "Failed to install Chef. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> /dev/null
         exit 22
     fi
 fi
@@ -266,7 +266,7 @@ if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
     echo ""
     echo "  https://github.com/eucalyptus/eucadev"
     echo ""
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=WIRELESS_NOT_SUPPORTED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=WIRELESS_NOT_SUPPORTED >> /dev/null
     exit 23
 elif [ "$(ifconfig em1 | grep 'inet addr')" ]; then
     echo "Active network interface em1 found"
@@ -328,7 +328,7 @@ if [ "$?" != "0" ]; then
     echo "[FATAL] Chef install failed!"
     echo ""
     echo "Failed to install Chef. See $LOGFILE for details."
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FULL_YUM_UPDATE_FAILED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FULL_YUM_UPDATE_FAILED >> /dev/null
     exit 24
 fi
 
@@ -442,7 +442,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to install git!"
         echo ""
         echo "Failed to install git. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> /dev/null
         exit 25
 fi
 rm -rf cookbooks
@@ -454,7 +454,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
         echo ""
         echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
@@ -463,7 +463,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch yum cookbook!"
         echo ""
         echo "Failed to fetch yum cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
@@ -472,7 +472,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch selinux cookbook!"
         echo ""
         echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
@@ -481,7 +481,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch ntp cookbook!"
         echo ""
         echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP >> $LOGFILE
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP >> /dev/null
         exit 25
 fi
 popd
@@ -538,16 +538,16 @@ if [[ ! -f faststart-successful.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
-    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> $LOGFILE
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED >> /dev/null
     exit 99
 fi
 
 echo ""
 echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
-$total_time = $(timer $t)
+total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
-curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time >> $LOGFILE
+curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time >> /dev/null
 
 echo ""
 echo "We've launched a simple instance for you. To start exploring your new Eucalyptus cloud,"
