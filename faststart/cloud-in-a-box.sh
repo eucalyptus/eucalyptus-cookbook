@@ -2,24 +2,19 @@
 
 ###############################################################################
 # TODOs:
+#   * Strip out ability to accept defaults?
+#   * Add DHCP check and fail with error
+#   * Add nuke by default, right before install, and get "OK" to continue
+#   * Add loop to allow re-entry of network parameters (are these correct?)
+#   * instructions for importing a larger image than the cirros starter
 #   * Text with very clear requirements (web) (make it look like a terminal!)
 #     (Just like install.openshift.com does.)
 #   * Insert UUID and tipoftheday
-#   * Add spinners
-#   * Add console to recipe listing (KEY!)
-#   * metrics: add timestamp to all errors and completion
-#   * Add loop to allow re-entry of network parameters (are these correct?)
-#   * Add DHCP check and fail with errora
 #   * Section borders between Precheck / Prep / Install / Post-install
-#   * Test on a new full centos install
-#   * detect PackageKit and error with a nice message 
 #   * Option to public pastebin the errors:
 #     http://askubuntu.com/questions/186371/how-to-submit-a-file-to-paste-ubuntu-com-without-graphical-interface
 #     (and nice messaging about helping the community)
 #   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
-#   * Add nuke by default, right before install, and get "OK" to continue
-#   * instructions for importing a larger image than the cirros starter
-#   * setup an automated mode that reads the ciab.json file directly
 #   * add an error parser to pull and report any FATAL chef error, then
 #     urlencode and send error message upstream
 ###############################################################################
@@ -337,7 +332,75 @@ echo ""
 echo ""
 
 ###############################################################################
-# SECTION 2: USER INPUT
+# SECTION 2: PREP THE INSTALLATION
+#
+###############################################################################
+
+echo "[Prep] Removing old Chef templates"
+# Get rid of old Chef stuff lying about.
+rm -rf /var/chef/* 1>$LOGFILE
+
+echo "[Prep] Downloading necessary cookbooks"
+# Grab cookbooks from git
+yum install -y git 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!"
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> /dev/null
+        exit 25
+fi
+rm -rf cookbooks
+mkdir -p cookbooks
+pushd cookbooks
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
+        echo ""
+        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> /dev/null
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch yum cookbook!"
+        echo ""
+        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> /dev/null
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch selinux cookbook!"
+        echo ""
+        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> /dev/null
+        exit 25
+fi
+git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch ntp cookbook!"
+        echo ""
+        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
+        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP >> /dev/null
+        exit 25
+fi
+popd
+
+echo "[Prep] Tarring up cookbooks"
+# Tar up the cookbooks for use by chef-solo.
+tar czvf cookbooks.tgz cookbooks 1>$LOGFILE
+
+# Copy the CIAB template over to be the active CIAB configuration file.
+cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
+
+###############################################################################
+# SECTION 3: USER INPUT
 #
 ###############################################################################
 
@@ -424,74 +487,6 @@ until valid_ip $ciab_privateips2; do
     valid_ip $ciab_privateips2|| echo "Please provide a valid IP."
 done
 echo ""
-
-###############################################################################
-# SECTION 3: PREP THE INSTALLATION
-#
-###############################################################################
-
-echo "[Prep] Removing old Chef templates"
-# Get rid of old Chef stuff lying about.
-rm -rf /var/chef/* 1>$LOGFILE
-
-echo "[Prep] Downloading necessary cookbooks"
-# Grab cookbooks from git
-yum install -y git 1>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to install git!"
-        echo ""
-        echo "Failed to install git. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL >> /dev/null
-        exit 25
-fi
-rm -rf cookbooks
-mkdir -p cookbooks
-pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
-        echo ""
-        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA >> /dev/null
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch yum cookbook!"
-        echo ""
-        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM >> /dev/null
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch selinux cookbook!"
-        echo ""
-        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX >> /dev/null
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch ntp cookbook!"
-        echo ""
-        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP >> /dev/null
-        exit 25
-fi
-popd
-
-echo "[Prep] Tarring up cookbooks"
-# Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks 1>$LOGFILE
-
-# Copy the CIAB template over to be the active CIAB configuration file.
-cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
 
 # Perform variable interpolation in the CIAB template.
 sed -i "s/IPADDR/$ciab_ipaddr/g" ciab.json
