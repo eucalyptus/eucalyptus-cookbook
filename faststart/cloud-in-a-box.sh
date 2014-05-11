@@ -51,7 +51,7 @@ function tput_loop()
 }
 
 # Let's have some coffee!
-coffee() 
+function coffee() 
 {
     local pid=$1
     IFS='%'
@@ -129,6 +129,23 @@ if [ "$ciab_user" != 'root' ]; then
 fi
 echo "[Precheck] OK, running as root"
 echo ""
+
+# If Eucalyptus is already installed, abort and tell the
+# user to run nuke.
+rpm -q eucalyptus
+if [ "$?" == "0" ]; then
+    echo "====="
+    echo "[FATAL] Eucalyptus already installed!"
+    echo ""
+    echo "An installation of Eucalyptus has been detected on this system. If you wish to"
+    echo "reinstall Eucalyptus, please remove the previous installation first.  If you used"
+    echo "Faststart to install previously, you can use the \"nuke\" command:"
+    echo ""
+    echo "  cd cookbooks/eucalyptus/faststart; ./nuke.sh"
+    echo ""
+    curl --silent https://www.eucalyptus.com/faststart_errors.html?fserror=EUCA_ALREADY_RUNNING >> /dev/null
+    exit 7
+fi
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
