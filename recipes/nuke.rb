@@ -178,6 +178,11 @@ execute 'clean iscsi sessions' do
   only_if "which iscsiadm"
 end
 
+execute 'delete tgtdadm eucalyptus account' do
+  command 'tgtadm --mode account --op delete --user eucalyptus'
+  only_if 'tgtadm --mode account --op show | grep eucalyptus'
+end
+
 execute "yum clean all"
 
 directory "/var/chef/cache" do
