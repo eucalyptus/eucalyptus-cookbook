@@ -23,7 +23,7 @@ execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 15
-  retry_delay 20
+  retry_delay 30
 end
 
 ##### Register clusters
