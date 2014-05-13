@@ -560,24 +560,5 @@ total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
 curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time&uuid=$uuid" >> /dev/null
 
-echo ""
-echo "We've launched a simple instance for you. To start exploring your new Eucalyptus cloud,"
-echo "you should:"
-echo ""
-echo "Source your new credentials:"
-echo "  source ~/eucarc"
-echo ""
-echo "Get a list of your running cloud instances:"
-echo "  euca-describe-instances"
-echo ""
-echo "Get a list of your available cloud images:"
-echo ""
-echo "  euca-describe-images"
-echo ""
-echo "For more information, consult the Eucalyptus User Guide at:"
-echo "  https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#shared/user_section.html"
-echo ""
-echo "Thanks for installing Eucalyptus!"
-echo ""
+cat get-started.txt
 exit 0
-
