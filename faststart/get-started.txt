@@ -10,11 +10,6 @@ so you should see one image listed. Run the following command to see your availa
 
   euca-describe-images
 
-Next, see what instances are running in your cloud. We've already started an instance for you, 
-so you should see one running instance. Run the following command to see your instances:
-
-  euca-describe-instances
-
 Next, install your own image. Many Linux distributions now have preconfigured cloud images,
 so you can download and install them to your cloud easily.  Run the following commands
 to add a Fedora 20 cloud image to your Eucalyptus install.
@@ -29,10 +24,16 @@ to add a Fedora 20 cloud image to your Eucalyptus install.
   euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
 
   # Set the image to be available to all users.
-  euca-modify-image-attribute -l -a all $(euca-describe-images | grep Fedora | grep emi | cut -f 2)
+  euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora | grep emi | cut -f 2)
 
   # Finally, run an instance based on the new image.
-  euca-run-instances -k my-first-keypair $(euca-describe-images | grep Fedora | grep emi | cut -f 2)
+  euca-run-instances -k my-first-keypair $(euca-describe-images | grep fedora | grep emi | cut -f 2)
+
+  # Run euca-describe-instances to get information about your instances.
+  euca-describe-instances
+
+  # Once your instance is listed as "running", ssh to it. Don't forget to specify the right keypair!
+  ssh -i ~/my-first-keypair 192.168.1.101 (or whatever the IP of your instance is)
 
 For more detailed explanations of these commands, and for more commands to try, check out the HOWTO:
 

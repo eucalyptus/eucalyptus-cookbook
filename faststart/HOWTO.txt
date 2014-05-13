@@ -1,42 +1,82 @@
-This HOWTO is for the short term.  The content here will
-be put into documentation, or into the starter script
-itself as a tutorial section, or maybe in both places.
+Welcome to Eucalyptus!  Here's a more detailed look at some of the commands necessary to get
+you started.  For a more in-depth explanation of Eucalyptus commands, please consult the 
+Eucalyptus User Guide:
+
+https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#user-guide/getting_started.html
 
 * * * * *
 
-Installing a Fedora 20 image:
+SOURCING CREDENTIALS
 
-# First, download the image:
-curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+Without credentials, Eucalyptus doesn't know who you are.  You must source your credentials
+to run any Eucalyptus commands.
 
-# Next, unzip the image.
-xz -d fedora.raw.xz 
+By default, Faststart only sets up one user: the admin user.  The credentials created in 
+~/eucarc belong to the admin user.  To source these credentials, run the following command:
 
-# Next, install the image.
-euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
+  source ~/eucarc
 
-# Next, set the image to be available to all.
-"source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep Fedora | grep emi | awk '{print $2}')"
+To learn more about how access works in Eucalyptus, consult the Manage Access section of the
+Administration Guide:
 
-# Finally, run the image.
-"source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep Fedora | grep emi | cut -f 2)"
+https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#admin-guide/managing_auth.html
 
 * * * * *
 
-Creating and mounting a volume:
+DESCRIBING IMAGES
 
-FIXME
+A cloud is only as useful as the images that are available on that cloud.  By default, 
+Faststart sets you up with CirrOS, a small Linux image meant for cloud testing. 
+
+To see the images available on your cloud, run the following command:
+
+  euca-describe-images
+
+The output will look something like this:
+
+[root@ciab ~]# euca-describe-images 
+IMAGE	emi-f0594352	default/default.img.manifest.xml	141239169078	available	public	x86_64	machine				instance-store	hvm
+
+The most important part of this output is the Eucalyptus Machine Image identifier, or EMI ID. 
+In this case, the EMI ID is emi-f0594352.  Each EMI ID is unique to that specific cloud, and
+is generated when an image is uploaded.
+
+For more information about the euca-describe-images command output, consult the euca2ools guide:
+
+https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#euca2ools-guide/euca-describe-images.html
+
+Initially, only the one image is installed, and it isn't very useful.  Your first task will be
+to install a more useful Linux image that can do real work.
 
 * * * * *
 
-Creating a BFEBS image:
+INSTALLING IMAGES
 
-FIXME
+Many Linux distributions now have preconfigured cloud images; the easiest way to get
+started is to download and install one of these preconfigured cloud images.  We're going to
+start with Fedora 20. 
+
+  # Download the image
+  curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+
+  # Unzip the image.
+  xz -d fedora.raw.xz 
+
+  # Install the image.
+  euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
+
+  # Set the image to be available to all users.
+  euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora | grep emi | cut -f 2)
+
+  # Finally, run an instance based on the new image.
+  euca-run-instances -k my-first-keypair $(euca-describe-images | grep fedora | grep emi | cut -f 2)
+
+  # Run euca-describe-instances to get information about your instances.
+  euca-describe-instances
+
+  # Once your instance is listed as "running", ssh to it. Don't forget to specify the right keypair!
+  ssh -i ~/my-first-keypair 192.168.1.101 (or whatever the IP of your instance is)
 
 * * * * *
 
-Running a script using cloud-init:
-
-FIXME
-
-* * * * *
+Much more here: FIXME.
