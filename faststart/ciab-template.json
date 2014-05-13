@@ -22,7 +22,7 @@
         "mode": "EDGE",
         "public-interface": "br0",
         "private-interface": "br0",
-        "bridged-nic":"eth0", 
+        "bridged-nic":"NIC", 
         "bridge-ip": "IPADDR",
         "bridge-netmask": "NETMASK",
         "bridge-gateway": "GATEWAY",
