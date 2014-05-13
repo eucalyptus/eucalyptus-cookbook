@@ -1,0 +1,42 @@
+This HOWTO is for the short term.  The content here will
+be put into documentation, or into the starter script
+itself as a tutorial section, or maybe in both places.
+
+* * * * *
+
+Installing a Fedora 20 image:
+
+# First, download the image:
+curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+
+# Next, unzip the image.
+xz -d fedora.raw.xz 
+
+# Next, install the image.
+euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
+
+# Next, set the image to be available to all.
+"source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep Fedora | grep emi | awk '{print $2}')"
+
+# Finally, run the image.
+"source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep Fedora | grep emi | cut -f 2)"
+
+* * * * *
+
+Creating and mounting a volume:
+
+FIXME
+
+* * * * *
+
+Creating a BFEBS image:
+
+FIXME
+
+* * * * *
+
+Running a script using cloud-init:
+
+FIXME
+
+* * * * *

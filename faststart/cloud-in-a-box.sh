@@ -3,17 +3,16 @@
 ###############################################################################
 # TODOs:
 #   * Strip out ability to accept defaults?
-#   * Add DHCP check and fail with error
-#   * Add loop to allow re-entry of network parameters (are these correct?)
-#   * Add instructions for importing a larger image than the cirros starter
-#   * Insert UUID and tipoftheday
-#   * Section borders between Precheck / Prep / Install / Post-install
-#   * Option to public pastebin the errors:
-#     http://askubuntu.com/questions/186371/how-to-submit-a-file-to-paste-ubuntu-com-without-graphical-interface
+#   * Or: Add loop to allow re-entry of network parameters (are these correct?)
+#   * Precheck: Add DHCP check and fail with error
+#   * Troubleshoot: Option to public pastebin the errors:
+#     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
+#   * Console: Insert tipoftheday
+#   * Console: Print out user/pass info on completion
+#   * Docs/Images: Add instructions for importing a larger image than the cirros starter
+#   * Pretty: Section borders between Precheck / Prep / Install / Post-install
 #   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
-#   * add an error parser to pull and report any FATAL chef error, then
-#     urlencode and send error message upstream
 ###############################################################################
 
 ###############################################################################
