@@ -1,0 +1,42 @@
+Welcome to Eucalyptus!  Here are a few commands to help you get familiar with your new cloud.
+
+First, source your new credentials. You must load your credentials to interact with Eucalyptus.
+Run the following command to source credentials:
+  
+  source ~/eucarc
+
+Next, take a look at your available cloud images.  We've already registered an image for you,
+so you should see one image listed. Run the following command to see your available images:
+
+  euca-describe-images
+
+Next, install your own image. Many Linux distributions now have preconfigured cloud images,
+so you can download and install them to your cloud easily.  Run the following commands
+to add a Fedora 20 cloud image to your Eucalyptus install.
+
+  # Download the image
+  curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+
+  # Unzip the image.
+  xz -d fedora.raw.xz 
+
+  # Install the image.
+  euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
+
+  # Set the image to be available to all users.
+  euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora | grep emi | cut -f 2)
+
+  # Finally, run an instance based on the new image.
+  euca-run-instances -k my-first-keypair $(euca-describe-images | grep fedora | grep emi | cut -f 2)
+
+  # Run euca-describe-instances to get information about your instances.
+  euca-describe-instances
+
+  # Once your instance is listed as "running", ssh to it. Don't forget to specify the right keypair!
+  ssh -i ~/my-first-keypair 192.168.1.101 (or whatever the IP of your instance is)
+
+For more detailed explanations of these commands, and for more commands to try, check out the HOWTO:
+
+  more HOWTO.txt
+
+Thanks for trying Eucalyptus!
