@@ -476,33 +476,61 @@ done
 echo "SUBNET="$ciab_subnet
 echo ""
 
-echo "What's the first address of your public IP range?"
-until valid_ip $ciab_publicips1; do
-    read ciab_publicips1
-    valid_ip $ciab_publicips1 || echo "Please provide a valid IP."
-done
-echo ""
+echo "You must now specify a range of IP addresses that are free"
+echo "for Eucalyptus to use.  These IP addresses should not be"
+echo "taken up by any other machines, and should not be in any"
+echo "DHCP address pools.  Faststart will split this range into"
+echo "public and private IP addresses, which will then be used"
+echo "by Eucalyptus instances."
 
-echo "What's the last address of your public IP range?"
-until valid_ip $ciab_publicips2; do
-    read ciab_publicips2
-    valid_ip $ciab_publicips2 || echo "Please provide a valid IP."
-done
-echo ""
+ipsinrange=0
 
-echo "What's the first address of your private IP range?"
-until valid_ip $ciab_privateips1; do
-    read ciab_privateips1
-    valid_ip $ciab_privateips1|| echo "Please provide a valid IP."
-done
-echo ""
+until (( $ipsinrange==1 )); do
 
-echo "What's the last address of your private IP range?"
-until valid_ip $ciab_privateips2; do
-    read ciab_privateips2
-    valid_ip $ciab_privateips2|| echo "Please provide a valid IP."
+    ciab_ips1='';
+    ciab_ips2='';
+
+    echo "What's the first address of your IP range?"
+    until valid_ip $ciab_ips1; do
+        read ciab_ips1
+        valid_ip $ciab_ips1 || echo "Please provide a valid IP."
+    done
+    echo ""
+
+    echo "What's the last address of your IP range?"
+    until valid_ip $ciab_ips2; do
+        read ciab_ips2
+        valid_ip $ciab_ips2 || echo "Please provide a valid IP."
+    done
+
+    ipsub1=$(echo $ciab_ips1 | cut -d'.' -f1-3)
+    ipsub2=$(echo $ciab_ips2 | cut -d'.' -f1-3)
+
+    if [ $ipsub1 == $ipsub2 ]; then
+        # OK, subnets match
+        iptail1=$(echo $ciab_ips1 | cut -d'.' -f4)
+        iptail2=$(echo $ciab_ips2 | cut -d'.' -f4)
+        echo "iptail1 = $iptail1 : iptail2 = $iptail2"
+        if ! (("$iptail1+9" < "$iptail2")); then
+            echo "Please provide a range of at least 10 IP addresses, with the second IP greater than the first."
+        else
+            publicend=$(($iptail1+(($iptail2-$iptail1)/2)))
+            privatestart=$(($publicend+1))
+            echo "Public end = $publicend Private start = $privatestart"
+            ciab_publicips1="$ipsub1.$iptail1"
+            ciab_publicips2="$ipsub1.$publicend"
+            ciab_privateips1="$ipsub1.$privatestart"
+            ciab_privateips2="$ipsub1.$iptail2"
+            echo "OK, IP range is good"
+            echo "  Public range will be $ciab_publicips1 - $ciab_publicips2"
+            echo "  Private range will be $ciab_privateips1 - $ciab_privateips2"
+            ipsinrange=1
+        fi
+    else
+        echo "Subnets for IP range don't match, try again."
+    fi
+
 done
-echo ""
 
 # Perform variable interpolation in the CIAB template.
 sed -i "s/IPADDR/$ciab_ipaddr/g" ciab.json
