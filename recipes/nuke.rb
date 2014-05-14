@@ -26,6 +26,10 @@ service "eucanetd" do
   action [ :stop ]
 end
 
+execute "eucanetd -F" do
+  only_if "which eucanetd"
+end
+
 service "eucalyptus-cc" do
   action [ :stop ]
 end
