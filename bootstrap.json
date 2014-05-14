@@ -1,7 +1,7 @@
 {
   "nodes": [
     {
-      "groups": ["cloud-controller::default", "user-facing::default", "cloud-controller::configure-storage", "user-console::default"],
+      "groups": ["cloud-controller::default", "user-facing::default", "cloud-controller::configure", "user-console::default"],
       "hosts": ["10.111.5.163"]
     },
     {
