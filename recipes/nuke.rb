@@ -60,7 +60,7 @@ end
 
 ## Remove euca packages chef yum_package does not seem to like wildcard
 execute 'remove euca packages' do
-  command "yum -y remove 'eucalyptus*'"
+  command "yum -y remove 'euca*'"
 end
 
 ## Delete home directory
