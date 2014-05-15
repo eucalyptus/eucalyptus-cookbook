@@ -586,5 +586,5 @@ total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
 curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time&uuid=$uuid" >> /dev/null
 
-cat get-started.txt
+cat cookbooks/eucalyptus/faststart/get-started.txt
 exit 0
