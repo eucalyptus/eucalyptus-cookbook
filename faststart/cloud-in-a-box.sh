@@ -2,16 +2,12 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: Add disk availability
-#   * Precheck: Add DHCP check and fail with error
+#   * Precheck: disk availability
+#   * Precheck: DHCP check and fail with error
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
 #   * Console: Insert tipoftheday
-#   * Console: Print out user/pass info on completion
-#   * Docs/Images: Add instructions for importing a larger image than the cirros starter
-#   * Pretty: Section borders between Precheck / Prep / Install / Post-install
-#   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
 ###############################################################################
 
 ###############################################################################
@@ -423,8 +419,11 @@ echo "====="
 echo ""
 echo "Welcome to the Faststart installer!"
 
+echo ""
 echo "We're about to turn this system into a single-system Eucalyptus cloud."
-echo "To do that, we need to get a few answers from you."
+echo ""
+echo "Note: it's STRONGLY suggested that you accept the default values where"
+echo "they are provided, unless you know that the values are incorrect."
 
 # Attempt to prepopulate values
 ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
@@ -490,13 +489,13 @@ until (( $ipsinrange==1 )); do
     ciab_ips1='';
     ciab_ips2='';
 
-    echo "What's the first address of your IP range?"
+    echo "What's the first address of your available IP range?"
     until valid_ip $ciab_ips1; do
         read ciab_ips1
         valid_ip $ciab_ips1 || echo "Please provide a valid IP."
     done
 
-    echo "What's the last address of your IP range?"
+    echo "What's the last address of your available IP range?"
     until valid_ip $ciab_ips2; do
         read ciab_ips2
         valid_ip $ciab_ips2 || echo "Please provide a valid IP."
