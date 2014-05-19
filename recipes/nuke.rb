@@ -63,6 +63,24 @@ execute 'remove euca packages' do
   command "yum -y remove 'eucalyptus*'"
 end
 
+bash "Remove devmapper and losetup entries" do
+  code <<-EOH
+    for export in `tgtadm --lld iscsi -m target -o show | grep Target | grep eucalyptus | awk 'BEGIN{FS="Target";}{print $2}'| awk 'BEGIN{FS=":";}{print $1}'`;do
+      tgtadm --lld iscsi -m target -o delete -t $export --force;
+    done
+  EOH
+  only_if "tgtadm --lld iscsi -m target -o show"
+end
+
+bash 'Remove Euca logical volumes' do
+  code <<-EOH
+    for vol in `lvdisplay  | grep /dev | grep euca-vol- | awk '{print $3}'`;do
+      lvremove -f $vol;
+    done
+  EOH
+  only_if "lvdisplay  | grep /dev | grep euca-vol-"
+end
+
 ## Delete home directory
 if node['eucalyptus']['home-directory'] != '/'
   directory node['eucalyptus']['home-directory'] do
