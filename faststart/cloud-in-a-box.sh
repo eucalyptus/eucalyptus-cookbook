@@ -2,8 +2,10 @@
 
 ###############################################################################
 # TODOs:
+#   * Precheck: laptop warning
 #   * Precheck: disk availability
 #   * Precheck: DHCP check and fail with error
+#   * Post-install: Tutorial access
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
