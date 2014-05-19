@@ -81,6 +81,7 @@ default["eucalyptus"]["cc"]["port"] = "8774"
 default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
 
 ## NC Specific
+default["eucalyptus"]["nc"]["install-qemu-migration"] = true
 default["eucalyptus"]["nc"]["port"] = "8775"
 default["eucalyptus"]["nc"]["work-size"] = "0"
 default["eucalyptus"]["nc"]["cache-size"] = "0"
