@@ -162,8 +162,6 @@ if [ "$DiskSpace" -lt "100000000" ]; then
     fi
 fi
 
-exit 0
-
 # Check to make sure curl is installed.
 # If the user is following directions, they should be using
 # curl already to fetch the script -- but can't guarantee that.
