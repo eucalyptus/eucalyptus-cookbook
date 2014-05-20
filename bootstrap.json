@@ -5,7 +5,7 @@
       "hosts": ["10.111.5.163"]
     },
     {
-      "groups": ["cluster-controller::default", "storage-controller::default", "walrus::default", ],
+      "groups": ["cluster-controller::default", "storage-controller::default", "walrus::default"],
       "hosts": ["10.111.5.164"]
     },
     {

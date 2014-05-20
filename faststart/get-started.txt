@@ -37,6 +37,6 @@ to add a Fedora 20 cloud image to your Eucalyptus install.
 
 For more detailed explanations of these commands, and for more commands to try, check out the HOWTO:
 
-  more HOWTO.txt
+  more cookbooks/eucalyptus/faststart/HOWTO.txt
 
 Thanks for trying Eucalyptus!

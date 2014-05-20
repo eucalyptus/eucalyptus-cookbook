@@ -2,17 +2,12 @@
 
 ###############################################################################
 # TODOs:
-#   * Strip out ability to accept defaults?
-#   * Or: Add loop to allow re-entry of network parameters (are these correct?)
-#   * Precheck: Add DHCP check and fail with error
+#   * Precheck: disk availability
+#   * Precheck: DHCP check and fail with error
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
 #   * Console: Insert tipoftheday
-#   * Console: Print out user/pass info on completion
-#   * Docs/Images: Add instructions for importing a larger image than the cirros starter
-#   * Pretty: Section borders between Precheck / Prep / Install / Post-install
-#   * Docs: talk about IP range, not pub/priv IPs, and split the range automatically
 ###############################################################################
 
 ###############################################################################
@@ -424,8 +419,11 @@ echo "====="
 echo ""
 echo "Welcome to the Faststart installer!"
 
+echo ""
 echo "We're about to turn this system into a single-system Eucalyptus cloud."
-echo "To do that, we need to get a few answers from you."
+echo ""
+echo "Note: it's STRONGLY suggested that you accept the default values where"
+echo "they are provided, unless you know that the values are incorrect."
 
 # Attempt to prepopulate values
 ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
@@ -491,13 +489,13 @@ until (( $ipsinrange==1 )); do
     ciab_ips1='';
     ciab_ips2='';
 
-    echo "What's the first address of your IP range?"
+    echo "What's the first address of your available IP range?"
     until valid_ip $ciab_ips1; do
         read ciab_ips1
         valid_ip $ciab_ips1 || echo "Please provide a valid IP."
     done
 
-    echo "What's the last address of your IP range?"
+    echo "What's the last address of your available IP range?"
     until valid_ip $ciab_ips2; do
         read ciab_ips2
         valid_ip $ciab_ips2 || echo "Please provide a valid IP."
@@ -544,9 +542,6 @@ sed -i "s/NIC/$ciab_nic/g" ciab.json
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
 #
-# TODO: Add successful run time
-# TODO: Add an error parser to pull and report any FATAL chef error
-# TODO: urlencode and send error message upstream
 ###############################################################################
 
 # Install Euca and start it up in the cloud-in-a-box configuration.
@@ -559,7 +554,7 @@ echo "log file by running the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
 echo ""
-echo "Note: this install might take a while. Go have a cup of coffee!"
+echo "Note: this install might take a while (15 minutes or so). Go have a cup of coffee!"
 echo ""
 
 # To make the spinner work, we need to launch in a subshell.  Since we 
@@ -579,6 +574,19 @@ if [[ ! -f faststart-successful.log ]]; then
     exit 99
 fi
 
+###############################################################################
+# SECTION 5: POST-INSTALL CONFIGURATION
+#
+###############################################################################
+
+echo ""
+echo "[Config] Enabling web console"
+source ~/eucarc && euare-useraddloginprofile --region localadmin@localhost --as-account eucalyptus -u admin -p password
+
+echo "[Config] Adding ssh and http to default security group"
+source ~/eucarc && euca-authorize -P tcp -p 22 default
+source ~/eucarc && euca-authorize -P tcp -p 80 default
+
 echo ""
 echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
@@ -586,5 +594,14 @@ total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
 curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time&uuid=$uuid" >> /dev/null
 
-cat get-started.txt
+echo "To log in to the User Console, go to:"
+echo "http://${ciab_ipaddr}:8888/"
+echo ""
+echo "User Credentials:"
+echo "  * Account: eucalyptus"
+echo "  * Username: admin"
+echo "  * Password: password"
+echo ""
+
+cat cookbooks/eucalyptus/faststart/get-started.txt
 exit 0
