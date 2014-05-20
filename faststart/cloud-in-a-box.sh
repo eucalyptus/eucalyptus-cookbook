@@ -2,9 +2,10 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: laptop warning
 #   * Precheck: disk availability
 #   * Precheck: DHCP check and fail with error
+#   * Double-check all error calls
+#     + Send a pre-install call immediately?
 #   * Post-install: Tutorial access
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
@@ -105,12 +106,27 @@ uuid=`uuidgen`
 # properly installed should be checked here.
 ###############################################################################
 
+# WARNING: if you're running on a laptop, turn sleep off in BIOS!
+# Sleep can affect VMs badly.
+
+echo "NOTE: if you're running on a laptop, you might want to make sure that"
+echo "you have turned off sleep/ACPI in your BIOS.  If the laptop goes to sleep,"
+echo "virtual machines could terminate."
+echo ""
+
+echo "Continue? [Y/n]"
+read continue_laptop
+if [ "$continue_laptop" = "n" ] || [ "$continue_laptop" = "N" ]
+then 
+    echo "Stopped by user request."
+    exit 1
+fi
+
 # Invoke timer start.
 t=$(timer)
 
 LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
 
-echo ""
 echo ""
 
 # Check to make sure I'm root
@@ -125,6 +141,26 @@ if [ "$ciab_user" != 'root' ]; then
 fi
 echo "[Precheck] OK, running as root"
 echo ""
+
+# Check disk space.
+DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
+
+if [ "$DiskSpace" -lt "100000000" ]; then
+    echo "WARNING: we recommend at least 100G of disk space free"
+    echo "for a Eucalyptus Faststart installation.  Running with"
+    echo "less disk space may result in issues with image and"
+    echo "volume management."
+    echo ""
+    echo "Your free space is: $DiskSpace"
+    echo ""
+    echo "Continue? [y/N]"
+    read continue_disk
+    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
+    then 
+        echo "Stopped by user request."
+        exit 1
+    fi
+fi
 
 # Check to make sure curl is installed.
 # If the user is following directions, they should be using
