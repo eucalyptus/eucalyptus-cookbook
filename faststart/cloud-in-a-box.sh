@@ -2,9 +2,10 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: laptop warning
 #   * Precheck: disk availability
 #   * Precheck: DHCP check and fail with error
+#   * Double-check all error calls
+#     + Send a pre-install call immediately?
 #   * Post-install: Tutorial access
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
@@ -104,6 +105,30 @@ uuid=`uuidgen`
 # Any immediately diagnosable condition that might prevent Euca from being
 # properly installed should be checked here.
 ###############################################################################
+
+# WARNING: if you're running on a laptop, turn sleep off in BIOS!
+# Sleep can affect VMs badly.
+
+echo "NOTE: if you're running on a laptop, you might want to make sure that"
+echo "you have turned off sleep/ACPI in your BIOS.  If the laptop goes to sleep,"
+echo "virtual machines could terminate."
+echo ""
+echo "Continue install? (Y/n)"
+
+read ContinueInstall
+
+case "$ContinueInstall" in 
+  *N*)
+    echo "OK, quitting."
+    exit 1
+    ;;
+  *n*)
+    echo "OK, quitting."
+    exit 1
+    ;;
+esac
+
+echo "OK, proceeding with install."
 
 # Invoke timer start.
 t=$(timer)
