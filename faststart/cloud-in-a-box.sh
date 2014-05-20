@@ -113,29 +113,20 @@ echo "NOTE: if you're running on a laptop, you might want to make sure that"
 echo "you have turned off sleep/ACPI in your BIOS.  If the laptop goes to sleep,"
 echo "virtual machines could terminate."
 echo ""
-echo "Continue install? (Y/n)"
 
-read ContinueInstall
-
-case "$ContinueInstall" in 
-  *N*)
-    echo "OK, quitting."
+echo "Continue? [Y/n]"
+read continue_laptop
+if [ "$continue_laptop" = "n" ] || [ "$continue_laptop" = "N" ]
+then 
+    echo "Stopped by user request."
     exit 1
-    ;;
-  *n*)
-    echo "OK, quitting."
-    exit 1
-    ;;
-esac
-
-echo "OK, proceeding with install."
+fi
 
 # Invoke timer start.
 t=$(timer)
 
 LOGFILE='/var/log/euca-install-'`date +%m.%d.%Y-%H.%M.%S`'.log'
 
-echo ""
 echo ""
 
 # Check to make sure I'm root
@@ -150,6 +141,28 @@ if [ "$ciab_user" != 'root' ]; then
 fi
 echo "[Precheck] OK, running as root"
 echo ""
+
+# Check disk space.
+DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
+
+if [ "$DiskSpace" -lt "100000000" ]; then
+    echo "WARNING: we recommend at least 100G of disk space free"
+    echo "for a Eucalyptus Faststart installation.  Running with"
+    echo "less disk space may result in issues with image and"
+    echo "volume management."
+    echo ""
+    echo "Your free space is: $DiskSpace"
+    echo ""
+    echo "Continue? [y/N]"
+    read continue_disk
+    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
+    then 
+        echo "Stopped by user request."
+        exit 1
+    fi
+fi
+
+exit 0
 
 # Check to make sure curl is installed.
 # If the user is following directions, they should be using
