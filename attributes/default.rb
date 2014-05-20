@@ -83,8 +83,8 @@ default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
 ## NC Specific
 default["eucalyptus"]["nc"]["install-qemu-migration"] = true
 default["eucalyptus"]["nc"]["port"] = "8775"
-default["eucalyptus"]["nc"]["work-size"] = "0"
-default["eucalyptus"]["nc"]["cache-size"] = "0"
+#default["eucalyptus"]["nc"]["work-size"] = "0"
+#default["eucalyptus"]["nc"]["cache-size"] = "0"
 default["eucalyptus"]["nc"]["service-path"] = "axis2/services/EucalyptusNC"
 default["eucalyptus"]["nc"]["hypervisor"] = "kvm"
 default["eucalyptus"]["nc"]["max-cores"] = "0"

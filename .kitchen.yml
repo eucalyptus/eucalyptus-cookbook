@@ -38,6 +38,7 @@ suites:
         "install-imaging-worker": false
         nc:
           hypervisor: qemu
+          "work-size": 10000
         network:
           "mode": "EDGE"
           "bridge-ip": "33.33.33.10"
