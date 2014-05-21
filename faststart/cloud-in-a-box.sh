@@ -465,7 +465,7 @@ echo "they are provided, unless you know that the values are incorrect."
 # Attempt to prepopulate values
 ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
-ciab_netmask_guess=`ipcalc -m $ciab_ipaddr_guess | cut -d'=' -f2`
+ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
 
 echo ""
