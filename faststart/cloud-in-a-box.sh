@@ -2,7 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: disk availability
 #   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately?
@@ -517,7 +516,8 @@ echo "for Eucalyptus to use.  These IP addresses should not be"
 echo "taken up by any other machines, and should not be in any"
 echo "DHCP address pools.  Faststart will split this range into"
 echo "public and private IP addresses, which will then be used"
-echo "by Eucalyptus instances."
+echo "by Eucalyptus instances.  Please specify a range of at least"
+echo "10 IP addresses."
 echo ""
 
 ipsinrange=0
