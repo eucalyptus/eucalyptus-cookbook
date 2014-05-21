@@ -69,7 +69,7 @@ bash "Remove devmapper and losetup entries" do
       tgtadm --lld iscsi -m target -o delete -t $export --force;
     done
   EOH
-  only_if "tgtadm --lld iscsi -m target -o show"
+  only_if "which tgtadm && tgtadm --lld iscsi -m target -o show"
 end
 
 bash 'Remove Euca logical volumes' do
