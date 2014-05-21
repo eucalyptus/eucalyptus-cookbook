@@ -2,7 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: disk availability
 #   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately?
@@ -466,7 +465,7 @@ echo "they are provided, unless you know that the values are incorrect."
 # Attempt to prepopulate values
 ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
-ciab_netmask_guess=`ipcalc -m $ciab_ipaddr_guess | cut -d'=' -f2`
+ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
 
 echo ""
@@ -517,7 +516,8 @@ echo "for Eucalyptus to use.  These IP addresses should not be"
 echo "taken up by any other machines, and should not be in any"
 echo "DHCP address pools.  Faststart will split this range into"
 echo "public and private IP addresses, which will then be used"
-echo "by Eucalyptus instances."
+echo "by Eucalyptus instances.  Please specify a range of at least"
+echo "10 IP addresses."
 echo ""
 
 ipsinrange=0
