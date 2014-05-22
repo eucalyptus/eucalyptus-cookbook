@@ -4,7 +4,8 @@
 # TODOs:
 #   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
-#     + Send a pre-install call immediately?
+#     + Send a pre-install call immediately on start?
+#   * Fix logs calls to append instead of overwrite
 #   * Post-install: Tutorial access
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
@@ -617,7 +618,8 @@ fi
 ###############################################################################
 
 # Add tipoftheday to the console
-sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?uuid=$(uuid)" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
+sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?uuid=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
+sed -i "s|FSUUID|$uuid" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
 echo ""
 echo "[Config] Enabling web console"
