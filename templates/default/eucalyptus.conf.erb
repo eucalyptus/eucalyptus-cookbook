@@ -7,8 +7,6 @@ CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
 <% if node["eucalyptus"]["topology"]["clusters"].has_key?(node["eucalyptus"]["local-cluster-name"]) -%>
 NODES="<%= node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] %>"
-<% else %>
-NODES=""
 <% end -%>
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
