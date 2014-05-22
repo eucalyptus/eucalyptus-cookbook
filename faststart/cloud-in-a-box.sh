@@ -7,6 +7,9 @@
 #     + Send a pre-install call immediately on start?
 #   * Fix logs calls to append instead of overwrite
 #   * Post-install: Tutorial access
+#   * Fix failure message to give possible options:
+#     + yum errors most likely, run nuke and retry
+#     + find us on users-list or irc 
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
@@ -619,7 +622,7 @@ fi
 
 # Add tipoftheday to the console
 sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?uuid=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
-sed -i "s|FSUUID|$uuid" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
+sed -i "s|FSUUID|$uuid|" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
 echo ""
 echo "[Config] Enabling web console"
