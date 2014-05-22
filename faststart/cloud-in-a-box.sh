@@ -9,7 +9,6 @@
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
-#   * Console: Insert tipoftheday
 ###############################################################################
 
 ###############################################################################
@@ -616,6 +615,9 @@ fi
 # SECTION 5: POST-INSTALL CONFIGURATION
 #
 ###############################################################################
+
+# Add tipoftheday to the console
+sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
 echo ""
 echo "[Config] Enabling web console"
