@@ -5,7 +5,6 @@
 #   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately on start?
-#   * Fix logs calls to append instead of overwrite
 #   * Post-install: Tutorial access
 #   * Fix failure message to give possible options:
 #     + yum errors most likely, run nuke and retry
@@ -170,7 +169,7 @@ fi
 echo "[Precheck] Checking curl version"
 curl --version 1>>$LOGFILE
 if [ "$?" != "0" ]; then
-    yum -y install curl 1>$LOGFILE
+    yum -y install curl 1>>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "======"
         echo "[FATAL] Could not install curl"
@@ -244,7 +243,7 @@ fi
 
 # Check to see if kvm is supported by the hardware.
 echo "[Precheck] Checking hardware virtualization"
-egrep '^flags.*(vmx|svm)' /proc/cpuinfo 1>$LOGFILE
+egrep '^flags.*(vmx|svm)' /proc/cpuinfo 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[FATAL] Processor doesn't support virtualization"
@@ -269,7 +268,7 @@ if [ "$?" != "0" ]; then
     echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash 1>$LOGFILE
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Chef install failed!"
@@ -389,11 +388,11 @@ echo ""
 
 echo "[Prep] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
-rm -rf /var/chef/* 1>$LOGFILE
+rm -rf /var/chef/* 1>>$LOGFILE
 
 echo "[Prep] Downloading necessary cookbooks"
 # Grab cookbooks from git
-yum install -y git 1>$LOGFILE
+yum install -y git 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to install git!"
@@ -405,7 +404,7 @@ fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>$LOGFILE
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
@@ -414,7 +413,7 @@ if [ "$?" != "0" ]; then
         curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA&uuid=$uuid" >> /dev/null
         exit 25
 fi
-git clone https://github.com/opscode-cookbooks/yum 1>$LOGFILE
+git clone https://github.com/opscode-cookbooks/yum 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch yum cookbook!"
@@ -423,7 +422,7 @@ if [ "$?" != "0" ]; then
         curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM&uuid=$uuid" >> /dev/null
         exit 25
 fi
-git clone https://github.com/opscode-cookbooks/selinux 1>$LOGFILE
+git clone https://github.com/opscode-cookbooks/selinux 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch selinux cookbook!"
@@ -432,7 +431,7 @@ if [ "$?" != "0" ]; then
         curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX&uuid=$uuid" >> /dev/null
         exit 25
 fi
-git clone https://github.com/opscode-cookbooks/ntp 1>$LOGFILE
+git clone https://github.com/opscode-cookbooks/ntp 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch ntp cookbook!"
@@ -445,7 +444,7 @@ popd
 
 echo "[Prep] Tarring up cookbooks"
 # Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks 1>$LOGFILE
+tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
 
 # Copy the CIAB template over to be the active CIAB configuration file.
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
