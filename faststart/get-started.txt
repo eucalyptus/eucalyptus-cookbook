@@ -33,7 +33,7 @@ to add a Fedora 20 cloud image to your Eucalyptus install.
   euca-describe-instances
 
   # Once your instance is listed as "running", ssh to it. Don't forget to specify the right keypair!
-  ssh -i ~/my-first-keypair 192.168.1.101 (or whatever the IP of your instance is)
+  ssh -i ~/my-first-keypair.pem 192.168.1.101 (or whatever the IP of your instance is)
 
 For more detailed explanations of these commands, and for more commands to try, check out the HOWTO:
 

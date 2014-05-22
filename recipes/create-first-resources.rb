@@ -18,7 +18,7 @@
 ##
 #
 execute "Add keypair: my-first-keypair" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair && chmod 0600 /root/my-first-keypair"
+  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair.pem && chmod 0600 /root/my-first-keypair.pem"
   not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypairs my-first-keypair"
   retries 10
   retry_delay 10
