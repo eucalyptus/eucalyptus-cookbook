@@ -153,7 +153,7 @@ if [ "$DiskSpace" -lt "100000000" ]; then
     echo "less disk space may result in issues with image and"
     echo "volume management."
     echo ""
-    echo "Your free space is: $DiskSpace"
+    echo "Your free space is: `df -Ph $PWD | tail -1 | awk '{ print $4}'`"
     echo ""
     echo "Continue? [y/N]"
     read continue_disk
