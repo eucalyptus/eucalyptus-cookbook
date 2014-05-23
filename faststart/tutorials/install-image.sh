@@ -1,7 +1,14 @@
 #!/bin/bash
 
+# TODOs:
+#   + Remove the raw image file after successful install.
+#   + Add some websites where users can find images.
+
 bold=`tput bold`
 normal=`tput sgr0`
+
+# REMOVE ME
+if false; then
 
 echo ""
 echo ""
@@ -17,11 +24,8 @@ then
     exit 1
 fi
 
-read continue
-
-echo "The image installed with Faststart is small, and"
-echo "not useful for much beyond demonstrating how"
-echo "images work."
+echo "The default image installed by Faststart is small, and"
+echo "not useful for much beyond demonstrating how images work."
 echo ""
 echo "In this tutorial, we will download a cloud image"
 echo "from the internet and install it on your Faststart"
@@ -51,7 +55,7 @@ curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-
 # Fail if the image download fails
 if [ "$?" != "0" ]; then
     echo "======"
-    echo "[OOPS] Curl failed!
+    echo "[OOPS] Curl failed!"
     echo ""
     echo "It appears that curl failed to fetch the image. Please check"
     echo "your network connection and try the tutorial again."
@@ -61,10 +65,11 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
+echo ""
 echo "OK, now let's unzip the image. This image is zipped in the xz"
 echo "format, so to unzip the image, we will use the ${bold}xz${normal} command."
 echo ""
-echo "Hit Enter to unzip the image."
+echo "Hit Enter to unzip the image. (This may also take a bit.)"
 
 # Unzip the image.
 
@@ -93,7 +98,7 @@ echo "+ ${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_6
 euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm
 if [ "$?" != "0" ]; then
     echo "======"
-    echo "[OOPS] euca-install-image failed!
+    echo "[OOPS] euca-install-image failed!"
     echo ""
     echo "It appears that Eucalyptus failed to install the image. You may want to"
     echo "check to see if you have enough disk space to install this image."
@@ -115,12 +120,15 @@ read continue
 # get the EMI_ID
 EMI_ID=$(euca-describe-images | tail -n 1 | grep tutorial | grep emi | cut -f 2)
 echo "+ ${bold}euca-modify-image-attribute -l -a all $EMI_ID${normal}"
-echo euca-modify-image-attribute -l -a all $EMI_ID
+euca-modify-image-attribute -l -a all $EMI_ID
+
+# REMOVE ME
+fi
 
 echo ""
 echo "Your new Fedora machine image is installed and available to all"
 echo "users on your cloud! Let's confirm that by running euca-describe-images"
-echo "one more time.
+echo "one more time."
 echo ""
 echo "Hit Enter to show the list of images."
 

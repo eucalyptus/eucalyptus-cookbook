@@ -17,11 +17,12 @@ if [ "$EMI_ID" == "" ]
 then
    echo "Unable to find the Fedora machine image. Use this command to install it:"
    echo "  tutorials/install-image"
+   echo ""
+   echo "Exiting..."
    exit 1
 fi
 
 source /root/eucarc
-
 
 echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID${normal}"
 euca-run-instances -k my-first-keypair $EMI_ID
