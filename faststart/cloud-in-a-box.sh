@@ -379,8 +379,6 @@ if [ "$?" == "0" ]; then
     exit 12
 fi
 
-exit 0
-
 echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
 echo "To see the update in progress, run the following command in another terminal:"
 echo ""
