@@ -2,10 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Double-check all error calls
-#     + Send a pre-install call immediately on start?
-#     + Verify that errors are hitting logs properly
-#   * Post-install: Tutorial access
 #   * Fix failure message to give possible options:
 #     + yum errors most likely, run nuke and retry
 #     + find us on users-list or irc 
