@@ -5,6 +5,7 @@
 #   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately on start?
+#     + Verify that errors are hitting logs properly
 #   * Post-install: Tutorial access
 #   * Fix failure message to give possible options:
 #     + yum errors most likely, run nuke and retry
@@ -638,7 +639,7 @@ total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
 curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time&uuid=$uuid" >> /dev/null
 
-echo "To log in to the User Console, go to:"
+echo "To log in to the Management Console, go to:"
 echo "http://${ciab_ipaddr}:8888/"
 echo ""
 echo "User Credentials:"
