@@ -2,7 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately on start?
 #     + Verify that errors are hitting logs properly
@@ -144,26 +143,6 @@ fi
 echo "[Precheck] OK, running as root"
 echo ""
 
-# Check disk space.
-DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
-
-if [ "$DiskSpace" -lt "100000000" ]; then
-    echo "WARNING: we recommend at least 100G of disk space free"
-    echo "for a Eucalyptus Faststart installation.  Running with"
-    echo "less disk space may result in issues with image and"
-    echo "volume management."
-    echo ""
-    echo "Your free space is: `df -Ph $PWD | tail -1 | awk '{ print $4}'`"
-    echo ""
-    echo "Continue? [y/N]"
-    read continue_disk
-    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
-    then 
-        echo "Stopped by user request."
-        exit 1
-    fi
-fi
-
 # Check to make sure curl is installed.
 # If the user is following directions, they should be using
 # curl already to fetch the script -- but can't guarantee that.
@@ -182,6 +161,29 @@ fi
 echo "[Precheck] OK, curl is up to date"
 echo ""
 
+curl --silent "https://www.eucalyptus.com/faststart_errors.html?/msg=EUCA_INSTALL_BEGIN&uuid=$uuid" >> /dev/null
+
+# Check disk space.
+DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
+
+if [ "$DiskSpace" -lt "100000000" ]; then
+    echo "WARNING: we recommend at least 100G of disk space free"
+    echo "for a Eucalyptus Faststart installation.  Running with"
+    echo "less disk space may result in issues with image and"
+    echo "volume management."
+    echo ""
+    echo "Your free space is: `df -Ph $PWD | tail -1 | awk '{ print $4}'`"
+    echo ""
+    echo "Continue? [y/N]"
+    read continue_disk
+    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
+    then 
+        echo "Stopped by user request."
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=NOT_ENOUGH_DISK_SPACE&uuid=$uuid" >> /dev/null
+        exit 1
+    fi
+fi
+
 # If Eucalyptus is already installed, abort and tell the
 # user to run nuke.
 rpm -q eucalyptus
@@ -195,7 +197,7 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "  cd cookbooks/eucalyptus/faststart; ./nuke.sh"
     echo ""
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=EUCA_ALREADY_RUNNING&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_ALREADY_RUNNING&uuid=$uuid" >> /dev/null
     exit 9
 fi
 
@@ -211,7 +213,7 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
     echo ""
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=OS_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=OS_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -226,7 +228,7 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of PackageKit indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=DESKTOP_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
     exit 12
 fi
 
@@ -238,7 +240,7 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of NetworkManager indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=DESKTOP_NOT_SUPPORTEDi&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=DESKTOP_NOT_SUPPORTEDi&uuid=$uuid" >> /dev/null
     exit 12
 fi
 
@@ -255,7 +257,7 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=VIRT_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=VIRT_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
@@ -275,7 +277,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Chef install failed!"
         echo ""
         echo "Failed to install Chef. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=CHEF_INSTALL_FAILED&uuid=$uuid" >> /dev/null
         exit 22
     fi
 fi
@@ -312,7 +314,7 @@ if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
     echo ""
     echo "  https://github.com/eucalyptus/eucadev"
     echo ""
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=WIRELESS_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=WIRELESS_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
     exit 23
 elif [ "$(ifconfig em1 | grep 'inet addr')" ]; then
     echo "Active network interface em1 found"
@@ -362,6 +364,21 @@ fi
 echo "[Precheck] OK, network interfaces checked."
 echo ""
 
+# Check to see if the primary network interface is configured to use DHCP.
+# If it is, warn and abort.
+echo "[Precheck] Ensuring static interface..."
+grep -i dhcp /etc/sysconfig/network-scripts/ifcfg-$active_nic
+if [ "$?" == "0" ]; then
+    echo "====="
+    echo "[FATAL] DHCP detected"
+    echo ""
+    echo "The primary network interface is configured to use DHCP.  The interface for"
+    echo "Faststart must be configured with a static IP address.  Please configure the"
+    echo "primary network interface with a static IP address and try again."
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=DHCP_NOT_SUPPORTED&uuid=$uuid" >> /dev/null
+    exit 12
+fi
+
 echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
 echo "To see the update in progress, run the following command in another terminal:"
 echo ""
@@ -374,7 +391,7 @@ if [ "$?" != "0" ]; then
     echo "[FATAL] Chef install failed!"
     echo ""
     echo "Failed to install Chef. See $LOGFILE for details."
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FULL_YUM_UPDATE_FAILED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&uuid=$uuid" >> /dev/null
     exit 24
 fi
 
@@ -399,7 +416,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to install git!"
         echo ""
         echo "Failed to install git. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_INSTALL&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=GIT_INSTALL_FAILED&uuid=$uuid" >> /dev/null
         exit 25
 fi
 rm -rf cookbooks
@@ -411,7 +428,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
         echo ""
         echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_EUCA&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=GIT_CLONE_EUCA_FAILED&uuid=$uuid" >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/yum 1>>$LOGFILE
@@ -420,7 +437,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch yum cookbook!"
         echo ""
         echo "Failed to fetch yum cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_YUM&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=GIT_CLONE_YUM_FAILED&uuid=$uuid" >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/selinux 1>>$LOGFILE
@@ -429,7 +446,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch selinux cookbook!"
         echo ""
         echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_SELINUX&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=GIT_CLONE_SELINUX_FAILED&uuid=$uuid" >> /dev/null
         exit 25
 fi
 git clone https://github.com/opscode-cookbooks/ntp 1>>$LOGFILE
@@ -438,7 +455,7 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to fetch ntp cookbook!"
         echo ""
         echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=FAILED_GIT_CLONE_NTP&uuid=$uuid" >> /dev/null
+        curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=GIT_CLONE_NTP_FAILED&uuid=$uuid" >> /dev/null
         exit 25
 fi
 popd
@@ -611,7 +628,7 @@ if [[ ! -f faststart-successful.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
-    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=CHEF_INSTALL_FAILED&uuid=$uuid" >> /dev/null
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_INSTALL_FAILED&uuid=$uuid" >> /dev/null
     exit 99
 fi
 
@@ -637,7 +654,7 @@ echo ""
 echo "[SUCCESS] Eucalyptus installation complete!"
 total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
-curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=$total_time&uuid=$uuid" >> /dev/null
+curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&uuid=$uuid" >> /dev/null
 
 echo "To log in to the Management Console, go to:"
 echo "http://${ciab_ipaddr}:8888/"
