@@ -2,7 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Precheck: DHCP check and fail with error
 #   * Double-check all error calls
 #     + Send a pre-install call immediately on start?
 #     + Verify that errors are hitting logs properly
@@ -361,6 +360,23 @@ else
 fi
 echo "[Precheck] OK, network interfaces checked."
 echo ""
+
+# Check to see if the primary network interface is configured to use DHCP.
+# If it is, warn and abort.
+echo "[Precheck] Ensuring static interface..."
+grep -i dhcp /etc/sysconfig/network-scripts/ifcfg-$active_nic
+if [ "$?" == "0" ]; then
+    echo "====="
+    echo "[FATAL] DHCP detected"
+    echo ""
+    echo "The primary network interface is configured to use DHCP.  The interface for"
+    echo "Faststart must be configured with a static IP address.  Please configure the"
+    echo "primary network interface with a static IP address and try again."
+    curl --silent "https://www.eucalyptus.com/faststart_errors.html?fserror=DHCP_FOUND&uuid=$uuid" >> /dev/null
+    exit 12
+fi
+
+exit 0
 
 echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
 echo "To see the update in progress, run the following command in another terminal:"
