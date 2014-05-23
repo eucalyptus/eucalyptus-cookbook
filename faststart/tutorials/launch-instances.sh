@@ -3,6 +3,12 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
+echo ""
+echo ""
+echo "${bold}Launching Instances${normal}"
+echo ""
+echo "Hit Enter to continue."
+
 # Be sure the Fedora image is installed
 EMI_ID=$(euca-describe-images | grep fedora | grep emi | cut -f 2)
 if [ "$EMI_ID" == "" ]
@@ -12,8 +18,18 @@ then
    exit 1
 fi
 
-# Run an instance
+source /root/eucarc
+
+echo ""
+echo ""
 echo "Launching your fedora image"
+echo ""
+echo "Hit Enter to launch an instance."
+echo ""
+
+read continue
+
+echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID${normal}"
 euca-run-instances -k my-first-keypair $EMI_ID
 
 # Capture the instance ID and public address
