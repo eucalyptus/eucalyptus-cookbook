@@ -2,10 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Double-check all error calls
-#     + Send a pre-install call immediately on start?
-#     + Verify that errors are hitting logs properly
-#   * Post-install: Tutorial access
 #   * Fix failure message to give possible options:
 #     + yum errors most likely, run nuke and retry
 #     + find us on users-list or irc 
@@ -665,5 +661,12 @@ echo "  * Username: admin"
 echo "  * Password: password"
 echo ""
 
-cat cookbooks/eucalyptus/faststart/get-started.txt
+echo "If you are new to Eucalyptus, we strongly recommend that you run"
+echo "the Eucalyptus tutorial now:"
+echo ""
+echo "  cd cookbooks/eucalyptus/faststart/tutorials"
+echo "  ./master-tutorial.sh"
+echo ""
+echo "Thanks for installing Eucalyptus!"
+
 exit 0
