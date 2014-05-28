@@ -680,7 +680,7 @@ Default User Credentials (unless changed):
 
 Eucalyptus CLI Tutorials can be found at:
 
-  $tutorial_path/tutorials
+  $tutorial_path/cookbooks/eucalyptus/faststart/tutorials
 
 EOF
 
@@ -696,7 +696,7 @@ echo ""
 echo "If you are new to Eucalyptus, we strongly recommend that you run"
 echo "the Eucalyptus tutorial now:"
 echo ""
-echo "  cd $tutorial_path/tutorials"
+echo "  cd $tutorial_path/cookbooks/eucalyptus/faststart/tutorials"
 echo "  ./master-tutorial.sh"
 echo ""
 echo "Thanks for installing Eucalyptus!"
