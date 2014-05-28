@@ -643,6 +643,12 @@ fi
 sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?uuid=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 sed -i "s|FSUUID|$uuid|" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
+# Add link to open IRC window for help
+sed -i "s|© 2014 Eucalyptus Systems, Inc.|© 2014 Eucalyptus Systems, Inc. \&nbsp; \&nbsp; \&nbsp; \&nbsp; Need help\? <a href=\"javascript:poptastic('https://kiwiirc.com/client/irc.freenode.com/eucalyptus');\">Talk to us</a> on IRC.|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
+sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; function poptastic(url) { newwindow=window.open(url,'name','height=400,width=750'); if (window.focus) {newwindow.focus()} } </script>\n    <metal:block metal:define-slot=\"head_js\" />|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
+
+
+
 echo ""
 echo "[Config] Enabling web console"
 source ~/eucarc && euare-useraddloginprofile --region localadmin@localhost --as-account eucalyptus -u admin -p password
