@@ -2,12 +2,14 @@
 
 ###############################################################################
 # TODOs:
-#   * Fix failure message to give possible options:
+#   * Add links to UI and tutorials into /etc/motd
+#   * Fix Chef install failure message to give possible options:
 #     + yum errors most likely, run nuke and retry
 #     + find us on users-list or irc 
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
+#   * Put *all* output for *all* commands into log file
 ###############################################################################
 
 ###############################################################################
@@ -624,6 +626,14 @@ if [[ ! -f faststart-successful.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
+    echo ""
+    echo "Please try to run the installation again. If your installation fails again,"
+    echo "you can ask the Eucalyptus community for assistance:"
+    echo ""
+    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+    echo ""
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo ""
     curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_INSTALL_FAILED&uuid=$uuid" >> /dev/null
     exit 99
 fi
