@@ -2,10 +2,6 @@
 
 ###############################################################################
 # TODOs:
-#   * Add links to UI and tutorials into /etc/motd
-#   * Fix Chef install failure message to give possible options:
-#     + yum errors most likely, run nuke and retry
-#     + find us on users-list or irc 
 #   * Troubleshoot: Option to public pastebin the errors:
 #     http://pastebin.com/api (figure out the API)
 #     (and nice messaging about helping the community)
@@ -661,6 +657,32 @@ echo "[SUCCESS] Eucalyptus installation complete!"
 total_time=$(timer $t)
 printf 'Time to install: %s\n' $total_time
 curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&uuid=$uuid" >> /dev/null
+
+# Add links to the /etc/motd file
+tutorial_path=`pwd`
+cat << EOF > /etc/motd
+
+ _______                   _
+(_______)                 | |             _
+ _____   _   _  ____ _____| |_   _ ____ _| |_ _   _  ___
+|  ___) | | | |/ ___|____ | | | | |  _ (_   _) | | |/___)
+| |_____| |_| ( (___/ ___ | | |_| | |_| || |_| |_| |___ |
+|_______)____/ \____)_____|\_)__  |  __/  \__)____/(___/
+                            (____/|_|
+
+To log in to the Management Console, go to:
+http://${ciab_ipaddr}:8888/
+
+Default User Credentials (unless changed):
+  * Account: eucalyptus
+  * Username: admin
+  * Password: password
+
+Eucalyptus CLI Tutorials can be found at:
+
+  $tutorial_path/tutorials
+
+EOF
 
 echo "To log in to the Management Console, go to:"
 echo "http://${ciab_ipaddr}:8888/"
