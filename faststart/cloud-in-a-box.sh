@@ -155,7 +155,7 @@ fi
 echo "[Precheck] OK, curl is up to date"
 echo ""
 
-curl --silent "https://www.eucalyptus.com/faststart_errors.html?/msg=EUCA_INSTALL_BEGIN&uuid=$uuid" >> /dev/null
+curl --silent "https://www.eucalyptus.com/faststart_errors.html?msg=EUCA_INSTALL_BEGIN&uuid=$uuid" >> /dev/null
 
 # Check disk space.
 DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
