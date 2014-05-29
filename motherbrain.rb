@@ -32,7 +32,6 @@ component 'cloud-controller' do
     recipe 'eucalyptus::cloud-controller'
     recipe 'eucalyptus::user-console'
     recipe 'eucalyptus::register-components'
-    recipe 'eucalyptus::user-facing'
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::storage-controller'
