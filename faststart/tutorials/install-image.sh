@@ -7,9 +7,6 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
-# REMOVE ME
-if false; then
-
 echo ""
 echo ""
 echo "${bold}Installing Images${normal}"
@@ -121,9 +118,6 @@ read continue
 EMI_ID=$(euca-describe-images | tail -n 1 | grep tutorial | grep emi | cut -f 2)
 echo "+ ${bold}euca-modify-image-attribute -l -a all $EMI_ID${normal}"
 euca-modify-image-attribute -l -a all $EMI_ID
-
-# REMOVE ME
-fi
 
 echo ""
 echo "Your new Fedora machine image is installed and available to all"
