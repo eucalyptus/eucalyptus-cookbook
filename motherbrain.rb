@@ -9,24 +9,41 @@
 # When bootstrapping a cluster for the first time, you'll need to specify which
 # components and groups you want to bootstrap.
 stack_order do
-  bootstrap 'cloud-controller::full'
-  bootstrap 'cloud-controller::default'
-  bootstrap 'cluster-controller::default'
-  bootstrap 'storage-controller::default'
-  bootstrap 'user-facing::default'
-  bootstrap 'walrus::default'
-  bootstrap 'user-console::default'
+  bootstrap 'cloud::full'
+  bootstrap 'cloud::default'
+  bootstrap 'cloud::frontend'
+  bootstrap 'cluster::default'
+  bootstrap 'cluster::cluster-controller'
+  bootstrap 'cluster::storage-controller'
+  bootstrap 'cloud::user-facing'
+  bootstrap 'cloud::walrus'
+  bootstrap 'cloud::user-console'
   bootstrap 'node::default'
-  bootstrap 'cloud-controller::configure'
+  bootstrap 'cloud::configure'
   bootstrap 'nuke::default'
 end
 
-component 'cloud-controller' do
+component 'cloud' do
   description "Eucalyptus Cloud Controller"
   versioned_with 'eucalyptus.version'
   group 'default' do
     recipe 'eucalyptus::cloud-controller'
     recipe 'eucalyptus::register-components'
+  end
+  group 'frontend' do
+    recipe 'eucalyptus::cloud-controller'
+    recipe 'eucalyptus::register-components'
+    recipe 'eucalyptus::walrus'
+    recipe 'eucalyptus::user-console'
+  end
+  group 'walrus' do
+    recipe 'eucalyptus::walrus'
+  end
+  group 'user-facing' do
+    recipe 'eucalyptus::user-facing'
+  end
+  group 'user-console' do
+    recipe 'eucalyptus::user-console'
   end
   group 'full' do
     recipe 'eucalyptus::cloud-controller'
@@ -42,34 +59,17 @@ component 'cloud-controller' do
   end
 end
 
-component 'user-facing' do
-  description "Eucalyptus User Facing Services"
-  versioned_with 'eucalyptus.version'
-  group 'default' do
-    recipe 'eucalyptus::user-facing'
-  end
-end
-
-component 'walrus' do
-  description "Eucalyptus Walrus Backend"
-  versioned_with 'eucalyptus.version'
-  group 'default' do
-    recipe 'eucalyptus::walrus'
-  end
-end
-
-component 'cluster-controller' do
+component 'cluster' do
   description "Eucalyptus Cluster Controller"
   versioned_with 'eucalyptus.version'
   group 'default' do
     recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::storage-controller'
   end
-end
-
-component 'storage-controller' do
-  description "Eucalyptus Storage Controller"
-  versioned_with 'eucalyptus.version'
-  group 'default' do
+  group 'cluster-controller' do
+    recipe 'eucalyptus::cluster-controller'
+  end
+  group 'storage-controller' do
     recipe 'eucalyptus::storage-controller'
   end
 end
@@ -79,14 +79,6 @@ component 'node' do
   versioned
   group 'default' do
     recipe 'eucalyptus::node-controller'
-  end
-end
-
-component 'user-console' do
-  description "Eucalyptus User Console"
-  versioned
-  group 'default' do
-    recipe 'eucalyptus::user-console'
   end
 end
 
