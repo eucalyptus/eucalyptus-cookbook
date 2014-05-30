@@ -1,11 +1,11 @@
 {
   "nodes": [
     {
-      "groups": ["cloud-controller::default", "user-facing::default", "cloud-controller::configure", "user-console::default"],
+      "groups": ["cloud::frontend", "cloud-controller::configure"],
       "hosts": ["10.111.5.163"]
     },
     {
-      "groups": ["cluster-controller::default", "storage-controller::default", "walrus::default"],
+      "groups": ["cluster-controller::default"],
       "hosts": ["10.111.5.164"]
     },
     {
