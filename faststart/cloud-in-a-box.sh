@@ -158,15 +158,16 @@ echo ""
 curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_BEGIN&uuid=$uuid" >> /tmp/fsout.log
 
 # Check disk space.
-DiskSpace=`df -Pk $PWD | tail -1 | awk '{ print $4}'`
+DiskSpace=`df -Pk /var | tail -1 | awk '{ print $4}'`
 
 if [ "$DiskSpace" -lt "100000000" ]; then
-    echo "WARNING: we recommend at least 100G of disk space free"
-    echo "for a Eucalyptus Faststart installation.  Running with"
-    echo "less disk space may result in issues with image and"
-    echo "volume management."
+    echo "WARNING: we recommend at least 100G of disk space available"
+    echo "in /var for a Eucalyptus Faststart installation.  Running with"
+    echo "less disk space may result in issues with image and volume"
+    echo "management, and may dramatically reduce the number of instances"
+    echo "your cloud can run simultaneously."
     echo ""
-    echo "Your free space is: `df -Ph $PWD | tail -1 | awk '{ print $4}'`"
+    echo "Your free space is: `df -Ph /var | tail -1 | awk '{ print $4}'`"
     echo ""
     echo "Continue? [y/N]"
     read continue_disk

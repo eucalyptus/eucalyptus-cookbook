@@ -7,12 +7,19 @@ echo ""
 echo ""
 echo "${bold}Launching Instances${normal}"
 echo ""
-echo "Hit Enter to continue."
+echo "Continue with Installing Images Tutorial? (Y/n)"
 
 read continue
+if [ "$continue" = "n" ] || [ "$continue" = "N" ]
+then
+    echo "OK. To run though this tutorial at any time, run the following command: "
+    echo "  $0"
+    exit 1
+fi
 
 # Be sure the tutorial image is installed
 EMI_ID=$(euca-describe-images | grep tutorial | grep emi | tail -n 1 | cut -f 2)
+echo $EMI_ID
 if [ "$EMI_ID" == "" ]
 then
    echo "Unable to find the Fedora machine image. Use this command to install it:"
