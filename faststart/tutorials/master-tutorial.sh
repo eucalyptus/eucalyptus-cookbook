@@ -24,3 +24,15 @@ fi
 
 ./describe-images.sh
 ./install-image.sh
+
+echo ""
+echo "* * * * *"
+echo ""
+echo "That's all for now. Check back for new tutorials by running the"
+echo "following command from this directory:"
+echo ""
+echo "git pull"
+echo ""
+echo "Thanks for trying Eucalyptus!"
+echo ""
+echo ""
