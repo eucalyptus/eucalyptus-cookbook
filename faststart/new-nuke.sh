@@ -54,7 +54,7 @@ if [ "$?" != "0" ]; then
     echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Chef install failed!"
