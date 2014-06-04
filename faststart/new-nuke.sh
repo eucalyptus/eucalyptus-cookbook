@@ -25,7 +25,7 @@ echo ""
 echo "Are you really super sure that you want to do this? [y/N]"
 
 read continue_nuke
-if [ "$continue_nuke" = "n" ] || [ "$continue_nuke" = "N" ] || [ -z "$continue_disk" ]
+if [ "$continue_nuke" = "n" ] || [ "$continue_nuke" = "N" ] || [ -z "$continue_nuke" ]
 then 
     echo "Stopped by user request."
     exit 1
