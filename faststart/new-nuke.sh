@@ -6,6 +6,7 @@
 
 # Create uuid
 uuid=`uuidgen -t`
+LOGFILE='/var/log/euca-nuke-'`date +%m.%d.%Y-%H.%M.%S`'.log'
 
 ###############################################################################
 # SECTION 1: PRECHECK.
