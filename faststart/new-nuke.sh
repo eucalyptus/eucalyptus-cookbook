@@ -17,15 +17,15 @@ uuid=`uuidgen -t`
 # WARNING: if you're running on a laptop, turn sleep off in BIOS!
 # Sleep can affect VMs badly.
 
+echo ""
 echo "NOTE: you're about to blow away your Eucalyptus installation."
 echo "That means removing all trace of Eucalyptus from this system."
 echo "What is done cannot be undone."
 echo ""
 echo "Are you really super sure that you want to do this? [y/N]"
 
-echo "Continue? [Y/n]"
-read continue_laptop
-if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
+read continue_nuke
+if [ "$continue_nuke" = "n" ] || [ "$continue_nuke" = "N" ] || [ -z "$continue_disk" ]
 then 
     echo "Stopped by user request."
     exit 1
