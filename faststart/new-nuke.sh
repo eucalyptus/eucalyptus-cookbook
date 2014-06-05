@@ -110,7 +110,7 @@ echo "[Prep] Tarring up cookbooks"
 tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
 
 echo "Nuking Eucalyptus install"
-chef-solo -r cookbooks.tgz -j nuke.json 1>>$LOGFILE
+chef-solo -r cookbooks.tgz -j cookbooks/eucalyptus/faststart/nuke.json 1>>$LOGFILE
 
 echo ""
 echo "Eucalyptus nuked."
