@@ -103,6 +103,15 @@ if [ "$?" != "0" ]; then
         curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_YUM_FAILED&id=$uuid" >> /tmp/fsout.log
         exit 25
 fi
+git clone https://github.com/opscode-cookbooks/ntp 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch ntp cookbook!"
+        echo ""
+        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_NTP_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 25
+fi
 popd
 
 echo "[Prep] Tarring up cookbooks"
@@ -114,4 +123,4 @@ chef-solo -r cookbooks.tgz -j cookbooks/eucalyptus/faststart/nuke.json 1>>$LOGFI
 
 echo ""
 echo "Eucalyptus nuked."
-curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NUKE_START&id=$uuid" >> /tmp/fsout.log
+curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NUKE_SUCCESSFUL&id=$uuid" >> /tmp/fsout.log
