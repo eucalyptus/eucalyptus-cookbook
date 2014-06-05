@@ -112,6 +112,15 @@ if [ "$?" != "0" ]; then
         curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_NTP_FAILED&id=$uuid" >> /tmp/fsout.log
         exit 25
 fi
+git clone https://github.com/opscode-cookbooks/selinux 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to fetch selinux cookbook!"
+        echo ""
+        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_SELINUX_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 25
+fi
 popd
 
 echo "[Prep] Tarring up cookbooks"
