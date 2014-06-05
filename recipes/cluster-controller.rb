@@ -24,7 +24,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :restart, "service[eucalyptus-cc]", :immediately
+    notifies :start, "service[eucalyptus-cc]", :immediately
   end
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
@@ -32,15 +32,9 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-ruby_block "Sync CC keys and register nodes" do
+ruby_block "Sync CC keys" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
-    nodes = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"]
-    nodes.split().each do |nc_ip|
-      r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
-      r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
-      r.run_action :run
-    end
   end
   not_if "#{Chef::Config[:solo]}"
 end
@@ -49,6 +43,18 @@ template "eucalyptus.conf" do
   path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
   action :create
+end
+
+ruby_block "Register nodes" do
+  block do
+    nodes = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"]
+    nodes.split().each do |nc_ip|
+      r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
+      r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
+      r.run_action :run
+    end
+  end
+  not_if "#{Chef::Config[:solo]}"
 end
 
 service "eucalyptus-cc" do
