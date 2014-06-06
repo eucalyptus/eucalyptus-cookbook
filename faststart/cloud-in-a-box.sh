@@ -440,7 +440,6 @@ fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-# FIXME
 git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
@@ -490,7 +489,6 @@ cp -f cookbooks/eucalyptus/faststart/node-template.json node.json
 ###############################################################################
 # SECTION 3: USER INPUT
 #
-# For cloud-in-a-box mode only; skip for the node controller only install.
 ###############################################################################
 
 # Attempt to prepopulate values
