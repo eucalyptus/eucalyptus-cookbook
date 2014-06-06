@@ -94,6 +94,9 @@ function timer()
 # Create uuid
 uuid=`uuidgen -t`
 
+# By default, not an NC-only install
+nc_install_only=0
+
 # Pull command-line args. Default is cloud-in-a-box, but --nc
 # will run NC installation only.
 while [ $# -gt 0 ]
@@ -103,7 +106,7 @@ do
             echo ""
             echo "NC ONLY"
             echo ""
-            nc_install_only=1;
+            nc_install_only=1
             shift
     esac
 done
@@ -438,7 +441,7 @@ rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
 # FIXME
-git clone https://github.com/gregdek/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
+git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
@@ -635,10 +638,6 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
 
-# FIXME: THIS IS THE BREAKPOINT. NEXT UP:
-# MAKE SURE THE NC INSTALL WORKS.
-exit 0;
-
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
 #
@@ -653,9 +652,16 @@ echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
-echo ""
-echo "Note: this install might take a while (15 minutes or so). Go have a cup of coffee!"
-echo ""
+
+if [ "$nc_install_only" == "0" ]; then
+    echo ""
+    echo "Your  cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
+    echo ""
+else
+    echo ""
+    echo "Your node controller should be installed in a few minutes. Go have a cup of coffee!"
+    echo ""
+fi
 
 # To make the spinner work, we need to launch in a subshell.  Since we 
 # can't get variables from the subshell scope, we'll write success or
