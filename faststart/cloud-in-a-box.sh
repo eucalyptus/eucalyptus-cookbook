@@ -437,7 +437,8 @@ fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
+# FIXME
+git clone https://github.com/gregdek/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
