@@ -130,6 +130,17 @@ tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
 echo "Nuking Eucalyptus install"
 chef-solo -r cookbooks.tgz -j cookbooks/eucalyptus/faststart/nuke.json 1>>$LOGFILE
 
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Nuke failed!"
+        echo ""
+        echo "Something went wrong during the nuke process."
+        echo "For details, check the log: $LOGFILE"
+        echo ""
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NUKE_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 25
+fi
+
 echo ""
 echo "Eucalyptus nuked."
 curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NUKE_SUCCESSFUL&id=$uuid" >> /tmp/fsout.log
