@@ -94,6 +94,23 @@ function timer()
 # Create uuid
 uuid=`uuidgen -t`
 
+# By default, not an NC-only install
+nc_install_only=0
+
+# Pull command-line args. Default is cloud-in-a-box, but --nc
+# will run NC installation only.
+while [ $# -gt 0 ]
+do
+    case $1 in
+        --nc)
+            echo ""
+            echo "NC ONLY"
+            echo ""
+            nc_install_only=1
+            shift
+    esac
+done
+
 ###############################################################################
 # SECTION 1: PRECHECK.
 # 
@@ -155,7 +172,13 @@ fi
 echo "[Precheck] OK, curl is up to date"
 echo ""
 
-curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_BEGIN&id=$uuid" >> /tmp/fsout.log
+if [ "$nc_install_only" == "1" ];
+then
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_BEGIN&id=$uuid" >> /tmp/fsout.log
+else
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_BEGIN&id=$uuid" >> /tmp/fsout.log
+fi
+
 
 # Check disk space.
 DiskSpace=`df -Pk /var | tail -1 | awk '{ print $4}'`
@@ -459,29 +482,38 @@ echo "[Prep] Tarring up cookbooks"
 # Tar up the cookbooks for use by chef-solo.
 tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
 
-# Copy the CIAB template over to be the active CIAB configuration file.
+# Copy the templates to the local directory
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
+cp -f cookbooks/eucalyptus/faststart/node-template.json node.json 
 
 ###############################################################################
 # SECTION 3: USER INPUT
 #
 ###############################################################################
 
-echo "====="
-echo ""
-echo "Welcome to the Faststart installer!"
-
-echo ""
-echo "We're about to turn this system into a single-system Eucalyptus cloud."
-echo ""
-echo "Note: it's STRONGLY suggested that you accept the default values where"
-echo "they are provided, unless you know that the values are incorrect."
-
 # Attempt to prepopulate values
 ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
 ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
+
+
+echo "====="
+echo ""
+echo "Welcome to the Faststart installer!"
+
+if [ "$nc_install_only" == "1" ]; 
+then
+    echo ""
+    echo "We're about to turn this system into a Eucalyptus node controller."
+    echo ""
+else
+    echo ""
+    echo "We're about to turn this system into a single-system Eucalyptus cloud."
+    echo ""
+fi
+echo "Note: it's STRONGLY suggested that you accept the default values where"
+echo "they are provided, unless you know that the values are incorrect."
 
 echo ""
 echo "What's the physical NIC that will be used for bridging? ($ciab_nic_guess)"
@@ -526,71 +558,83 @@ done
 echo "SUBNET="$ciab_subnet
 echo ""
 
-echo "You must now specify a range of IP addresses that are free"
-echo "for Eucalyptus to use.  These IP addresses should not be"
-echo "taken up by any other machines, and should not be in any"
-echo "DHCP address pools.  Faststart will split this range into"
-echo "public and private IP addresses, which will then be used"
-echo "by Eucalyptus instances.  Please specify a range of at least"
-echo "10 IP addresses."
-echo ""
+# We only ask for IP range if this system is a front-end.
+# Thus, if it's going to be an NC, we skip these questions.
 
-ipsinrange=0
+if [ "$nc_install_only" == "0" ]; then
+    echo "You must now specify a range of IP addresses that are free"
+    echo "for Eucalyptus to use.  These IP addresses should not be"
+    echo "taken up by any other machines, and should not be in any"
+    echo "DHCP address pools.  Faststart will split this range into"
+    echo "public and private IP addresses, which will then be used"
+    echo "by Eucalyptus instances.  Please specify a range of at least"
+    echo "10 IP addresses."
+    echo ""
 
-until (( $ipsinrange==1 )); do
+    ipsinrange=0
 
-    ciab_ips1='';
-    ciab_ips2='';
+    until (( $ipsinrange==1 )); do
 
-    echo "What's the first address of your available IP range?"
-    until valid_ip $ciab_ips1; do
-        read ciab_ips1
-        valid_ip $ciab_ips1 || echo "Please provide a valid IP."
-    done
+        ciab_ips1='';
+        ciab_ips2='';
 
-    echo "What's the last address of your available IP range?"
-    until valid_ip $ciab_ips2; do
-        read ciab_ips2
-        valid_ip $ciab_ips2 || echo "Please provide a valid IP."
-    done
+        echo "What's the first address of your available IP range?"
+        until valid_ip $ciab_ips1; do
+            read ciab_ips1
+            valid_ip $ciab_ips1 || echo "Please provide a valid IP."
+        done
 
-    ipsub1=$(echo $ciab_ips1 | cut -d'.' -f1-3)
-    ipsub2=$(echo $ciab_ips2 | cut -d'.' -f1-3)
+        echo "What's the last address of your available IP range?"
+        until valid_ip $ciab_ips2; do
+            read ciab_ips2
+            valid_ip $ciab_ips2 || echo "Please provide a valid IP."
+        done
 
-    if [ $ipsub1 == $ipsub2 ]; then
-        # OK, subnets match
-        iptail1=$(echo $ciab_ips1 | cut -d'.' -f4)
-        iptail2=$(echo $ciab_ips2 | cut -d'.' -f4)
-        if ! (("$iptail1+9" < "$iptail2")); then
-            echo "Please provide a range of at least 10 IP addresses, with the second IP greater than the first."
+        ipsub1=$(echo $ciab_ips1 | cut -d'.' -f1-3)
+        ipsub2=$(echo $ciab_ips2 | cut -d'.' -f1-3)
+
+        if [ $ipsub1 == $ipsub2 ]; then
+            # OK, subnets match
+            iptail1=$(echo $ciab_ips1 | cut -d'.' -f4)
+            iptail2=$(echo $ciab_ips2 | cut -d'.' -f4)
+            if ! (("$iptail1+9" < "$iptail2")); then
+                echo "Please provide a range of at least 10 IP addresses, with the second IP greater than the first."
+            else
+                publicend=$(($iptail1+(($iptail2-$iptail1)/2)))
+                privatestart=$(($publicend+1))
+                ciab_publicips1="$ipsub1.$iptail1"
+                ciab_publicips2="$ipsub1.$publicend"
+                ciab_privateips1="$ipsub1.$privatestart"
+                ciab_privateips2="$ipsub1.$iptail2"
+                echo "OK, IP range is good"
+                echo "  Public range will be:   $ciab_publicips1 - $ciab_publicips2"
+                echo "  Private range will be   $ciab_privateips1 - $ciab_privateips2"
+                ipsinrange=1
+            fi
         else
-            publicend=$(($iptail1+(($iptail2-$iptail1)/2)))
-            privatestart=$(($publicend+1))
-            ciab_publicips1="$ipsub1.$iptail1"
-            ciab_publicips2="$ipsub1.$publicend"
-            ciab_privateips1="$ipsub1.$privatestart"
-            ciab_privateips2="$ipsub1.$iptail2"
-            echo "OK, IP range is good"
-            echo "  Public range will be:   $ciab_publicips1 - $ciab_publicips2"
-            echo "  Private range will be   $ciab_privateips1 - $ciab_privateips2"
-            ipsinrange=1
+            echo "Subnets for IP range don't match, try again."
         fi
-    else
-        echo "Subnets for IP range don't match, try again."
-    fi
 
-done
+    done
+fi
 
-# Perform variable interpolation in the CIAB template.
-sed -i "s/IPADDR/$ciab_ipaddr/g" ciab.json
-sed -i "s/NETMASK/$ciab_netmask/g" ciab.json
-sed -i "s/GATEWAY/$ciab_gateway/g" ciab.json
-sed -i "s/SUBNET/$ciab_subnet/g" ciab.json
-sed -i "s/PUBLICIPS1/$ciab_publicips1/g" ciab.json
-sed -i "s/PUBLICIPS2/$ciab_publicips2/g" ciab.json
-sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" ciab.json
-sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" ciab.json
-sed -i "s/NIC/$ciab_nic/g" ciab.json
+# Decide which template we're using.
+if [ "$nc_install_only" == "0" ]; then
+    chef_template="ciab.json"
+else
+    chef_template="node.json"
+fi
+
+# Perform variable interpolation in the proper template.
+sed -i "s/IPADDR/$ciab_ipaddr/g" $chef_template
+sed -i "s/NETMASK/$ciab_netmask/g" $chef_template
+sed -i "s/GATEWAY/$ciab_gateway/g" $chef_template
+sed -i "s/SUBNET/$ciab_subnet/g" $chef_template
+sed -i "s/PUBLICIPS1/$ciab_publicips1/g" $chef_template
+sed -i "s/PUBLICIPS2/$ciab_publicips2/g" $chef_template
+sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
+sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
+sed -i "s/NIC/$ciab_nic/g" $chef_template
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
@@ -606,9 +650,16 @@ echo "If you want to watch the progress of this installation, you can check the"
 echo "log file by running the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
-echo ""
-echo "Note: this install might take a while (15 minutes or so). Go have a cup of coffee!"
-echo ""
+
+if [ "$nc_install_only" == "0" ]; then
+    echo ""
+    echo "Your  cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
+    echo ""
+else
+    echo ""
+    echo "Your node controller should be installed in a few minutes. Go have a cup of coffee!"
+    echo ""
+fi
 
 # To make the spinner work, we need to launch in a subshell.  Since we 
 # can't get variables from the subshell scope, we'll write success or
@@ -616,7 +667,12 @@ echo ""
 # exists or not.
 
 rm -f faststart-successful.log
-(chef-solo -r cookbooks.tgz -j ciab.json 1>>$LOGFILE && echo "success" > faststart-successful.log) &
+
+#
+# OK, THIS IS THE BIG STEP!  Install whichever chef template we're going with here.
+# On successful exit, write "success" to faststart-successful.log.
+
+(chef-solo -r cookbooks.tgz -j $chef_template 1>>$LOGFILE && echo "success" > faststart-successful.log) &
 coffee $!
 
 if [[ ! -f faststart-successful.log ]]; then
@@ -638,36 +694,41 @@ fi
 ###############################################################################
 # SECTION 5: POST-INSTALL CONFIGURATION
 #
+# If we reach this section, install has been successful. Take two different
+# paths: one for the NC mode, another for the CIAB mode.
 ###############################################################################
 
-# Add tipoftheday to the console
-sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?id=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
+if [ "$nc_install_only" == "0" ]; then
+
+#
+# CLOUD-IN-A-BOX INSTALL SUCCESSFUL
+#
+    # Add tipoftheday to the console
+    sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?id=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 sed -i "s|FSUUID|$uuid|" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
-# Add link to open IRC window for help
-sed -i "s|© 2014 Eucalyptus Systems, Inc.|© 2014 Eucalyptus Systems, Inc. \&nbsp; \&nbsp; \&nbsp; \&nbsp; Need help\? <a href=\"javascript:poptastic('https://kiwiirc.com/client/irc.freenode.com/eucalyptus');\">Talk to us</a> on IRC.|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
+    # Add link to open IRC window for help
+    sed -i "s|© 2014 Eucalyptus Systems, Inc.|© 2014 Eucalyptus Systems, Inc. \&nbsp; \&nbsp; \&nbsp; \&nbsp; Need help\? <a href=\"javascript:poptastic('https://kiwiirc.com/client/irc.freenode.com/eucalyptus');\">Talk to us</a> on IRC.|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
 sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; function poptastic(url) { newwindow=window.open(url,'name','height=400,width=750'); if (window.focus) {newwindow.focus()} } </script>\n    <metal:block metal:define-slot=\"head_js\" />|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
 
+    echo ""
+    echo "[Config] Enabling web console"
+    source ~/eucarc && euare-useraddloginprofile --region localadmin@localhost --as-account eucalyptus -u admin -p password
 
+    echo "[Config] Adding ssh and http to default security group"
+    source ~/eucarc && euca-authorize -P tcp -p 22 default
+    source ~/eucarc && euca-authorize -P tcp -p 80 default
 
-echo ""
-echo "[Config] Enabling web console"
-source ~/eucarc && euare-useraddloginprofile --region localadmin@localhost --as-account eucalyptus -u admin -p password
+    echo ""
+    echo ""
+    echo "[SUCCESS] Eucalyptus installation complete!"
+    total_time=$(timer $t)
+    printf 'Time to install: %s\n' $total_time
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
-echo "[Config] Adding ssh and http to default security group"
-source ~/eucarc && euca-authorize -P tcp -p 22 default
-source ~/eucarc && euca-authorize -P tcp -p 80 default
-
-echo ""
-echo ""
-echo "[SUCCESS] Eucalyptus installation complete!"
-total_time=$(timer $t)
-printf 'Time to install: %s\n' $total_time
-curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
-
-# Add links to the /etc/motd file
-tutorial_path=`pwd`
-cat << EOF > /etc/motd
+    # Add links to the /etc/motd file
+    tutorial_path=`pwd`
+    cat << EOF > /etc/motd
 
  _______                   _
 (_______)                 | |             _
@@ -691,21 +752,41 @@ Eucalyptus CLI Tutorials can be found at:
 
 EOF
 
-echo "To log in to the Management Console, go to:"
-echo "http://${ciab_ipaddr}:8888/"
-echo ""
-echo "User Credentials:"
-echo "  * Account: eucalyptus"
-echo "  * Username: admin"
-echo "  * Password: password"
-echo ""
+    echo "To log in to the Management Console, go to:"
+    echo "http://${ciab_ipaddr}:8888/"
+    echo ""
+    echo "User Credentials:"
+    echo "  * Account: eucalyptus"
+    echo "  * Username: admin"
+    echo "  * Password: password"
+    echo ""
 
-echo "If you are new to Eucalyptus, we strongly recommend that you run"
-echo "the Eucalyptus tutorial now:"
-echo ""
-echo "  cd $tutorial_path/cookbooks/eucalyptus/faststart/tutorials"
-echo "  ./master-tutorial.sh"
-echo ""
-echo "Thanks for installing Eucalyptus!"
+    echo "If you are new to Eucalyptus, we strongly recommend that you run"
+    echo "the Eucalyptus tutorial now:"
+    echo ""
+    echo "  cd $tutorial_path/cookbooks/eucalyptus/faststart/tutorials"
+    echo "  ./master-tutorial.sh"
+    echo ""
+    echo "Thanks for installing Eucalyptus!"
+
+else
+#
+# NODE CONTROLLER INSTALL SUCCESSFUL
+#
+    echo ""
+    echo ""
+    echo "[SUCCESS] Eucalyptus node controller installation complete!"
+    total_time=$(timer $t)
+    printf 'Time to install: %s\n' $total_time
+    echo ""
+    echo "Now, to register your node controller with your cloud, ssh to your"
+    echo "cloud-in-a-box server and run the following command:"
+    echo ""
+    echo "  /usr/sbin/euca_conf --register-nodes ${ciab_ipaddr}"
+    echo ""
+    echo "Thanks for installing Eucalyptus!" 
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
+
+fi
 
 exit 0
