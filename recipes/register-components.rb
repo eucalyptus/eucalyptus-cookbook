@@ -45,6 +45,8 @@ clusters.each do |cluster, info|
   execute "Register CC" do
     command "#{euca_conf} --register-cluster -P #{cluster} -H #{cc_ip} -C #{cluster}-cc-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep #{cluster}-cc-1"
+    retries 5
+    retry_delay 10
   end
   if info["sc-1"] == ""
 	sc_ip = node['ipaddress']
