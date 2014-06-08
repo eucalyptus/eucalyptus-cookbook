@@ -384,17 +384,22 @@ echo ""
 
 # Check to see if the primary network interface is configured to use DHCP.
 # If it is, warn and abort.
-echo "[Precheck] Ensuring static interface..."
 grep -i dhcp /etc/sysconfig/network-scripts/ifcfg-$active_nic
 if [ "$?" == "0" ]; then
     echo "====="
-    echo "[FATAL] DHCP detected"
+    echo "WARNING: we recommend configuring Eucalypus servers to use"
+    echo "a static IP address. This system is configured to use DHCP,"
+    echo "which will cause problems if you lose the DHCP lease for this"
+    echo "system."
     echo ""
-    echo "The primary network interface is configured to use DHCP.  The interface for"
-    echo "Faststart must be configured with a static IP address.  Please configure the"
-    echo "primary network interface with a static IP address and try again."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=DHCP_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
-    exit 12
+    echo "Continue anyway? [y/N]"
+    read continue_dhcp
+    if [ "$continue_dhcp" = "n" ] || [ "$continue_dhcp" = "N" ] || [ -z "$continue_dhcp" ]
+    then 
+        echo "Stopped by user request."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=DHCP_NOT_RECOMMENDED&id=$uuid" >> /tmp/fsout.log
+        exit 1
+    fi
 fi
 
 echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
