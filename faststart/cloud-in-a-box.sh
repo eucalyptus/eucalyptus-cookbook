@@ -406,9 +406,10 @@ echo "[Precheck] Package update in progress..."
 yum -y update
 if [ "$?" != "0" ]; then
     echo "====="
-    echo "[FATAL] Chef install failed!"
+    echo "[FATAL] Yum update failed!"
     echo ""
-    echo "Failed to install Chef. See $LOGFILE for details."
+    echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
+    echo "may also have some details related to the same."
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
     exit 24
 fi
