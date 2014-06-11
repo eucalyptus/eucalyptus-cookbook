@@ -91,6 +91,52 @@ function timer()
     fi
 }
 
+# Offer free support for the more difficult errors
+function offer_support()
+{
+    errorCondition=$1
+    echo ""
+    echo "Free support is available for this error. Provide your email address below and"
+    echo "a member of the support team will contact you directly. Or hit Enter to continue."
+    echo -n "Email address: "
+    read emailAddress
+ 
+   if [ "$emailAddress" != "" ]
+   then
+       submit_support_request $emailAddress $errorCondition
+       echo ""
+       echo "Eucalyptus support will contact you at $emailAddress as early as possible."
+    else
+       echo "You can ask the Eucalyptus community for assistance:"
+       echo ""
+       echo " https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+       echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    fi 
+} 
+
+# Notify support team that a user wants help
+function submit_support_request()
+{
+    emailAddress=$1
+    errorCondition=$2
+
+    # Build the URL used to call Marketo for this new account
+    dataString="mktForm_116=mktForm_116"
+    dataString="$dataString&""Email=$emailAddress"
+    dataString="$dataString&""FastStart_Install_Error_Msg__c=$errorCondition"
+    dataString="$dataString&""mktFrmSubmit=Submit"
+    dataString="$dataString&""lpId=4976"
+    dataString="$dataString&""subId=198"
+    dataString="$dataString&""munchkinId=729-HPK-685"
+    dataString="$dataString&""lpurl=http%3A%2F%2Fgo.eucalyptus.com/FastStart-Install-Support?cr={creative}&kw={keyword}"
+    dataString="$dataString&""formid=116"
+    dataString="$dataString&""_mkt_dis=return"
+  
+    curl -s --data "$dataString"  http://go.eucalyptus.com/index.php/leadCapture/save >> /tmp/fsout.log
+}
+
+
+
 # Create uuid
 uuid=`uuidgen -t`
 
@@ -296,6 +342,7 @@ if [ "$?" != "0" ]; then
         echo ""
         echo "Failed to install Chef. See $LOGFILE for details."
         curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        offer_support "CHEF_INSTALL_FAILED"
         exit 22
     fi
 fi
@@ -686,14 +733,8 @@ if [[ ! -f faststart-successful.log ]]; then
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
     echo ""
-    echo "Please try to run the installation again. If your installation fails again,"
-    echo "you can ask the Eucalyptus community for assistance:"
-    echo ""
-    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
-    echo ""
-    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
-    echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+    offer_support "EUCA_INSTALL_FAILED"
     exit 99
 fi
 
