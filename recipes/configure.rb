@@ -61,8 +61,14 @@ end
 clusters = node["eucalyptus"]["topology"]["clusters"]
 clusters.each do |cluster, info|
   ### Set backend
+  storage_backend = "overlay"
+  if info["storage-backend"]
+    storage_backend = info["storage-backend"]
+  else
+
+  end
   execute "Set storage backend" do
-     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{info["storage-backend"]} | grep #{info["storage-backend"]}"
+     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{info["storage-backend"]}"
      retries 15
      retry_delay 20
   end

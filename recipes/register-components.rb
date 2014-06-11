@@ -37,9 +37,9 @@ dont_sync_keys = "--no-scp --no-rsync --no-sync"
 
 clusters.each do |cluster, info|
   if info["cc-1"] == ""
-	cc_ip = node['ipaddress']
+	  cc_ip = node['ipaddress']
   else
-	cc_ip = info["cc-1"]
+	  cc_ip = info["cc-1"]
   end
 
   execute "Register CC" do
