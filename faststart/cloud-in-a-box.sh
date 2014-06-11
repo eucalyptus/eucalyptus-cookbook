@@ -106,7 +106,11 @@ function offer_support()
        submit_support_request $emailAddress $errorCondition
        echo ""
        echo "Eucalyptus support will contact you at $emailAddress as early as possible."
+    else
+       echo "You can ask the Eucalyptus community for assistance:"
        echo ""
+       echo " https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+       echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
     fi 
 } 
 
@@ -274,7 +278,6 @@ if [ "$?" != "0" ]; then
     echo ""
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=OS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
-    offer_support OS_NOT_SUPPORTED
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -339,6 +342,7 @@ if [ "$?" != "0" ]; then
         echo ""
         echo "Failed to install Chef. See $LOGFILE for details."
         curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        offer_support "CHEF_INSTALL_FAILED"
         exit 22
     fi
 fi
@@ -729,14 +733,8 @@ if [[ ! -f faststart-successful.log ]]; then
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
     echo ""
-    echo "Please try to run the installation again. If your installation fails again,"
-    echo "you can ask the Eucalyptus community for assistance:"
-    echo ""
-    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
-    echo ""
-    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
-    echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+    offer_support "EUCA_INSTALL_FAILED"
     exit 99
 fi
 
