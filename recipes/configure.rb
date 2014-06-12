@@ -121,5 +121,9 @@ if node['eucalyptus']['install-imaging-worker']
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
-  execute "#{modify_property} -p #{key}=\"#{value}\""
+  execute "#{modify_property} -p #{key}=\"#{value}\"" do
+    retries 10
+    retry_delay 5
+    not_if "#{describe_property} #{key} | grep \"#{value}\""
+  end
 end
