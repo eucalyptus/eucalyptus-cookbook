@@ -1,0 +1,52 @@
+{
+    "eucalyptus": {
+      "yum-options": "--nogpg",
+      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/",
+      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/",
+      "install-load-balancer": false,
+      "install-imaging-worker": false,
+      "topology": {
+        "clc-1": "IPADDR",
+        "walrus": "IPADDR",
+        "user-facing": ["IPADDR"],
+        "clusters": {
+          "default": {
+            "cc-1": "IPADDR",
+            "sc-1": "IPADDR",
+            "storage-backend": "overlay",
+            "nodes": "IPADDR"
+          }
+        }
+      },
+      "network": {
+        "mode": "EDGE",
+        "public-interface": "br0",
+        "private-interface": "br0",
+        "bridged-nic":"NIC", 
+        "bridge-ip": "IPADDR",
+        "bridge-netmask": "NETMASK",
+        "bridge-gateway": "GATEWAY",
+        "config-json": {
+          "InstanceDnsDomain" : "eucalyptus.internal",
+          "InstanceDnsServers": ["IPADDR"],
+          "PublicIps": ["PUBLICIPS1-PUBLICIPS2"],
+          "Clusters": [
+            {
+              "Name": "default",
+              "MacPrefix": "d0:0d",
+              "Subnet": {
+                "Name": "SUBNET",
+                "Subnet": "SUBNET",
+                "Netmask": "NETMASK",
+                "Gateway": "GATEWAY"
+              },
+              "PrivateIps": [ "PRIVATEIPS1-PRIVATEIPS2"]
+            }
+          ]
+        }
+      }
+    },
+  "run_list": [
+    "recipe[eucalyptus::node-controller]"
+  ]
+}
