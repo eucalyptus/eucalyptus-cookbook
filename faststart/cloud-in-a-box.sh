@@ -733,7 +733,7 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
     echo ""
-    echo ""
+    echo "* * * * *"
     echo "Do you wish to install the optional load balancer and image"
     echo "management services? This will take another 10-15 minutes." 
     echo "Install additional services? [y/N]"
@@ -776,6 +776,8 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
             exit 30
         fi
         echo "[Config] Load balancer and imaging services installed."
+        echo "* * * * *"
+        echo ""
         echo ""
     fi
 
