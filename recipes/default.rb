@@ -65,6 +65,14 @@ yum_repository "eucalyptus-release" do
   gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
 end
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  yum_repository "eucalyptus-enterprise-release" do
+    description "Eucalyptus Enterprise Package Repo"
+    url node["eucalyptus"]["enterprise-repo"]
+    gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  end
+end
+
 yum_repository "euca2ools-release" do
   description "Euca2ools Package Repo"
   url node["eucalyptus"]["euca2ools-repo"]

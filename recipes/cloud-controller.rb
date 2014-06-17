@@ -49,6 +49,35 @@ ruby_block "Upload cloud keys Chef Server" do
   not_if "#{Chef::Config[:solo]}"
 end
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_san?(node)
+    node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+      case info['storage-backend']
+      when 'emc'
+        san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
+      when 'netapp'
+        san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
+      when 'equallogic'
+        san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
+      end
+      yum_package san_package do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+    if Eucalyptus::Enterprise.is_vmware?(node)
+      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+  end
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

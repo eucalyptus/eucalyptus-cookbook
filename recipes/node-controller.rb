@@ -19,6 +19,32 @@
 
 include_recipe "eucalyptus::default"
 
+## Install packages for the NC
+if node["eucalyptus"]["install-type"] == "packages"
+  yum_package "eucalyptus-nc" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+    flush_cache [:before]
+  end
+  if node["eucalyptus"]["network"]["mode"] == "EDGE"
+    yum_package "eucanetd" do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+    end
+    execute "Set ip_forward sysctl values on NC" do
+      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+    end
+    execute "Set bridge-nf-call-iptables sysctl values on NC" do
+      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+    end
+    execute "Reload sysctl values on NC" do
+      command "sysctl -p"
+    end
+  end
+else
+  include_recipe "eucalyptus::install-source"
+end
+
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
   source "ifcfg-eth.erb"
@@ -47,31 +73,6 @@ execute "network-restart" do
   action :nothing
 end
 
-## Install packages for the NC
-if node["eucalyptus"]["install-type"] == "packages"
-  yum_package "eucalyptus-nc" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-    flush_cache [:before]
-  end
-  if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    yum_package "eucanetd" do
-      action :upgrade
-      options node['eucalyptus']['yum-options']
-    end
-    execute "Set ip_forward sysctl values on NC" do
-      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
-    end
-    execute "Set bridge-nf-call-iptables sysctl values on NC" do
-      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
-    end
-    execute "Reload sysctl values on NC" do
-      command "sysctl -p"
-    end
-  end
-else
-  include_recipe "eucalyptus::install-source"
-end
 
 service "messagebus" do
   supports :status => true, :restart => true, :reload => true
