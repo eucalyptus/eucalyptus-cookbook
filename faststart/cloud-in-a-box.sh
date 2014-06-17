@@ -659,7 +659,7 @@ echo "  tail -f $LOGFILE"
 
 if [ "$nc_install_only" == "0" ]; then
     echo ""
-    echo "Your  cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
+    echo "Your cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
     echo ""
 else
     echo ""
