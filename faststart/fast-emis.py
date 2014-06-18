@@ -44,14 +44,14 @@ temp_dir_prefix = "emis"
 ### Answer from:
 ### http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
 class bcolors:
-    HEADER = '\033[95m'
+    HEADER = '\033[37m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
 
-def get_input():
+def main_menu():
     return raw_input("Would you like to install an image? (Y/n): ").strip()
 
 
@@ -64,6 +64,9 @@ def print_error(message):
 
 def print_warning(message):
     print bcolors.WARNING + message + bcolors.ENDC
+
+def print_info(message):
+    print bcolors.HEADER + message + bcolors.ENDC
 
 def check_dependencies():
     ### Check that euca2ools 3.1.0 is installed
@@ -99,7 +102,7 @@ def get_image(number):
 def print_catalog():
     catalog = get_catalog()
     format_spec = '{0:3} {1:20} {2:20} {3:20}'
-    print format_spec.format("id", "version", "created-date", "description")
+    print_info(format_spec.format("id", "version", "created-date", "description"))
     image_number = 1
     for image in catalog:
         print format_spec.format(str(image_number), image["version"],
@@ -117,7 +120,7 @@ def install_image():
                                    "would like to install: "))
             image = get_image(number - 1)
         except (ValueError, KeyError, IndexError):
-            print "Invalid image selected"
+            print_error("Invalid image selected")
     image_name = image["os"] + "-" + image["created-date"]
 
     ### Check if image is already registered
@@ -134,24 +137,24 @@ def install_image():
 
     ### Download image
     download_path = tmpdir.strip() + "/" + image_name + ".raw.xz"
-    print "Downloading image to: " + download_path
+    print_info("Downloading image to: " + download_path)
     if call(["curl", image["url"], "-o", download_path]):
         print_error("Image download failed attempting to download:\n" + image["url"])
         sys.exit(1)
 
-    print "Decompressing image..."
+    print_info("Decompressing image...")
     if call(["xz", "-d", download_path]):
         print_error("Unable to decompress image downloaded to: " + download_path)
         sys.exit(1)
     image_path = download_path.strip(".xz")
-    print "Decompressed image can be found at: " + image_path
+    print_error("Decompressed image can be found at: " + image_path)
 
-    print "Installing image to bucket: " + image_name
+    print_error("Installing image to bucket: " + image_name)
     install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".\
         format(image_path, image_name)
 
-    print "Running installation command: "
-    print install_cmd
+    print_info("Running installation command: ")
+    print_info(install_cmd)
     if call(install_cmd.split()):
         print_error("Unable to install image that was downloaded to: \n" + download_path)
         sys.exit(1)
@@ -179,8 +182,7 @@ def welcome_message():
 
 def exit_message():
     print
-    print "For more information visit:\n" \
-          "\thttp://emis.eucalyptus.com"
+    print_info("For more information visit:\n\thttp://emis.eucalyptus.com")
 
 if __name__ == "__main__":
     check_dependencies()
@@ -189,7 +191,7 @@ if __name__ == "__main__":
         while 1:
             try:
                 print_catalog()
-                input = get_input()
+                input = main_menu()
             except ValueError:
                 input = 0
             if input == 'y' or input == 'Y' or input == '':
