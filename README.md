@@ -140,7 +140,7 @@ Some common attributes are:
 Usage
 -----
 For cloud-in-a-box installs look at...
-[Eucadev](https://github.com/eucalyptus/eucadev)
+[Eucadev](https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md)
 
 For distributed topologies...
 [Deployment with motherbrain](http://testingclouds.wordpress.com/2014/03/24/install-eucalyptus-4-0-using-motherbrain-and-chef/)
