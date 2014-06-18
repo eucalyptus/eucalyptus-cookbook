@@ -41,6 +41,16 @@ import re
 catalog_url = "http://emis.eucalyptus.com/catalog-web"
 temp_dir_prefix = "emis"
 
+### Answer from:
+### http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
 def get_input():
     return raw_input("Would you like to install an image? (Y/n): ").strip()
 
@@ -49,6 +59,11 @@ def check_output(command):
     process = Popen(command.split(), stdout=PIPE)
     return process.communicate()
 
+def print_error(message):
+    print bcolors.FAIL + message + bcolors.ENDC
+
+def print_warning(message):
+    print bcolors.WARNING + message + bcolors.ENDC
 
 def check_dependencies():
     ### Check that euca2ools 3.1.0 is installed
@@ -56,22 +71,20 @@ def check_dependencies():
         import euca2ools
         (major, minor, patch) = euca2ools.__version__.split('-')[0].split('.')
         if int(major) < 3 or (int(major) >= 3 and int(minor) < 1):
-            print "Euca2ools version 3.1.0 or newer required."
+            print_error("Euca2ools version 3.1.0 or newer required.")
             sys.exit(1)
     except ImportError:
-        print "Euca2ools not found. Instructions can be found here:"
-        print "https://www.eucalyptus.com/docs/eucalyptus/4.0/index.html#shared/installing_euca2ools.html"
+        print_error("Euca2ools not found. Instructions can be found here:\n"\
+                    "https://www.eucalyptus.com/docs/eucalyptus/4.0/index.html#shared/installing_euca2ools.html")
         sys.exit(1)
 
     ### Check that creds are sourced
     env = os.environ.copy()
     if not "EC2_URL" in env:
-        print >> sys.stderr, "Error: Unable to find EC2_URL"
-        print >> sys.stderr, "Make sure your eucarc is sourced."
+        print_error("Error: Unable to find EC2_URL\nMake sure your eucarc is sourced.")
         sys.exit(1)
     if not "S3_URL" in env:
-        print >> sys.stderr, "Error: Unable to find EC2_URL"
-        print >> sys.stderr, "Make sure your eucarc is sourced."
+        print_error("Error: Unable to find EC2_URL\nMake sure your eucarc is sourced.")
         sys.exit(1)
 
 
@@ -111,9 +124,8 @@ def install_image():
     describe_images = "euca-describe-images --filter name={0}".format(image_name)
     (stdout, stderr) = check_output(describe_images)
     if re.search(image_name, stdout):
-        print
-        print "Image is already registered with this name: " + image_name
-        print stdout
+        print_warning("Image is already registered with this name: " + image_name)
+        print_warning(stdout)
         return
     directory_format = '{0}-{1}.XXXXXXXX'.format(temp_dir_prefix, image["os"])
 
@@ -124,25 +136,24 @@ def install_image():
     download_path = tmpdir.strip() + "/" + image_name + ".raw.xz"
     print "Downloading image to: " + download_path
     if call(["curl", image["url"], "-o", download_path]):
-        print "Image download failed attempting to download: "
-        print image["url"]
+        print_error("Image download failed attempting to download:\n" + image["url"])
         sys.exit(1)
 
     print "Decompressing image..."
     if call(["xz", "-d", download_path]):
-        print "Unable to decompress image downloaded to: "
-        print download_path
+        print_error("Unable to decompress image downloaded to: " + download_path)
         sys.exit(1)
     image_path = download_path.strip(".xz")
     print "Decompressed image can be found at: " + image_path
 
     print "Installing image to bucket: " + image_name
-    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".format(image_path, image_name)
+    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1} -d \"{2}\"".\
+        format(image_path, image_name, image["description"])
+
     print "Running installation command: "
     print install_cmd
     if call(install_cmd.split()):
-        print "Unable to install image that was downloaded to: "
-        print download_path
+        print_error("Unable to install image that was downloaded to: \n" + download_path)
         sys.exit(1)
 
 
