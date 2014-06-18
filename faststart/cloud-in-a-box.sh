@@ -564,8 +564,8 @@ done
 echo "SUBNET="$ciab_subnet
 echo ""
 
-# We only ask for IP range if this system is a front-end.
-# Thus, if it's going to be an NC, we skip these questions.
+# We only ask certain questions for CIAB installs. Thus, if
+# we're only installing the NC, we'll skip the following questions.
 
 if [ "$nc_install_only" == "0" ]; then
     echo "You must now specify a range of IP addresses that are free"
@@ -622,6 +622,7 @@ if [ "$nc_install_only" == "0" ]; then
         fi
 
     done
+
 fi
 
 # Decide which template we're using.
@@ -707,7 +708,7 @@ fi
 if [ "$nc_install_only" == "0" ]; then
 
 #
-# CLOUD-IN-A-BOX INSTALL SUCCESSFUL
+# FINISH CLOUD-IN-A-BOX INSTALL
 #
     # Add tipoftheday to the console
     sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?id=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
@@ -724,13 +725,61 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
     echo "[Config] Adding ssh and http to default security group"
     source ~/eucarc && euca-authorize -P tcp -p 22 default
     source ~/eucarc && euca-authorize -P tcp -p 80 default
-
     echo ""
     echo ""
     echo "[SUCCESS] Eucalyptus installation complete!"
     total_time=$(timer $t)
     printf 'Time to install: %s\n' $total_time
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
+
+    echo ""
+    echo "* * * * *"
+    echo "Do you wish to install the optional load balancer and image"
+    echo "management services? This will take another 10-15 minutes." 
+    echo "Install additional services? [y/N]"
+    read continue_disk
+    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
+    then 
+        echo "Stopped by user request."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NOT_ENOUGH_DISK_SPACE&id=$uuid" >> /tmp/fsout.log
+        exit 1
+    else
+        echo "[Config] Setting up load balancer and imaging services"
+        yum install -y eucalyptus-load-balancer-image eucalyptus-imaging-worker-image
+        if [ "$?" != "0" ]; then
+            echo "====="
+            echo "[FATAL] Failed to yum install load balancer and/or imaging packages"
+            echo ""
+            echo "See $LOGFILE for details.  This may be a transient error;"
+            echo "please try the installation again."
+            curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=YUM_INSTALL_LB_OR_IMGSVC_FAILED&id=$uuid" >> /tmp/fsout.log
+            exit 30
+        fi
+        euca-install-load-balancer --install-default
+        if [ "$?" != "0" ]; then
+            echo "====="
+            echo "[FATAL] Failed to install load balancer"
+            echo ""
+            echo "See $LOGFILE for details.  This may be a transient error;"
+            echo "please try the installation again."
+            curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=INSTALL_LB_FAILED&id=$uuid" >> /tmp/fsout.log
+            exit 30
+        fi
+        euca-install-imaging-worker --install-default
+        if [ "$?" != "0" ]; then
+            echo "====="
+            echo "[FATAL] Failed to install imaging service"
+            echo ""
+            echo "See $LOGFILE for details.  This may be a transient error;"
+            echo "please try the installation again."
+            curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=INSTALL_IMGCSVC_FAILED&id=$uuid" >> /tmp/fsout.log
+            exit 30
+        fi
+        echo "[Config] Load balancer and imaging services installed."
+        echo "* * * * *"
+        echo ""
+        echo ""
+    fi
 
     # Add links to the /etc/motd file
     tutorial_path=`pwd`
