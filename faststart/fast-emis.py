@@ -147,8 +147,8 @@ def install_image():
     print "Decompressed image can be found at: " + image_path
 
     print "Installing image to bucket: " + image_name
-    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1} --description '{2}'".\
-        format(image_path, image_name, image["description"])
+    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".\
+        format(image_path, image_name)
 
     print "Running installation command: "
     print install_cmd
