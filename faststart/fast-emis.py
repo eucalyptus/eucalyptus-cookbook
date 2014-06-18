@@ -147,7 +147,7 @@ def install_image():
     print "Decompressed image can be found at: " + image_path
 
     print "Installing image to bucket: " + image_name
-    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1} -d \"{2}\"".\
+    install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1} --description '{2}'".\
         format(image_path, image_name, image["description"])
 
     print "Running installation command: "
@@ -198,7 +198,7 @@ if __name__ == "__main__":
                 exit_message()
                 sys.exit(0)
             else:
-                print "Invalid selection: " + str(input)
+                print_error("Invalid selection: " + str(input))
     except KeyboardInterrupt:
         exit_message()
 
