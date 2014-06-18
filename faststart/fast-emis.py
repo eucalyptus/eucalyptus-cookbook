@@ -31,37 +31,49 @@
 # Author: Vic Iglesias vic.iglesias@eucalyptus.com
 #
 import json
+import os
 from subprocess import call, Popen, PIPE
-import urllib
 import sys
+import urllib
+import re
 
-import euca2ools
 
 catalog_url = "http://emis.eucalyptus.com/catalog-web"
 temp_dir_prefix = "emis"
-menu = """1) Install an image
-2) Exit
-"""
-
 
 def get_input():
-    print menu
-    return raw_input("Enter your selection: ").strip()
+    return raw_input("Would you like to install an image? (Y/n): ").strip()
+
 
 def check_output(command):
     process = Popen(command.split(), stdout=PIPE)
     return process.communicate()
 
+
 def check_dependencies():
-    ### Check that euca2ools 3.1.0 is installed and creds are sourced
-    if call(["which", "euca-version"]):
+    ### Check that euca2ools 3.1.0 is installed
+    try:
+        import euca2ools
+        (major, minor, patch) = euca2ools.__version__.split('-')[0].split('.')
+        if int(major) < 3 or (int(major) >= 3 and int(minor) < 1):
+            print "Euca2ools version 3.1.0 or newer required."
+            sys.exit(1)
+    except ImportError:
         print "Euca2ools not found. Instructions can be found here:"
         print "https://www.eucalyptus.com/docs/eucalyptus/4.0/index.html#shared/installing_euca2ools.html"
         sys.exit(1)
-    (major, minor, patch) = euca2ools.__version__.split('-')[0].split('.')
-    if int(major) < 3 or (int(major) >= 3 and int(minor) < 1):
-        print "Euca2ools version 3.1.0 or newer required."
+
+    ### Check that creds are sourced
+    env = os.environ.copy()
+    if not "EC2_URL" in env:
+        print >> sys.stderr, "Error: Unable to find EC2_URL"
+        print >> sys.stderr, "Make sure your eucarc is sourced."
         sys.exit(1)
+    if not "S3_URL" in env:
+        print >> sys.stderr, "Error: Unable to find EC2_URL"
+        print >> sys.stderr, "Make sure your eucarc is sourced."
+        sys.exit(1)
+
 
 def get_catalog():
     return json.loads(urllib.urlopen(catalog_url).read())["images"]
@@ -94,6 +106,15 @@ def install_image():
         except (ValueError, KeyError, IndexError):
             print "Invalid image selected"
     image_name = image["os"] + "-" + image["created-date"]
+
+    ### Check if image is already registered
+    describe_images = "euca-describe-images --filter name={0}".format(image_name)
+    (stdout, stderr) = check_output(describe_images)
+    if re.search(image_name, stdout):
+        print
+        print "Image is already registered with this name: " + image_name
+        print stdout
+        return
     directory_format = '{0}-{1}.XXXXXXXX'.format(temp_dir_prefix, image["os"])
 
     ### Make temp directory
@@ -112,8 +133,10 @@ def install_image():
         print "Unable to decompress image downloaded to: "
         print download_path
         sys.exit(1)
-
     image_path = download_path.strip(".xz")
+    print "Decompressed image can be found at: " + image_path
+
+    print "Installing image to bucket: " + image_name
     install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".format(image_path, image_name)
     print "Running installation command: "
     print install_cmd
@@ -122,19 +145,49 @@ def install_image():
         print download_path
         sys.exit(1)
 
+
+def welcome_message():
+    title = """
+  ______                _             _
+ |  ____|              | |           | |
+ | |__  _   _  ___ __ _| |_   _ _ __ | |_ _   _ ___
+ |  __|| | | |/ __/ _` | | | | | '_ \| __| | | / __|
+ | |___| |_| | (_| (_| | | |_| | |_) | |_| |_| \__ \\
+ |______\__,_|\___\__,_|_|\__, | .__/ \__|\__,_|___/
+                           __/ | |
+  __  __            _     |___/|_|       _____
+ |  \/  |          | |   (_)            |_   _|
+ | \  / | __ _  ___| |__  _ _ __   ___    | |  _ __ ___   __ _  __ _  ___  ___
+ | |\/| |/ _` |/ __| '_ \| | '_ \ / _ \   | | | '_ ` _ \ / _` |/ _` |/ _ \/ __|
+ | |  | | (_| | (__| | | | | | | |  __/  _| |_| | | | | | (_| | (_| |  __/\__ \\
+ |_|  |_|\__,_|\___|_| |_|_|_| |_|\___| |_____|_| |_| |_|\__,_|\__, |\___||___/
+                                                                __/ |
+                                                               |___/           """
+    print title
+
+
+def exit_message():
+    print
+    print "For more information visit:\n" \
+          "\thttp://emis.eucalyptus.com"
+
 if __name__ == "__main__":
     check_dependencies()
-    while 1:
-        try:
-            print_catalog()
-            input = int(get_input())
-        except ValueError:
-            input = 0
-        if input == 1:
-            install_image()
-        elif input == 2:
-            print "For more information visit:\n" \
-                  "\thttp://emis.eucalyptus.com"
-            exit(0)
-        else:
-            print "Invalid selection: " + str(input)
+    welcome_message()
+    try:
+        while 1:
+            try:
+                print_catalog()
+                input = get_input()
+            except ValueError:
+                input = 0
+            if input == 'y' or input == 'Y' or input == '':
+                install_image()
+            elif input == 'n' or input == 'N':
+                exit_message()
+                sys.exit(0)
+            else:
+                print "Invalid selection: " + str(input)
+    except KeyboardInterrupt:
+        exit_message()
+
