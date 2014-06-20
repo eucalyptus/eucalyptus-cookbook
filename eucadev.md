@@ -19,9 +19,9 @@ This method produces a dev/test environment in a single virtual machine, with al
         $ vagrant plugin install vagrant-berkshelf --plugin-version '>= 2.0.1'
         $ vagrant plugin install vagrant-omnibus
 
-5. Check out [eucadev](https://github.com/eucalyptus/eucadev) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute):
+5. Check out [eucadev](https://github.com/eucalyptus/eucalyptus-cookbook/eucadev.md) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute):
 
-        $ git clone https://github.com/eucalyptus/eucadev.git
+        $ git clone https://github.com/eucalyptus/eucalyptus-cookbook.git
 
 6. *Optionally:* Check the default parameters in `eucadev/Vagrantfile` and `eucadev/roles/cloud-in-a-box.json`
   * `install-type` is `"source"` by default. Set the value to `"packages"` for an RPM-based installation,  which can take less than half the time of a source install (e.g., 20 min instead of 48), but won't allow you to edit and re-deploy code easily.
@@ -137,9 +137,9 @@ This method produces a dev/test environment in a single cloud instance, with all
         $ vagrant plugin install vagrant-omnibus
         $ vagrant plugin install vagrant-aws
         
-4. Check out [eucadev](https://github.com/eucalyptus/eucadev) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute)
+4. Check out [eucadev](https://github.com/eucalyptus/eucalyptus-cookbook/eucadev.md) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute)
 
-        $ git clone https://github.com/eucalyptus/eucadev.git
+        $ git clone https://github.com/eucalyptus/eucalyptus-cookbook.git
         
 5. Set the parameters in `eucadev/Vagrantfile` and, optionally, in `eucadev/roles/cloud-in-a-box.json`
   * `install-type` is `"source"` by default. Set the value to `"packages"` for an RPM-based installation,  which can take less than half the time of a source install (e.g., 20 min instead of 48), but won't allow you to edit and re-deploy code easily.
