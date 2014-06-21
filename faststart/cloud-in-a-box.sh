@@ -623,6 +623,19 @@ if [ "$nc_install_only" == "0" ]; then
 
     done
 
+    echo ""
+    echo "Do you wish to install the optional load balancer and image"
+    echo "management services? This add 10-15 minutes to the installation." 
+    echo "Install additional services? [Y/n]"
+    read continue_services
+    if [ "$continue_services" = "n" ] || [ "$continue_services" = "N" ]
+    then 
+        echo "OK, additional services will not be installed."
+        echo ""
+    else
+        echo "OK, additional services will be installed."
+        continue_services="Y"
+    fi
 fi
 
 # Decide which template we're using.
@@ -659,9 +672,15 @@ echo ""
 echo "  tail -f $LOGFILE"
 
 if [ "$nc_install_only" == "0" ]; then
-    echo ""
-    echo "Your  cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
-    echo ""
+    if [ "$continue_services" == "Y" ]; then
+        echo ""
+        echo "Your cloud-in-a-box should be installed in 30-45 minutes. Go have a cup of coffee!"
+        echo ""
+    else
+        echo ""
+        echo "Your cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
+        echo ""
+    fi
 else
     echo ""
     echo "Your node controller should be installed in a few minutes. Go have a cup of coffee!"
@@ -725,25 +744,9 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
     echo "[Config] Adding ssh and http to default security group"
     source ~/eucarc && euca-authorize -P tcp -p 22 default
     source ~/eucarc && euca-authorize -P tcp -p 80 default
-    echo ""
-    echo ""
-    echo "[SUCCESS] Eucalyptus installation complete!"
-    total_time=$(timer $t)
-    printf 'Time to install: %s\n' $total_time
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
-
-    echo ""
-    echo "* * * * *"
-    echo "Do you wish to install the optional load balancer and image"
-    echo "management services? This will take another 10-15 minutes." 
-    echo "Install additional services? [y/N]"
-    read continue_disk
-    if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
-    then 
-        echo "Stopped by user request."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NOT_ENOUGH_DISK_SPACE&id=$uuid" >> /tmp/fsout.log
-        exit 1
-    else
+    
+    if [ "$continue_services" = "Y" ]; then
+        echo ""
         echo "[Config] Setting up load balancer and imaging services"
         yum install -y eucalyptus-load-balancer-image eucalyptus-imaging-worker-image
         if [ "$?" != "0" ]; then
@@ -780,6 +783,13 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
         echo ""
         echo ""
     fi
+
+    echo ""
+    echo ""
+    echo "[SUCCESS] Eucalyptus installation complete!"
+    total_time=$(timer $t)
+    printf 'Time to install: %s\n' $total_time
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
     # Add links to the /etc/motd file
     tutorial_path=`pwd`
