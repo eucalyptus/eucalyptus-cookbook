@@ -48,4 +48,4 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   execute "chmod +x #{tools_dir}/eucanetd"
 end
 
-execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
+execute "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup -d #{node["eucalyptus"]["home-directory"]}"

@@ -45,6 +45,11 @@ template "eucalyptus.conf" do
   action :create
 end
 
+service "eucalyptus-cc" do
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
+end
+
 ruby_block "Register nodes" do
   block do
     nodes = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"]
@@ -55,9 +60,4 @@ ruby_block "Register nodes" do
     end
   end
   not_if "#{Chef::Config[:solo]}"
-end
-
-service "eucalyptus-cc" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
 end
