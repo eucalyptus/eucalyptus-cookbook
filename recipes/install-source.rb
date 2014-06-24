@@ -17,16 +17,9 @@
 ##    limitations under the License.
 ##
 execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
-execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-  cwd "#{node["eucalyptus"]["source-directory"]}/eucalyptus/"
-  only_if "ls #{node["eucalyptus"]["source-directory"]}/eucalyptus/clc"
-  creates "/etc/init.d/eucalyptus-cloud"
-  timeout node["eucalyptus"]["compile-timeout"]
-end
 
 execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
   cwd "#{node["eucalyptus"]["source-directory"]}/"
-  only_if "ls #{node["eucalyptus"]["source-directory"]}/clc"
   creates "/etc/init.d/eucalyptus-cloud"
   timeout node["eucalyptus"]["compile-timeout"]
 end
@@ -48,4 +41,4 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   execute "chmod +x #{tools_dir}/eucanetd"
 end
 
-execute "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup"
+execute "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup -d #{node["eucalyptus"]["home-directory"]}"

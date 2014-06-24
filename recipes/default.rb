@@ -152,6 +152,7 @@ if node["eucalyptus"]["install-type"] == "source"
   ### Checkout Eucalyptus Source
   execute "Checkout source" do
     command "git clone #{node['eucalyptus']['source-repo']} -b #{node['eucalyptus']['source-branch']} #{node['eucalyptus']['source-directory']}"
+    not_if "ls #{node['eucalyptus']['source-directory']}"
   end
 
   execute "Init submodules" do
