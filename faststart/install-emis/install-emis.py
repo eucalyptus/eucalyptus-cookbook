@@ -81,6 +81,19 @@ def check_dependencies():
                     "https://www.eucalyptus.com/docs/eucalyptus/4.0/index.html#shared/installing_euca2ools.html")
         sys.exit(1)
 
+    while call(["which", "xz"], stdout=PIPE, stderr=PIPE):
+        print_error("Unable to find xz binary.")
+        response = raw_input("Would you like to install xz now? (Y/n) ")
+        if response == "" or response == 'y' or response == 'Y':
+            if call(["yum", "install", "-y", "xz"]):
+                print_error("Failed to install xz.")
+                sys.exit(1)
+        elif response == 'n' or response == 'N':
+            print_info("Please install xz and try again.")
+            sys.exit(1)
+        else:
+            print_error("Invalid response.")
+
     ### Check that creds are sourced
     env = os.environ.copy()
     if not "EC2_URL" in env:
@@ -147,9 +160,9 @@ def install_image():
         print_error("Unable to decompress image downloaded to: " + download_path)
         sys.exit(1)
     image_path = download_path.strip(".xz")
-    print_error("Decompressed image can be found at: " + image_path)
+    print_info("Decompressed image can be found at: " + image_path)
 
-    print_error("Installing image to bucket: " + image_name)
+    print_info("Installing image to bucket: " + image_name)
     install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".\
         format(image_path, image_name)
 
