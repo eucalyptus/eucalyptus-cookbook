@@ -446,7 +446,8 @@ fi
 rm -rf cookbooks
 mkdir -p cookbooks
 pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
+#git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
+git clone https://github.com/gregdek/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
 if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
@@ -564,8 +565,8 @@ done
 echo "SUBNET="$ciab_subnet
 echo ""
 
-# We only ask for IP range if this system is a front-end.
-# Thus, if it's going to be an NC, we skip these questions.
+# We only ask certain questions for CIAB installs. Thus, if
+# we're only installing the NC, we'll skip the following questions.
 
 if [ "$nc_install_only" == "0" ]; then
     echo "You must now specify a range of IP addresses that are free"
@@ -622,6 +623,21 @@ if [ "$nc_install_only" == "0" ]; then
         fi
 
     done
+
+    echo ""
+    echo "Do you wish to install the optional load balancer and image"
+    echo "management services? This add 10-15 minutes to the installation." 
+    echo "Install additional services? [Y/n]"
+    read continue_services
+    if [ "$continue_services" = "n" ] || [ "$continue_services" = "N" ]
+    then 
+        echo "OK, additional services will not be installed."
+        ciab_extraservices="false"
+        echo ""
+    else
+        echo "OK, additional services will be installed."
+        ciab_extraservices="true"
+    fi
 fi
 
 # Decide which template we're using.
@@ -640,6 +656,7 @@ sed -i "s/PUBLICIPS1/$ciab_publicips1/g" $chef_template
 sed -i "s/PUBLICIPS2/$ciab_publicips2/g" $chef_template
 sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
+sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
 
 ###############################################################################
@@ -658,9 +675,15 @@ echo ""
 echo "  tail -f $LOGFILE"
 
 if [ "$nc_install_only" == "0" ]; then
-    echo ""
-    echo "Your cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
-    echo ""
+    if [ "$ciab_extraservices" == "true" ]; then
+        echo ""
+        echo "Your cloud-in-a-box should be installed in 30-45 minutes. Go have a cup of coffee!"
+        echo ""
+    else
+        echo ""
+        echo "Your cloud-in-a-box should be installed in 15-20 minutes. Go have a cup of coffee!"
+        echo ""
+    fi
 else
     echo ""
     echo "Your node controller should be installed in a few minutes. Go have a cup of coffee!"
@@ -707,7 +730,7 @@ fi
 if [ "$nc_install_only" == "0" ]; then
 
 #
-# CLOUD-IN-A-BOX INSTALL SUCCESSFUL
+# FINISH CLOUD-IN-A-BOX INSTALL
 #
     # Add tipoftheday to the console
     sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?id=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
@@ -724,7 +747,7 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
     echo "[Config] Adding ssh and http to default security group"
     source ~/eucarc && euca-authorize -P tcp -p 22 default
     source ~/eucarc && euca-authorize -P tcp -p 80 default
-
+    
     echo ""
     echo ""
     echo "[SUCCESS] Eucalyptus installation complete!"
