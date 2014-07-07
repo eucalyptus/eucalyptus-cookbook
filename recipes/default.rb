@@ -100,6 +100,7 @@ yum_repository "euca2ools-release" do
   description "Euca2ools Package Repo"
   url node["eucalyptus"]["euca2ools-repo"]
   gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  metadata_expire "1"
 end
 
 remote_file "/tmp/epel-release.rpm" do
@@ -136,6 +137,7 @@ if node["eucalyptus"]["install-type"] == "source"
     description "Eucalyptus Build Dependencies repo"
     url node['eucalyptus']['build-deps-repo']
     action :add
+    metadata_expire "1"
   end
 
   ### This is a source install so we need the build time deps and runtime deps
@@ -188,6 +190,7 @@ if node["eucalyptus"]["install-type"] == "source"
     url node['eucalyptus']['vddk-libs-repo']
     action :add
     only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+    metadata_expire "1"
   end
 
   yum_package "vmware-vix-disklib" do
