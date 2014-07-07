@@ -45,6 +45,7 @@ end
 
 execute "Flush and save iptables" do
   command "iptables -F; iptables -F -t nat; iptables-save > /etc/sysconfig/iptables"
+  not_if "service eucalyptus-cc status || service eucanetd status || service eucalyptus-cloud status || service eucalyptus-nc status"
 end
 
 ## Setup NTP
