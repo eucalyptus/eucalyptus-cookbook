@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/eucalyptus/eucalyptus-cookbook.png?label=ready&title=Ready)](https://waffle.io/eucalyptus/eucalyptus-cookbook)
 eucalyptus Cookbook
 ===================
 This cookbook installs and configures Eucalyptus on CentOS 6 physical and virtual machines. Source and package installations are supported.
