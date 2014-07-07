@@ -64,13 +64,35 @@ yum_repository "eucalyptus-release" do
   description "Eucalyptus Package Repo"
   url node["eucalyptus"]["eucalyptus-repo"]
   gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  metadata_expire "1"
 end
 
 if Eucalyptus::Enterprise.is_enterprise?(node)
+  cert_file = "/etc/pki/tls/certs/eucalyptus-enterprise.crt"
+  key_file = "/etc/pki/tls/private/eucalyptus-enterprise.key"
+  file cert_file do
+    content <<-EOH
+    -----BEGIN CERTIFICATE-----
+    #{node['eucalyptus']['enterprise']['clientcert']}
+    -----END CERTIFICATE-----
+    EOH
+    mode "0700"
+  end
+  file key_file do
+    content <<-EOH
+    -----BEGIN RSA PRIVATE KEY-----
+    #{node['eucalyptus']['enterprise']['clientkey']}
+    -----END RSA PRIVATE KEY-----
+    EOH
+    mode "0700"
+  end
   yum_repository "eucalyptus-enterprise-release" do
     description "Eucalyptus Enterprise Package Repo"
     url node["eucalyptus"]["enterprise-repo"]
     gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+    sslclientcert cert_file
+    sslclientkey key_file
+    metadata_expire "1"
   end
 end
 
