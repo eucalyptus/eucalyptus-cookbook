@@ -26,7 +26,7 @@ service "eucanetd" do
   action [ :stop ]
 end
 
-execute "eucanetd -F" do
+execute "eucanetd -F || true" do
   only_if "which eucanetd"
 end
 
@@ -135,10 +135,6 @@ if node['eucalyptus']['install-type'] == 'source'
   end
 end
 
-execute "Clear yum cache" do
-  command "yum clean all"
-end
-
 ## Delete File system artifacts
 directory '/etc/eucalyptus' do
   recursive true
@@ -205,10 +201,12 @@ execute 'delete tgtdadm eucalyptus account' do
   only_if 'tgtadm --mode account --op show | grep eucalyptus'
 end
 
-execute "yum clean all"
-
 directory "/var/chef/cache" do
   recursive true
   action :delete
   only_if "ls /var/chef/cache"
+end
+
+execute "Clear yum cache" do
+  command "yum clean all"
 end
