@@ -42,13 +42,6 @@ execute "Initialize Eucalyptus DB" do
  creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
 end
 
-ruby_block "Upload cloud keys Chef Server" do
-  block do
-    Eucalyptus::KeySync.upload_cloud_keys(node)
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
 if Eucalyptus::Enterprise.is_enterprise?(node)
   if Eucalyptus::Enterprise.is_san?(node)
     node['eucalyptus']['topology']['clusters'].each do |cluster, info|

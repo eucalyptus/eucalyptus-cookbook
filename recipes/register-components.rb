@@ -26,6 +26,13 @@ execute "wait-for-credentials" do
   retry_delay 30
 end
 
+ruby_block "Upload cloud keys Chef Server" do
+  block do
+    Eucalyptus::KeySync.upload_cloud_keys(node)
+  end
+  not_if "#{Chef::Config[:solo]}"
+end
+
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
 command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
@@ -64,7 +71,7 @@ clusters.each do |cluster, info|
     block do
       %w(cloud-cert.pem cluster-cert.pem cluster-pk.pem node-cert.pem node-pk.pem vtunpass).each do |key_name|
         cert = Base64.encode64(::File.new("#{cluster_keys_dir}/#{key_name}").read)
-        node.set['eucalyptus']['cloud-keys'][cluster][key_name] = cert
+        node.override['eucalyptus']['cloud-keys'][cluster][key_name] = cert
         node.save
       end
     end

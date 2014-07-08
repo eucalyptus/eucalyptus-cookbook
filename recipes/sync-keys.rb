@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: register-nodes
+# Recipe:: sync-keys
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
@@ -17,63 +17,28 @@
 ##    limitations under the License.
 ##
 
-if node.recipe?("walrus")
-  ruby_block "Get cloud keys for walrus service" do
-    block do
+ruby_block "Synchronize cloud keys" do
+  block do
+    if node.recipe?("eucalyptus::walrus") or node.recipe?("eucalyptus::user-facing")
       Eucalyptus::KeySync.get_cloud_keys(node)
-    end
-    not_if "#{Chef::Config[:solo]}"
-  end
-end
-
-if node.recipe?("user-facing")
-  ruby_block "Get cloud keys for user-facing service" do
-    block do
-      Eucalyptus::KeySync.get_cloud_keys(node)
-    end
-    not_if "#{Chef::Config[:solo]}"
-  end
-end
-
-if node.recipe?("cluster-controller") or node.recipe?("storage-controller")
-  ruby_block "Sync cluster keys" do
-    block do
+    elsif node.recipe?("eucalyptus::storage-controller")
+      Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+    elsif node.recipe?("eucalyptus::node-controller")
+      Eucalyptus::KeySync.get_node_keys(node)
+    elsif node.recipe?("eucalyptus::cluster-controller")
       Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
-    end
-    not_if "#{Chef::Config[:solo]}"
-    notifies :restart, "service[eucalyptus-cc]", :immediately
-  end
-end
-
-
-if node.recipe?("cluster-controller")
-  ruby_block "Register nodes" do
-    block do
       nc_nodes = search(:node, "chef_environment:#{node.chef_environment} AND recipe:\"eucalyptus\\:\\:node-controller\"")
       nc_ips = []
       nc_nodes.each do |nc_node|
         nc_ips << nc_node[:ipaddress]
       end
       Chef::Log.info "Node list is: #{@nc_ips}"
-      topology = data_bag_item("eucalyptus", "topology")
-      topology['clusters'][node["eucalyptus"]["local-cluster-name"]]['nodes'] = nc_ips
-      topology.save
       nc_ips.each do |nc_ip|
         r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
         r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
         r.run_action :run
       end
     end
-    not_if "#{Chef::Config[:solo]}"
   end
-end
-
-if node.recipe?("node-controller")
-  ruby_block "Get node keys from CC" do
-    block do
-      Eucalyptus::KeySync.get_node_keys(node)
-    end
-    not_if "#{Chef::Config[:solo]}"
-    notifies :restart, "service[eucalyptus-nc]", :immediately
-  end
+  not_if "#{Chef::Config[:solo]}"
 end
