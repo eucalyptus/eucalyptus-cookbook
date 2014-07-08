@@ -121,6 +121,16 @@ if node['eucalyptus']['install-type'] == 'source'
     action :remove
   end
 
+  execute 'Remove init script symlinks' do
+    command 'rm -rf /etc/init.d/euca*'
+  end
+
+  directory "#{node['eucalyptus']['home-directory']}/usr/share/eucalyptus" do
+    recursive true
+    action :delete
+    only_if "ls #{node['eucalyptus']['home-directory']}/usr/share/eucalyptus"
+  end
+
   directory "#{node['eucalyptus']['home-directory']}/source" do
     recursive true
     action :delete

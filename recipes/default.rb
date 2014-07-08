@@ -154,35 +154,45 @@ if node["eucalyptus"]["install-type"] == "source"
   end
 
   ### Runtime deps
-  %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c 
-    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils 
-    dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod 
-    drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm 
+  %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c
+    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
+    dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod
+    drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
     PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
-    openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random 
-    postgresql91 postgresql91-server python-boto python-devel python-setuptools 
-    rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig 
+    openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
+    postgresql91 postgresql91-server python-boto python-devel python-setuptools
+    rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
     velocity vtun wget which xalan-j2-xsltc ipset ebtables}.each do |dependency|
     yum_package dependency do
       options node['eucalyptus']['yum-options']
       action :upgrade
     end
   end
-  
+
   ### Get WSDL2C
   execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
     cwd node["eucalyptus"]["home-directory"]
   end
 
+  execute "Remove source" do
+    command "rm -rf #{node['eucalyptus']['source-directory']}"
+    only_if "#{node['eucalyptus']['rm-source-dir']}"
+  end
+
   ### Checkout Eucalyptus Source
-  execute "Checkout source" do
-    command "git clone #{node['eucalyptus']['source-repo']} -b #{node['eucalyptus']['source-branch']} #{node['eucalyptus']['source-directory']}"
+  execute "Clone source repo" do
+    command "git clone #{node['eucalyptus']['source-repo']} #{node['eucalyptus']['source-directory']}"
     not_if "ls #{node['eucalyptus']['source-directory']}"
   end
 
+  execute "Checkout source branch" do
+    command "git checkout #{node['eucalyptus']['source-branch']}"
+    cwd "#{node['eucalyptus']['source-directory']}"
+  end
+
   execute "Init submodules" do
-    cwd "#{node["eucalyptus"]["source-directory"]}"
     command "git submodule init && git submodule update"
+    cwd "#{node["eucalyptus"]["source-directory"]}"
   end
 
   yum_repository "euca-vmware-libs" do
