@@ -17,7 +17,7 @@
 ##    limitations under the License.
 ##
 
-return if node.recipe?("cloud-controller")
+return if node.recipe?("eucalyptus::cloud-controller")
 
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
   bind_addr = node["ipaddress"]
