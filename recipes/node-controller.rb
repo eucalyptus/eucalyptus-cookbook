@@ -110,13 +110,6 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
   action :create
 end
 
-ruby_block "Get node keys from CC" do
-  block do
-    Eucalyptus::KeySync.get_node_keys(node)
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
 if node["eucalyptus"]["nc"]["install-qemu-migration"]
   bash "Installing qemu-kvm that works for migration" do
     code <<-EOH

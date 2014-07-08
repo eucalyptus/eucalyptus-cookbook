@@ -36,13 +36,6 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-ruby_block "Sync SC keys" do
-  block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
 template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   path "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"

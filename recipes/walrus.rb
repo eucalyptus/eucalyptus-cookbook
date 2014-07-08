@@ -41,13 +41,6 @@ template "eucalyptus.conf" do
   action :create
 end
 
-ruby_block "Get cloud keys for walrus service" do
-  block do
-    Eucalyptus::KeySync.get_cloud_keys(node)
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
