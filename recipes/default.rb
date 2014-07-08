@@ -92,6 +92,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
     gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
     sslclientcert cert_file
     sslclientkey key_file
+    sslverify node['eucalyptus']['enterprise']['sslverify']
     metadata_expire "1"
   end
 end
