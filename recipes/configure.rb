@@ -127,3 +127,14 @@ node['eucalyptus']['system-properties'].each do |key, value|
     not_if "#{describe_property} #{key} | grep \"#{value}\""
   end
 end
+
+## Post script
+if node['eucalyptus']['post-script-url'] != ""
+  remote_file "#{node['eucalyptus']['home-directory']}/post.sh" do
+    source node['eucalyptus']['post-script-url']
+    mode "777"
+  end
+  execute 'Running post script' do
+    command "bash #{node['eucalyptus']['home-directory']}/post.sh"
+  end
+end

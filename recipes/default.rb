@@ -16,16 +16,6 @@
 ##    limitations under the License.
 ##
 
-## Create home directory
-if node["eucalyptus"]["home-directory"] != "/"
-  directory node["eucalyptus"]["home-directory"] do
-    owner "eucalyptus"
-    group "eucalyptus"
-    mode 00750
-    action :create
-  end
-end
-
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
@@ -34,6 +24,16 @@ if node['eucalyptus']['init-script-url'] != ""
   end
   execute 'Running init script' do
     command "bash #{node['eucalyptus']['home-directory']}/init.sh"
+  end
+end
+
+## Create home directory
+if node["eucalyptus"]["home-directory"] != "/"
+  directory node["eucalyptus"]["home-directory"] do
+    owner "eucalyptus"
+    group "eucalyptus"
+    mode 00750
+    action :create
   end
 end
 

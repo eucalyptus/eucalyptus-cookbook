@@ -23,6 +23,7 @@ default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
 default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
+default['eucalyptus']['post-script-url'] = ""
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
