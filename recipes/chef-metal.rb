@@ -6,12 +6,16 @@ cluster_config = { "storage-backend" => 'overlay' }
 global_config = { "eucalyptus" => { "install-load-balancer" => false, 
                              "install-imaging-worker" => false } }
 
-with_driver 'fog:AWS', :compute_options => { :aws_access_key_id => 'XNKO4SHYC0XH1OKWDKEVC',
-                                             :aws_secret_access_key => 'CwiaSozGTiLELjnm96iTgOMKLuiht4mcPwkGDWV3'}
+with_driver 'fog:AWS'
+with_chef_server "https://new-qa.qa1.eucalyptus-systems.com",
+  :client_name => "viglesias",
+  :signing_key_filename => "/Users/viglesias/.chef/viglesias.pem"
 with_machine_options ssh_username: 'root', :bootstrap_options => {
-    :image_id => 'emi-E2CC185B',
+    :image_id => 'emi-A6021FA7',
     :flavor_id => 'm2.2xlarge',
     :key_name => key_pair,
+#    :block_device_mapping => [
+#    { 'DeviceName' => '/dev/sda', 'Ebs.VolumeSize' => '10' }],
     :user_data => <<eos
 #!/bin/bash
 ephemeral=/dev/vdb
@@ -20,8 +24,6 @@ mkdir -p $dir
 mkfs.ext4 -F $ephemeral
 mount $ephemeral $dir
 eos
-    #:block_device_mapping => [
-    #{ 'DeviceName' => '/dev/sda', 'Ebs.VolumeSize' => '10' }]
   }
 
 chef_environment chef_env do
