@@ -18,6 +18,7 @@
 ##
 include_recipe "eucalyptus::default"
 
+Eucalyptus::KeySync.get_local_cluster_name(node)
 ### Set bind-addr if necessary
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
   node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][node["eucalyptus"]["local-cluster-name"]]["sc-1"]
