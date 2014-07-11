@@ -41,6 +41,7 @@ default["eucalyptus"]["cloud-keys"] = {}
 default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
 default["eucalyptus"]["compile-timeout"] = 7200
 default["eucalyptus"]["network"]["metadata-use-private-ip"] = "N"
+default["eucalyptus"]["network"]["metadata-ip"] = ""
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 
 ### System properties
