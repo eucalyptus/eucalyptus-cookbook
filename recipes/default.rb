@@ -145,8 +145,8 @@ if node["eucalyptus"]["install-type"] == "source"
   ### Build time first
 
   %w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
-    axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel 
-    libxslt-devel m2crypto openssl-devel python-devel python-setuptools
+    axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
+    libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
     rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
     yum_package dependency do
       options node['eucalyptus']['yum-options']
