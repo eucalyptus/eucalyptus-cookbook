@@ -63,7 +63,7 @@ end
 yum_repository "eucalyptus-release" do
   description "Eucalyptus Package Repo"
   url node["eucalyptus"]["eucalyptus-repo"]
-  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
   metadata_expire "1"
 end
 
@@ -89,7 +89,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   yum_repository "eucalyptus-enterprise-release" do
     description "Eucalyptus Enterprise Package Repo"
     url node["eucalyptus"]["enterprise-repo"]
-    gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+    gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
     sslclientcert cert_file
     sslclientkey key_file
     sslverify node['eucalyptus']['enterprise']['sslverify']
@@ -100,7 +100,7 @@ end
 yum_repository "euca2ools-release" do
   description "Euca2ools Package Repo"
   url node["eucalyptus"]["euca2ools-repo"]
-  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  gpgkey node["eucalyptus"]["euca2ools-gpg-key"]
   metadata_expire "1"
 end
 
