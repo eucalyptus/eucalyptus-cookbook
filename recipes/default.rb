@@ -16,16 +16,6 @@
 ##    limitations under the License.
 ##
 
-## Create home directory
-if node["eucalyptus"]["home-directory"] != "/"
-  directory node["eucalyptus"]["home-directory"] do
-    owner "eucalyptus"
-    group "eucalyptus"
-    mode 00750
-    action :create
-  end
-end
-
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
@@ -34,6 +24,16 @@ if node['eucalyptus']['init-script-url'] != ""
   end
   execute 'Running init script' do
     command "bash #{node['eucalyptus']['home-directory']}/init.sh"
+  end
+end
+
+## Create home directory
+if node["eucalyptus"]["home-directory"] != "/"
+  directory node["eucalyptus"]["home-directory"] do
+    owner "eucalyptus"
+    group "eucalyptus"
+    mode 00750
+    action :create
   end
 end
 
@@ -63,7 +63,7 @@ end
 yum_repository "eucalyptus-release" do
   description "Eucalyptus Package Repo"
   url node["eucalyptus"]["eucalyptus-repo"]
-  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
   metadata_expire "1"
 end
 
@@ -89,9 +89,10 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   yum_repository "eucalyptus-enterprise-release" do
     description "Eucalyptus Enterprise Package Repo"
     url node["eucalyptus"]["enterprise-repo"]
-    gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+    gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
     sslclientcert cert_file
     sslclientkey key_file
+    sslverify node['eucalyptus']['enterprise']['sslverify']
     metadata_expire "1"
   end
 end
@@ -99,7 +100,7 @@ end
 yum_repository "euca2ools-release" do
   description "Euca2ools Package Repo"
   url node["eucalyptus"]["euca2ools-repo"]
-  gpgkey "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+  gpgkey node["eucalyptus"]["euca2ools-gpg-key"]
   metadata_expire "1"
 end
 
@@ -144,8 +145,8 @@ if node["eucalyptus"]["install-type"] == "source"
   ### Build time first
 
   %w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
-    axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel 
-    libxslt-devel m2crypto openssl-devel python-devel python-setuptools
+    axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
+    libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
     rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
     yum_package dependency do
       options node['eucalyptus']['yum-options']

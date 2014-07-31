@@ -6,6 +6,11 @@ default['eucalyptus']['rm-source-dir'] = false
 default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/"
 default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/"
 default["eucalyptus"]["enterprise-repo"] = ""
+default["eucalyptus"]["eucalyptus-gpg-key"] = "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+default["eucalyptus"]["euca2ools-gpg-key"] = "http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub"
+default['eucalyptus']['enterprise']['clientcert'] = "insertclientcerthere"
+default['eucalyptus']['enterprise']['clientkey'] = "insertclientkeyhere"
+default['eucalyptus']['enterprise']['sslverify'] = true
 default['eucalyptus']['load-balancer-repo'] = ""
 default['eucalyptus']['install-load-balancer'] = true
 default['eucalyptus']['imaging-worker-repo'] = ""
@@ -20,6 +25,7 @@ default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
 default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
+default['eucalyptus']['post-script-url'] = ""
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
@@ -37,6 +43,7 @@ default["eucalyptus"]["cloud-keys"] = {}
 default["eucalyptus"]["ntp-server"] = "pool.ntp.org"
 default["eucalyptus"]["compile-timeout"] = 7200
 default["eucalyptus"]["network"]["metadata-use-private-ip"] = "N"
+default["eucalyptus"]["network"]["metadata-ip"] = ""
 default["eucalyptus"]["network"]["mode"] = "MANAGED-NOVLAN"
 
 ### System properties

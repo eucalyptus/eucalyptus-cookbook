@@ -31,7 +31,7 @@ module Eucalyptus
         node.save
       end
     end
-    def self.get_cluster_keys(node, component)
+    def self.set_local_cluster_name(node)
       node["eucalyptus"]["topology"]["clusters"].each do |name, info|
         Chef::Log.info "Found cluster #{name} with attributes: #{info}"
         addresses = []
@@ -41,19 +41,40 @@ module Eucalyptus
           end
         end
         Chef::Log.info "Found addresses: " + addresses.join("  ")
-        if addresses.include?(info[component]) and not Chef::Config[:solo]
-            Chef::Log.info "Setting cluster name to: " + name
-            node.override["eucalyptus"]["local-cluster-name"] = name
-            node.save
+        all_cluster_machines = []
+        all_cluster_machines << info["sc-1"]
+        all_cluster_machines << info["cc-1"]
+        all_cluster_machines << info["nodes"].split()
+        all_cluster_machines.each do |ip|
+          if addresses.include?(ip) and not Chef::Config[:solo]
+              Chef::Log.info "Setting cluster name to: " + name
+              node.override["eucalyptus"]["local-cluster-name"] = name
+              node.save
+          end
         end
       end
+    end
 
+    def self.upload_cloud_keys(node)
+      cloud_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys"
+      %w(cloud-cert.pem cloud-pk.pem euca.p12).each do |key_name|
+        cert = Base64.encode64(::File.new("#{cloud_keys_dir}/#{key_name}").read)
+        node.override['eucalyptus']['cloud-keys'][key_name] = cert
+        node.save
+      end
+    end
+
+    def self.get_cluster_keys(node, component)
+      self.set_local_cluster_name(node)
       local_cluster_name = node["eucalyptus"]["local-cluster-name"]
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
       Chef::Log.info "Getting keys from CLC: " + clc_ip
       clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first
       cluster_keys = clc.first.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
       euca_p12 = clc.first.attributes["eucalyptus"]["cloud-keys"]["euca.p12"]
+      node.override["eucalyptus"]["cloud-keys"][local_cluster_name] = cluster_keys
+      node.override["eucalyptus"]["cloud-keys"]["euca.p12"] = euca_p12
+      node.save
 
       ### Write cluster keys to disk
       cluster_keys.each do |key_name,data|

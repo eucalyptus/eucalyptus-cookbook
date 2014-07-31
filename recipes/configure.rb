@@ -32,7 +32,7 @@ if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
 else
   execute "Set OSG providerclient" do
     command "#{modify_property} -p objectstorage.providerclient=walrus"
-    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
     retries 15
     retry_delay 20
   end
@@ -113,7 +113,7 @@ if node['eucalyptus']['install-imaging-worker']
   yum_package "eucalyptus-imaging-worker-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
     only_if "#{describe_property} imaging.imaging_worker_emi | grep 'NULL'"
@@ -125,5 +125,16 @@ node['eucalyptus']['system-properties'].each do |key, value|
     retries 10
     retry_delay 5
     not_if "#{describe_property} #{key} | grep \"#{value}\""
+  end
+end
+
+## Post script
+if node['eucalyptus']['post-script-url'] != ""
+  remote_file "#{node['eucalyptus']['home-directory']}/post.sh" do
+    source node['eucalyptus']['post-script-url']
+    mode "777"
+  end
+  execute 'Running post script' do
+    command "bash #{node['eucalyptus']['home-directory']}/post.sh"
   end
 end

@@ -83,7 +83,7 @@ clusters.each do |cluster, info|
   end
 end
 
-### If this is 4.0 we need to register User facing services
+### If this is 4.x we need to register User facing services
 if Chef::Config[:solo]
       user_facing = [ node['ipaddress'] ]
   else
@@ -93,7 +93,7 @@ user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{euca_conf}  --register-service -T user-api -H #{uf_ip} -N API_#{uf_ip} #{dont_sync_keys}"
     not_if "euca-describe-services | egrep 'API_#{uf_ip}'"
-    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
 end
 
