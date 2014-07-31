@@ -23,7 +23,7 @@ require 'fileutils'
 
 module Eucalyptus
   module KeySync
-    def self.get_local_cluster_name(node)
+    def self.set_local_cluster_name(node)
       node["eucalyptus"]["topology"]["clusters"].each do |name, info|
         Chef::Log.info "Found cluster #{name} with attributes: #{info}"
         addresses = []
@@ -57,6 +57,7 @@ module Eucalyptus
     end
 
     def self.get_cluster_keys(node, component)
+      self.set_local_cluster_name(node)
       local_cluster_name = node["eucalyptus"]["local-cluster-name"]
       clc_ip = node["eucalyptus"]["topology"]["clc-1"]
       Chef::Log.info "Getting keys from CLC: " + clc_ip
@@ -89,11 +90,12 @@ module Eucalyptus
     end
 
     def self.get_node_keys(node)
-      self.get_local_cluster_name(node)
-      cc_ip = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["cc-1"]
+      self.set_local_cluster_name(node)
+      local_cluster_name = node["eucalyptus"]["local-cluster-name"]
+      cc_ip = node["eucalyptus"]["topology"]["clusters"][local_cluster_name]["cc-1"]
       Chef::Log.info "Getting keys from CC: " + cc_ip
       cc = Chef::Search::Query.new.search(:node, "addresses:#{cc_ip}").first
-      cc.first.attributes["eucalyptus"]["cloud-keys"][node["eucalyptus"]["local-cluster-name"]].each do |key_name,data|
+      cc.first.attributes["eucalyptus"]["cloud-keys"][local_cluster_name].each do |key_name,data|
         file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
         File.open(file_name, 'w') do |file|
           file.puts Base64.decode64(data)
