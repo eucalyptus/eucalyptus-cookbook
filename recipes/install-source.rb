@@ -41,4 +41,8 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   execute "chmod +x #{tools_dir}/eucanetd"
 end
 
+execute "Copy Policy Kit file for NC" do
+  execute "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
+end
+
 execute "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup -d #{node["eucalyptus"]["home-directory"]}"
