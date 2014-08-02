@@ -18,7 +18,6 @@
 ##
 require 'json'
 
-
 execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
@@ -56,9 +55,9 @@ clusters.each do |cluster, info|
     retry_delay 10
   end
   if info["sc-1"] == ""
-	sc_ip = node['ipaddress']
+	  sc_ip = node['ipaddress']
   else
-	sc_ip = info["sc-1"]
+	  sc_ip = info["sc-1"]
   end
 
   execute "Register SC" do
@@ -71,23 +70,22 @@ clusters.each do |cluster, info|
     block do
       %w(cloud-cert.pem cluster-cert.pem cluster-pk.pem node-cert.pem node-pk.pem vtunpass).each do |key_name|
         cert = Base64.encode64(::File.new("#{cluster_keys_dir}/#{key_name}").read)
-        node.override['eucalyptus']['cloud-keys'][cluster][key_name] = cert
-        node.save
+        node.default['eucalyptus']['cloud-keys'][cluster][key_name] = cert
       end
     end
     not_if "#{Chef::Config[:solo]}"
   end
   execute "Copy keys locally" do
     command "cp #{cluster_keys_dir}/* #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/"
-    only_if "#{Chef::Config[:solo]}"
+    only_if "rpm -qa | grep eucalyptus-cc || rpm -qa | grep eucalyptus-sc || rpm -qa | grep eucalyptus-nc"
   end
 end
 
 ### If this is 4.x we need to register User facing services
-if Chef::Config[:solo]
-      user_facing = [ node['ipaddress'] ]
-  else
+if node['eucalyptus']['topology']['user-facing']
       user_facing = node['eucalyptus']['topology']['user-facing']
+  else
+      user_facing = [ node['ipaddress'] ]
 end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
@@ -108,16 +106,9 @@ if node['eucalyptus']['network']['mode'] == "EDGE"
   end
 end
 
-if node['eucalyptus']['topology']['riakcs']['endpoint'] == ""
-  ### Get correct walrus IP
-  if node['eucalyptus']['topology']['walrus'] == ""
-      walrus_ip = node['ipaddress']
-  else
-      walrus_ip = node['eucalyptus']['topology']['walrus']
-  end
-
+if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
-    command "#{euca_conf} --register-walrus -P walrus -H #{walrus_ip} -C walrus-1 #{dont_sync_keys}"
+    command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep walrus-1"
   end
 end

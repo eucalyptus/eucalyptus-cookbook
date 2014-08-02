@@ -72,8 +72,8 @@ default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
 default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 
 ## Define Topology - Used for registration on CLC
-default["eucalyptus"]["topology"]["clc-1"] = "" 
-default["eucalyptus"]["topology"]["clusters"] = {}
+#default["eucalyptus"]["topology"]["clc-1"] = ""
+#default["eucalyptus"]["topology"]["clusters"] = {}
 ##############################################################################
 ### Clusters are defined with the following parameters in an environment file
 ##############################################################################
@@ -83,11 +83,11 @@ default["eucalyptus"]["topology"]["clusters"] = {}
 #default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 #default["eucalyptus"]["topology"]["clusters"]["default"]["hypervisor"] = "kvm"
 #default["eucalyptus"]["topology"]["clusters"]["default"]["das-device"] = "vg01"
-default["eucalyptus"]["topology"]["walrus"] = ""
-default["eucalyptus"]["topology"]["user-facing"] = []
-default['eucalyptus']['topology']['riakcs']['endpoint'] = ""
-default['eucalyptus']['topology']['riakcs']['access-key'] = ""
-default['eucalyptus']['topology']['riakcs']['secret-key'] = ""
+#default["eucalyptus"]["topology"]["walrus"] = ""
+#default["eucalyptus"]["topology"]["user-facing"] = []
+#default['eucalyptus']['topology']['riakcs']['endpoint'] = ""
+#default['eucalyptus']['topology']['riakcs']['access-key'] = ""
+#default['eucalyptus']['topology']['riakcs']['secret-key'] = ""
 
 
 ## CC Specific
@@ -102,4 +102,4 @@ default["eucalyptus"]["nc"]["port"] = "8775"
 default["eucalyptus"]["nc"]["service-path"] = "axis2/services/EucalyptusNC"
 default["eucalyptus"]["nc"]["hypervisor"] = "kvm"
 default["eucalyptus"]["nc"]["max-cores"] = "0"
-default["eucalyptus"]["nc"]["instance-path"] = "/var/lib/eucalyptus/instances" 
+default["eucalyptus"]["nc"]["instance-path"] = "/var/lib/eucalyptus/instances"

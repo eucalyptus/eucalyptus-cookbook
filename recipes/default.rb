@@ -205,7 +205,7 @@ if node["eucalyptus"]["install-type"] == "source"
   end
 
   yum_package "vmware-vix-disklib" do
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"  
+    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
     options node['eucalyptus']['yum-options']
     action :upgrade
   end

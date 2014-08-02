@@ -85,24 +85,8 @@ execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Ensure hostname resolves
-execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts"
-
-### Determine local cluster name
-if not Chef::Config[:solo]
-  ### Look through each cluster
-  node["eucalyptus"]["topology"]["clusters"].each do |name, cluster_data|
-    ### Try to match all of this NCs interfaces
-    node["network"]["interfaces"].each do |interface, iface_data|
-      ### Look through each of the addresses on the interfaces
-      iface_data["addresses"].each do |address, addr_data|
-        ### If my addresss is in the nodes list for this cluster
-        if cluster_data["nodes"].include?(address) and not Chef::Config[:solo]
-          node.set["eucalyptus"]["local-cluster-name"] = name
-          node.save
-        end
-      end
-    end
-  end
+execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts" do
+  not_if "ping -c \`hostname --fqdn\`"
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
