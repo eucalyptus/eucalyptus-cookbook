@@ -15,8 +15,6 @@ default['eucalyptus']['load-balancer-repo'] = ""
 default['eucalyptus']['install-load-balancer'] = true
 default['eucalyptus']['imaging-worker-repo'] = ""
 default['eucalyptus']['install-imaging-worker'] = true
-default["eucalyptus"]["install-user-console"] = true
-default['eucalyptus']['user-console-repo'] = ""
 default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
 default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/euca-master-plugin-build-bootstrap/centos/$releasever/$basearch/"
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
@@ -26,6 +24,10 @@ default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
+
+#### User console
+default['eucalyptus']['user-console']['source-branch'] = "develop"
+default['eucalyptus']['user-console']['source-repo'] = "https://github.com/eucalyptus/eucaconsole"
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"

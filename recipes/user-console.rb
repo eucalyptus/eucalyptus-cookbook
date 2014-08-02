@@ -17,13 +17,31 @@
 ##    limitations under the License.
 ##
 ## Install packages for the user-console
-if node["eucalyptus"]["install-user-console"]
-  yum_repository "eucaconsole" do
-    description "Eucalyptus Console Repo"
-    url node["eucalyptus"]["user-console-repo"]
-    only_if { node['eucalyptus']['user-console-repo'] != '' }
-  end
+include_recipe "eucalyptus::default"
 
+if node['eucalyptus']['user-console']['install-type'] == 'source'
+  %w{openssl-devel python-devel swig gcc}.each do |package_name|
+    package package_name
+  end
+  source_branch = node['eucalyptus']['user-console']['source-branch']
+  source_repo = node['eucalyptus']['user-console']['source-repo']
+  source_directory = node['eucalyptus']['source-directory'] + "/eucaconsole"
+  execute "Clone eucaconsole repository" do
+    command "git clone -b #{source_branch} #{source_repo} #{source_directory}"
+  end
+  execute "Install python dependencies" do
+    command "python setup.py develop"
+    cwd source_directory = node['eucalyptus']['source-directory'] + "/eucaconsole"
+  end
+  execute "Copy config file into place" do
+    command "cp conf/console.default.ini console.ini"
+     cwd source_directory = node['eucalyptus']['source-directory'] + "/eucaconsole"
+  end
+  execute "Run eucaconsole in background" do
+    command "./launcher &"
+     cwd source_directory = node['eucalyptus']['source-directory'] + "/eucaconsole"
+  end
+else
   yum_package "eucaconsole" do
     action :upgrade
     options node['eucalyptus']['yum-options']
