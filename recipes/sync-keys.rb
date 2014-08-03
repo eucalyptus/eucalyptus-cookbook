@@ -21,11 +21,14 @@ ruby_block "Synchronize cloud keys" do
   block do
     if node.recipe?("eucalyptus::walrus") or node.recipe?("eucalyptus::user-facing")
       Eucalyptus::KeySync.get_cloud_keys(node)
-    elsif node.recipe?("eucalyptus::storage-controller")
+    end
+    if node.recipe?("eucalyptus::storage-controller")
       Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
-    elsif node.recipe?("eucalyptus::node-controller")
+    end
+    if node.recipe?("eucalyptus::node-controller")
       Eucalyptus::KeySync.get_node_keys(node)
-    elsif node.recipe?("eucalyptus::cluster-controller")
+    end
+    if node.recipe?("eucalyptus::cluster-controller")
       Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
       nc_nodes = search(:node, "chef_environment:#{node.chef_environment} AND recipe:\"eucalyptus\\:\\:node-controller\"")
       nc_ips = []

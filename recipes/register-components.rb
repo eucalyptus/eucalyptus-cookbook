@@ -75,10 +75,6 @@ clusters.each do |cluster, info|
     end
     not_if "#{Chef::Config[:solo]}"
   end
-  execute "Copy keys locally" do
-    command "cp #{cluster_keys_dir}/* #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/"
-    only_if "rpm -qa | grep eucalyptus-cc || rpm -qa | grep eucalyptus-sc || rpm -qa | grep eucalyptus-nc"
-  end
 end
 
 ### If this is 4.x we need to register User facing services
