@@ -19,19 +19,6 @@
 
 return if node.recipe?("eucalyptus::cloud-controller")
 
-if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  bind_addr = node["ipaddress"]
-  node["network"]["interfaces"].each do |if_name, if_info|
-    if_info["addresses"].each do |addr, addr_info|
-      if node["eucalyptus"]["topology"]["user-facing"].include?(addr)
-        bind_addr = addr
-      end
-    end
-  end
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
-  node.save
-end
-
 include_recipe "eucalyptus::cloud-service"
 
 service "eucalyptus-cloud" do
