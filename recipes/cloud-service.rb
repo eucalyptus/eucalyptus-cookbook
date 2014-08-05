@@ -45,8 +45,7 @@ if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].
       end
     end
   end
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
-  node.save
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
 end
 
 template "eucalyptus.conf" do

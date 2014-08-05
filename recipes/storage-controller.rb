@@ -22,7 +22,7 @@ include_recipe "eucalyptus::default"
 
 ### Set bind-addr if necessary
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  node['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][Eucalyptus::KeySync.get_local_cluster_name(node)]["sc-1"]
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][Eucalyptus::KeySync.get_local_cluster_name(node)]["sc-1"]
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
