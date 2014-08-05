@@ -35,7 +35,7 @@ ruby_block "Synchronize cloud keys" do
       nc_nodes.each do |nc_node|
         nc_ips << nc_node[:ipaddress]
       end
-      Chef::Log.info "Node list is: #{@nc_ips}"
+      Chef::Log.info "Node list is: #{nc_ips}"
       nc_ips.each do |nc_ip|
         r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
         r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
