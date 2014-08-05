@@ -52,8 +52,8 @@ module Eucalyptus
               return name
           end
         end
-        raise "Unable to determine local cluster name for #{node[:ipaddress]}"
       end
+      raise "Unable to determine local cluster name for #{node[:ipaddress]}"
     end
 
     def self.get_cluster_keys(node, component)
