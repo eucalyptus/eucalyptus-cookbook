@@ -38,6 +38,35 @@ else
   end
 end
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_san?(node)
+    node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+      case info['storage-backend']
+      when 'emc'
+        san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
+      when 'netapp'
+        san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
+      when 'equallogic'
+        san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
+      end
+      yum_package san_package do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+    if Eucalyptus::Enterprise.is_vmware?(node)
+      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+  end
+end
+
 execute "Wait for credentials with S3 URL populated" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip && grep 'export S3_URL' eucarc"
   cwd node['eucalyptus']['admin-cred-dir']
