@@ -24,18 +24,18 @@ describe "Eucalyptus CIAB" do
        it { should be_listening }
      end
   end
-  
+
   %w{eucalyptus-cloud eucalyptus-cc eucanetd
      eucalyptus-nc eucaconsole}.each do |service_name|
      describe service(service_name) do
        it { should be_enabled }
        it { should be_running }
      end
-  end   
+  end
 
   describe command('euca-version') do
-    it { should return_stdout /euca2ools.*3\.1\.0/ }
-    it { should return_stdout /eucalyptus.*4\.0\.0/ }
+    it { should return_stdout /euca2ools.*3\.1/ }
+    it { should return_stdout /eucalyptus.*4\.0/ }
   end
 
   describe selinux do
