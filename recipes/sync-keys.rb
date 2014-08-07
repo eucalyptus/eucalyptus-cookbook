@@ -30,11 +30,8 @@ ruby_block "Synchronize cloud keys" do
     end
     if node.recipe?("eucalyptus::cluster-controller")
       Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
-      nc_nodes = search(:node, "chef_environment:#{node.chef_environment} AND recipe:\"eucalyptus\\:\\:node-controller\"")
-      nc_ips = []
-      nc_nodes.each do |nc_node|
-        nc_ips << nc_node[:ipaddress]
-      end
+      cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+      nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
       Chef::Log.info "Node list is: #{nc_ips}"
       nc_ips.each do |nc_ip|
         r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
