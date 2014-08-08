@@ -95,6 +95,43 @@ function timer()
 function offer_support()
 {
     errorCondition=$1
+    echo "Upload log file to improve quality? [Y/n]"
+    read continue_upload
+    if [ "$continue_upload" = "Y" ] || [ "$continue_upload" == "y" ]
+    then
+        curl -Ls https://raw.githubusercontent.com/eucalyptus/eucalyptus-cookbook/master/faststart/faststart-logger.priv > /tmp/faststart-logger.priv
+        chmod 0600 /tmp/faststart-logger.priv
+        mkdir /tmp/$uuid
+        echo "Let us gather some environment data."
+        df -B M >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        ps aux >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        free >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        uptime >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        iptables -L >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        iptables -L -t nat >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        arp -a >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        ip addr show >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        ifconfig >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        brctl show >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        route >> /tmp/$uuid/env.log
+        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
+        netstat -lnp >> /tmp/$uuid/env.log
+
+        cp $LOGFILE /tmp/$uuid/ 2&>> /dev/null
+        cp -r /var/log/eucalyptus/* /tmp/$uuid/ 2&>> /dev/null
+        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid 2&>> /dev/null
+        echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
+    fi
     echo ""
     echo "Free support is available for this error. Provide your email address below and"
     echo "a member of the support team will contact you directly. Or hit Enter to continue."
