@@ -70,7 +70,7 @@ clusters.each do |cluster, info|
     block do
       %w(cloud-cert.pem cluster-cert.pem cluster-pk.pem node-cert.pem node-pk.pem vtunpass).each do |key_name|
         cert = Base64.encode64(::File.new("#{cluster_keys_dir}/#{key_name}").read)
-        node.default['eucalyptus']['cloud-keys'][cluster][key_name] = cert
+        node.set['eucalyptus']['cloud-keys'][cluster][key_name] = cert
         node.save
       end
     end
