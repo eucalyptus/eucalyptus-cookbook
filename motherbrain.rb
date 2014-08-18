@@ -20,6 +20,7 @@ stack_order do
   bootstrap 'cloud::user-console'
   bootstrap 'node::default'
   bootstrap 'cloud::configure'
+  bootstrap 'cloud::create-first-resources'
   bootstrap 'nuke::default'
 end
 
@@ -61,6 +62,9 @@ component 'cloud' do
   end
   group 'configure' do
     recipe 'eucalyptus::configure'
+  end
+  group 'create-first-resources' do
+    recipe 'eucalyptus::create-first-resources'
   end
 end
 
