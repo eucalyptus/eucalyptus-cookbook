@@ -181,19 +181,11 @@ if node["eucalyptus"]["install-type"] == "source"
   end
 
   ### Checkout Eucalyptus Source
-  execute "Clone source repo" do
-    command "git clone #{node['eucalyptus']['source-repo']} #{node['eucalyptus']['source-directory']}"
-    not_if "ls #{node['eucalyptus']['source-directory']}"
-  end
-
-  execute "Checkout source branch" do
-    command "git checkout #{node['eucalyptus']['source-branch']}"
-    cwd "#{node['eucalyptus']['source-directory']}"
-  end
-
-  execute "Init submodules" do
-    command "git submodule init && git submodule update"
-    cwd "#{node["eucalyptus"]["source-directory"]}"
+  git node['eucalyptus']['source-directory'] do
+    repository node['eucalyptus']['source-repo']
+    revision node['eucalyptus']['source-branch']
+    enable_submodules true
+    action :sync
   end
 
   yum_repository "euca-vmware-libs" do
