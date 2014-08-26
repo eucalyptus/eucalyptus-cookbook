@@ -108,6 +108,9 @@ module Eucalyptus
       environment = node.chef_environment
       Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
       clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first
+      if clc.nil?
+        raise "Unable to find CLC #{clc_ip} in environment #{environment}"
+      end
       clc.first.attributes["eucalyptus"]["cloud-keys"].each do |key_name, data|
         if data.is_a? String
           file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
