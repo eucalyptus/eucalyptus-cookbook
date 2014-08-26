@@ -19,6 +19,7 @@
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
+    retries 10
     source node['eucalyptus']['init-script-url']
     mode "777"
   end
