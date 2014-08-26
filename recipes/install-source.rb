@@ -20,7 +20,6 @@ execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sb
 
 execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
   cwd "#{node["eucalyptus"]["source-directory"]}/"
-  creates "/etc/init.d/eucalyptus-cloud"
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
