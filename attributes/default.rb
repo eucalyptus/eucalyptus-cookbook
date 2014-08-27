@@ -32,7 +32,7 @@ default['eucalyptus']['user-console']['source-repo'] = "https://github.com/eucal
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
 default['eucalyptus']['admin-ssh-pub-key'] = ""
-default["eucalyptus"]["home-directory"] = "/"
+default["eucalyptus"]["home-directory"] = "/opt/eucalyptus"
 default["eucalyptus"]["set-bind-addr"] = false
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["source-directory"] = "/opt/eucalyptus"

@@ -16,6 +16,17 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+source_directory = "#{node['eucalyptus']['source-directory']}/#{node['eucalyptus']['source-branch']}"
+home_directory = "#{node["eucalyptus"]["home-directory"]}/#{node['eucalyptus']['source-branch']}"
+
+directory source_directory do
+  recursive true
+end
+
+directory home_directory do
+  recursive true
+end
+
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -63,18 +74,12 @@ end
 
 ### Get WSDL2C
 execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-  cwd node["eucalyptus"]["home-directory"]
+  cwd home_directory
 end
 
-source_directory = "#{node['eucalyptus']['source-directory']}/#{node['eucalyptus']['source-branch']}"
 execute "Remove source" do
   command "rm -rf #{source_directory}"
   only_if "#{node['eucalyptus']['rm-source-dir']}"
-end
-
-
-directory source_directory do
-  recursive true
 end
 
 ### Checkout Eucalyptus Source
@@ -99,7 +104,7 @@ yum_package "vmware-vix-disklib" do
   action :upgrade
 end
 
-configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh"
+configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
 
 ### Run configure for open source
 execute "Run configure with open source bits"  do
@@ -114,9 +119,9 @@ execute "Run configure with enterprise bits" do
   only_if "ls #{source_directory}/vmware-broker"
 end
 
-execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
+execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
 
-execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
+execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make && make install" do
   cwd source_directory
   timeout node["eucalyptus"]["compile-timeout"]
 end
@@ -142,4 +147,4 @@ execute "Copy Policy Kit file for NC" do
   command "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
 end
 
-execute "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --setup -d #{node["eucalyptus"]["home-directory"]}"
+execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
