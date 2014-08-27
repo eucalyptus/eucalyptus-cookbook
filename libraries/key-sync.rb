@@ -113,7 +113,7 @@ module Eucalyptus
 
     def self.get_clc(node)
       clc = nil
-      if lazy { node.recipe? "eucalyptus::cloud-controller" }
+      if node.recipe? "eucalyptus::cloud-controller"
         clc = node
       else
         clc_ip = node["eucalyptus"]["topology"]["clc-1"]
