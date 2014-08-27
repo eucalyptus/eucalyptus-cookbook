@@ -20,7 +20,6 @@ Vagrant.configure("2") do |config|
                                       "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
                                       "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
-                                      "source-directory" => "/vagrant/eucalyptus-src",
                                       "install-load-balancer" => false,
                                       "install-imaging-worker" => false,
                                       "nc" => {"hypervisor" => "qemu", "work-size" => "50000"},

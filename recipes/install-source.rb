@@ -16,19 +16,6 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-source_directory = "#{node['eucalyptus']['source-directory']}/#{node['eucalyptus']['source-branch']}"
-home_directory = "#{node["eucalyptus"]["home-directory"]}/#{node['eucalyptus']['source-branch']}"
-node.set['eucalyptus']['home-directory'] = home_directory
-node.save
-
-directory source_directory do
-  recursive true
-end
-
-directory home_directory do
-  recursive true
-end
-
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -36,6 +23,16 @@ user "eucalyptus" do
   home "/home/eucalyptus"
   shell "/bin/bash"
 end
+
+source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
+home_directory =  node['eucalyptus']["home-directory"]
+
+directory source_directory do
+  recursive true
+  owner "eucalyptus"
+  group "eucalyptus"
+end
+
 
 ### Add build deps repo
 yum_repository "euca-build-deps" do
