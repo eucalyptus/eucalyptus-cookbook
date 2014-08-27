@@ -125,108 +125,11 @@ execute 'yum install -y *elrepo*.rpm' do
   not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
-if node["eucalyptus"]["install-type"] == "source"
-  ### Create eucalyptus user
-  user "eucalyptus" do
-    supports :manage_home => true
-    comment "Eucalyptus User"
-    home "/home/eucalyptus"
-    shell "/bin/bash"
-  end
-
-  ### Add build deps repo
-  yum_repository "euca-build-deps" do
-    description "Eucalyptus Build Dependencies repo"
-    url node['eucalyptus']['build-deps-repo']
-    action :add
-    metadata_expire "1"
-  end
-
-  ### This is a source install so we need the build time deps and runtime deps
-  ### Build time first
-
-  %w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
-    axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
-    libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
-    rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
-    yum_package dependency do
-      options node['eucalyptus']['yum-options']
-      action :upgrade
-    end
-  end
-
-  ### Runtime deps
-  %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c
-    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
-    dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod
-    drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-    PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
-    openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
-    postgresql91 postgresql91-server python-boto python-devel python-setuptools
-    rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-    velocity vtun wget which xalan-j2-xsltc ipset ebtables}.each do |dependency|
-    yum_package dependency do
-      options node['eucalyptus']['yum-options']
-      action :upgrade
-    end
-  end
-
-  ### Get WSDL2C
-  execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-    cwd node["eucalyptus"]["home-directory"]
-  end
-
-  execute "Remove source" do
-    command "rm -rf #{node['eucalyptus']['source-directory']}"
-    only_if "#{node['eucalyptus']['rm-source-dir']}"
-  end
-
-  ### Checkout Eucalyptus Source
-  git node['eucalyptus']['source-directory'] do
-    repository node['eucalyptus']['source-repo']
-    revision node['eucalyptus']['source-branch']
-    enable_submodules true
-    action :sync
-  end
-
-  yum_repository "euca-vmware-libs" do
-    description "VDDK libs repo"
-    url node['eucalyptus']['vddk-libs-repo']
-    action :add
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
-    metadata_expire "1"
-  end
-
-  yum_package "vmware-vix-disklib" do
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
-    options node['eucalyptus']['yum-options']
-    action :upgrade
-  end
-
-  configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.1 --with-wsdl2c-sh=#{node["eucalyptus"]["home-directory"]}/euca-WSDL2C.sh"
-
-  ### Run configure for open source
-  execute "Run configure with open source bits"  do
-    command configure_command
-    cwd "#{node["eucalyptus"]["source-directory"]}"
-    not_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
-  end
-  ### Run configure with enterprise bits
-  execute "Run configure with enterprise bits" do
-    command configure_command + " --with-vddk=/opt/packages/vddk"
-    cwd "#{node["eucalyptus"]["source-directory"]}"
-    only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
-  end
-end
-
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
   not_if "ls /root/.ssh/id_rsa"
 end
 
-execute 'Authorize passwordless SSH for self' do
-  command "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && chmod og-r /root/.ssh/authorized_keys"
-end
-
 execute 'Add host key' do
   command "ssh-keyscan #{node['ipaddress']} >> /root/.ssh/known_hosts"
+  not_if "grep #{node['ipaddress']} /root/.ssh/known_hosts"
 end
