@@ -66,17 +66,19 @@ execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-W
   cwd node["eucalyptus"]["home-directory"]
 end
 
+source_directory = "#{node['eucalyptus']['source-directory']}/#{node['eucalyptus']['source-branch']}"
 execute "Remove source" do
-  command "rm -rf #{node['eucalyptus']['source-directory']}"
+  command "rm -rf #{source_directory}"
   only_if "#{node['eucalyptus']['rm-source-dir']}"
 end
 
-directory "#{node['eucalyptus']['source-directory']}" do
+
+directory source_directory do
   recursive true
 end
 
 ### Checkout Eucalyptus Source
-git node['eucalyptus']['source-directory'] do
+git source_directory do
   repository node['eucalyptus']['source-repo']
   revision node['eucalyptus']['source-branch']
   enable_submodules true
@@ -87,12 +89,12 @@ yum_repository "euca-vmware-libs" do
   description "VDDK libs repo"
   url node['eucalyptus']['vddk-libs-repo']
   action :add
-  only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+  only_if "ls #{source_directory}/vmware-broker"
   metadata_expire "1"
 end
 
 yum_package "vmware-vix-disklib" do
-  only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+  only_if "ls #{source_directory}/vmware-broker"
   options node['eucalyptus']['yum-options']
   action :upgrade
 end
@@ -102,26 +104,26 @@ configure_command = "export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}'
 ### Run configure for open source
 execute "Run configure with open source bits"  do
   command configure_command
-  cwd "#{node["eucalyptus"]["source-directory"]}"
-  not_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+  cwd source_directory
+  not_if "ls #{source_directory}/vmware-broker"
 end
 ### Run configure with enterprise bits
 execute "Run configure with enterprise bits" do
   command configure_command + " --with-vddk=/opt/packages/vddk"
-  cwd "#{node["eucalyptus"]["source-directory"]}"
-  only_if "ls #{node["eucalyptus"]["source-directory"]}/vmware-broker"
+  cwd source_directory
+  only_if "ls #{source_directory}/vmware-broker"
 end
 
 execute "echo \"export PATH=$PATH:#{node['eucalyptus']['home-directory']}/usr/sbin/\" >>/root/.bashrc"
 
 execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{node["eucalyptus"]["home-directory"]}' && make && make install" do
-  cwd "#{node["eucalyptus"]["source-directory"]}/"
+  cwd source_directory
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
-tools_dir = "#{node["eucalyptus"]["source-directory"]}/tools"
+tools_dir = "#{source_directory}/tools"
 if node['eucalyptus']['source-repo'].end_with?("internal")
-  tools_dir = "#{node["eucalyptus"]["source-directory"]}/eucalyptus/tools"
+  tools_dir = "#{source_directory}/eucalyptus/tools"
 end
 
 %w{eucalyptus-cloud eucalyptus-cc eucalyptus-nc}.each do |init_script|
