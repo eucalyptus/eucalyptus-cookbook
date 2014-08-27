@@ -153,28 +153,28 @@ if node['eucalyptus']['install-type'] == 'source'
 end
 
 ## Delete File system artifacts
-directory '/etc/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /etc/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/etc/eucalyptus"
 end
 
-directory '/etc/euca2ools' do
+directory "#{node["eucalyptus"]["home-directory"]}/etc/euca2ools" do
   recursive true
   action :delete
-  only_if 'ls /etc/euca2ools'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/etc/euca2ools"
 end
 
-directory '/var/log/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/log/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/log/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/log/eucalyptus"
 end
 
-directory '/var/run/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/run/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus"
 end
 
 bash "Remove devmapper and losetup entries" do
@@ -188,10 +188,10 @@ bash "Remove devmapper and losetup entries" do
   retry_delay 2
 end
 
-directory '/var/lib/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/lib/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus"
 end
 
 directory "#{node['eucalyptus']['home-directory']}/source/vmware-broker" do
