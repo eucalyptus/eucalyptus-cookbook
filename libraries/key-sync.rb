@@ -59,12 +59,9 @@ module Eucalyptus
 
     def self.get_cluster_keys(node, component)
       local_cluster_name = self.get_local_cluster_name(node)
-      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      environment = node.chef_environment
-      Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
-      clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first
-      cluster_keys = clc.first.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
-      euca_p12 = clc.first.attributes["eucalyptus"]["cloud-keys"]["euca.p12"]
+      clc = self.get_clc(node)
+      cluster_keys = clc.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
+      euca_p12 = clc.attributes["eucalyptus"]["cloud-keys"]["euca.p12"]
       ### Write cluster keys to disk
       cluster_keys.each do |key_name,data|
        file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
@@ -88,11 +85,8 @@ module Eucalyptus
 
     def self.get_node_keys(node)
       local_cluster_name = self.get_local_cluster_name(node)
-      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      environment = node.chef_environment
-      Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
-      clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first
-      cluster_keys = clc.first.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
+      clc = self.get_clc(node)
+      cluster_keys = clc.attributes["eucalyptus"]["cloud-keys"][local_cluster_name]
       cluster_keys.each do |key_name,data|
         file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
         File.open(file_name, 'w') do |file|
@@ -104,14 +98,8 @@ module Eucalyptus
     end
 
     def self.get_cloud_keys(node)
-      clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-      environment = node.chef_environment
-      Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
-      clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first
-      if clc.nil?
-        raise "Unable to find CLC #{clc_ip} in environment #{environment}"
-      end
-      clc.first.attributes["eucalyptus"]["cloud-keys"].each do |key_name, data|
+      clc = self.get_clc(node)
+      clc.attributes["eucalyptus"]["cloud-keys"].each do |key_name, data|
         if data.is_a? String
           file_name = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{key_name}"
           File.open(file_name, 'w') do |file|
@@ -120,6 +108,23 @@ module Eucalyptus
           FileUtils.chmod 0700, file_name
           FileUtils.chown 'eucalyptus', 'eucalyptus', file_name
         end
+      end
+    end
+
+    def self.get_clc(node)
+      clc = nil
+      if lazy { node.recipe? "eucalyptus::cloud-controller" }
+        clc = node
+      else
+        clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+        environment = node.chef_environment
+        Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
+        clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first.first
+      end
+      if clc.nil?
+        raise "Unable to find CLC in this environment"
+      else
+        return clc
       end
     end
   end
