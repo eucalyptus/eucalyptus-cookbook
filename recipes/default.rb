@@ -15,7 +15,9 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-
+directory node['eucalyptus']['home-directory'] do
+  recursive true
+end
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
