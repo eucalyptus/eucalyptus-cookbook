@@ -18,6 +18,8 @@
 ##
 source_directory = "#{node['eucalyptus']['source-directory']}/#{node['eucalyptus']['source-branch']}"
 home_directory = "#{node["eucalyptus"]["home-directory"]}/#{node['eucalyptus']['source-branch']}"
+node.set['eucalyptus']['home-directory'] = home_directory
+node.save
 
 directory source_directory do
   recursive true
