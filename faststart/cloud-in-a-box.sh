@@ -140,7 +140,7 @@ function offer_support()
  
    if [ "$emailAddress" != "" ]
    then
-       submit_support_request $emailAddress $errorCondition
+       submit_support_request $emailAddress $errorCondition "$uuid.tar.gz"
        echo ""
        echo "Eucalyptus support will contact you at $emailAddress as early as possible."
     else
@@ -157,11 +157,13 @@ function submit_support_request()
 {
     emailAddress=$1
     errorCondition=$2
+    installLogFile=$3
 
     # Build the URL used to call Marketo for this new account
     dataString="mktForm_116=mktForm_116"
     dataString="$dataString&""Email=$emailAddress"
     dataString="$dataString&""FastStart_Install_Error_Msg__c=$errorCondition"
+    dataString="$dataString&""fastStartInstallLog=$installLogFile"
     dataString="$dataString&""mktFrmSubmit=Submit"
     dataString="$dataString&""lpId=4976"
     dataString="$dataString&""subId=198"
