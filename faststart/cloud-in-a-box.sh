@@ -127,9 +127,9 @@ function offer_support()
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
         netstat -lnp >> /tmp/$uuid/env.log
 
-        cp $LOGFILE /tmp/$uuid/ 2&>> /dev/null
-        cp -r /var/log/eucalyptus/* /tmp/$uuid/ 2&>> /dev/null
-        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid 2&>> /dev/null
+        cp $LOGFILE /tmp/$uuid/ &> /dev/null
+        cp -r /var/log/eucalyptus/* /tmp/$uuid/ &> /dev/null
+        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid &> /dev/null
         echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
     fi
     echo ""
