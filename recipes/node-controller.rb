@@ -89,6 +89,12 @@ execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/h
   not_if "ping -c \`hostname --fqdn\`"
 end
 
+ruby_block "Sync keys for NC" do
+  block do
+    Eucalyptus::KeySync.get_node_keys(node)
+  end
+end
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
@@ -103,12 +109,6 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
     yum versionlock qemu-kvm
     yum versionlock qemu-img
     EOH
-  end
-end
-
-ruby_block "Sync keys for NC" do
-  block do
-    Eucalyptus::KeySync.get_node_keys(node)
   end
 end
 

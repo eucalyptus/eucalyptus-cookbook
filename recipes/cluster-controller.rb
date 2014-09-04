@@ -32,16 +32,17 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-template "eucalyptus.conf" do
-  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
-  source "eucalyptus.conf.erb"
-  action :create
-end
-
+cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
 ruby_block "Sync keys for CC" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
   end
+end
+
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
+  source "eucalyptus.conf.erb"
+  action :create
 end
 
 service "eucalyptus-cc" do
@@ -49,7 +50,6 @@ service "eucalyptus-cc" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
 nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
 log "Registering the following nodes: #{nc_ips}"
 nc_ips.each do |nc_ip|
