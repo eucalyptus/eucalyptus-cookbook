@@ -30,14 +30,6 @@ ruby_block "Synchronize cloud keys" do
     end
     if node.recipe?("eucalyptus::cluster-controller")
       Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
-      cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
-      nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
-      Chef::Log.info "Node list is: #{nc_ips}"
-      nc_ips.each do |nc_ip|
-        r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
-        r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
-        r.run_action :run
-      end
     end
   end
   not_if "#{Chef::Config[:solo]}"
