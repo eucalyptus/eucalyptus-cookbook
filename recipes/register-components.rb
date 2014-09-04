@@ -109,7 +109,7 @@ end
 
 if node['eucalyptus']['network']['mode'] == "EDGE"
   file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-    content node['eucalyptus']['network']['config-json'].to_json
+    content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
     mode "644"
     action :create
   end
