@@ -106,6 +106,12 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
   end
 end
 
+ruby_block "Sync keys for NC" do
+  block do
+    Eucalyptus::KeySync.get_node_keys(node)
+  end
+end
+
 service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

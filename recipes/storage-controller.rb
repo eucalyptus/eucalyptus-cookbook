@@ -62,6 +62,12 @@ if Eucalyptus::Enterprise.is_san?(node)
   end
 end
 
+ruby_block "Sync keys for SC" do
+  block do
+    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+  end
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

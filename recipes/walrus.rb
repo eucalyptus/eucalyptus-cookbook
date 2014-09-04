@@ -40,6 +40,12 @@ template "eucalyptus.conf" do
   action :create
 end
 
+ruby_block "Sync keys for Walrus" do
+  block do
+    Eucalyptus::KeySync.get_cloud_keys(node)
+  end
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

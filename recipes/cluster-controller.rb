@@ -38,18 +38,22 @@ template "eucalyptus.conf" do
   action :create
 end
 
+ruby_block "Sync keys for CC" do
+  block do
+    Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
+  end
+end
+
 service "eucalyptus-cc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-ruby_block "Register nodes" do
-  cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
-  nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
-  Chef::Log.info "Node list is: #{nc_ips}"
-  nc_ips.each do |nc_ip|
-    r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
-    r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
-    r.run_action :run
+cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
+log "Registering the following nodes: #{nc_ips}"
+nc_ips.each do |nc_ip|
+  execute 'Register Nodes' do
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
   end
 end
