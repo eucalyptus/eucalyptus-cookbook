@@ -119,7 +119,7 @@ module Eucalyptus
         clc_ip = node["eucalyptus"]["topology"]["clc-1"]
         environment = node.chef_environment
         Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
-        clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip} AND chef_environment:#{environment}").first.first
+        clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first.first
       end
       if clc.nil?
         raise "Unable to find CLC in this environment"
