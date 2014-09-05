@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: eucalyptus-console
+# Recipe:: user-console
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
@@ -25,9 +25,13 @@ if node['eucalyptus']['user-console']['install-type'] == 'source'
   end
   source_branch = node['eucalyptus']['user-console']['source-branch']
   source_repo = node['eucalyptus']['user-console']['source-repo']
-  source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
-  execute "Clone eucaconsole repository" do
-    command "git clone -b #{source_branch} #{source_repo} #{source_directory}"
+  source_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole"
+  ### Checkout eucaconsole Source
+  git source_directory do
+    repository source_repo
+    revision source_branch
+    checkout_branch source_branch
+    action :sync
   end
   execute "Install python dependencies" do
     command "python setup.py develop"
