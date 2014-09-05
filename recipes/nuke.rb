@@ -22,12 +22,14 @@ service "eucalyptus-nc" do
   action [ :stop ]
 end
 
-service "eucanetd" do
-  action [ :stop ]
-end
+if node['eucalyptus']['network']['mode'] == 'EDGE'
+  service "eucanetd" do
+    action [ :stop ]
+  end
 
-execute "eucanetd -F || true" do
-  only_if "which eucanetd"
+  execute "eucanetd -F || true" do
+    only_if "which eucanetd"
+  end
 end
 
 service "eucalyptus-cc" do
