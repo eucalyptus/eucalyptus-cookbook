@@ -84,7 +84,8 @@ end
 ### Checkout Eucalyptus Source
 git source_directory do
   repository node['eucalyptus']['source-repo']
-  revision node['eucalyptus']['source-branch']
+  revision "refs/heads/#{node['eucalyptus']['source-branch']}"
+  checkout_branch node['eucalyptus']['source-branch']
   enable_submodules true
   action :sync
 end
