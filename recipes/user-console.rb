@@ -26,6 +26,7 @@ if node['eucalyptus']['user-console']['install-type'] == 'source'
   source_branch = node['eucalyptus']['user-console']['source-branch']
   source_repo = node['eucalyptus']['user-console']['source-repo']
   source_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole"
+  directory "#{node['eucalyptus']["home-directory"]}/etc/eucaconsole"
   ### Checkout eucaconsole Source
   git source_directory do
     repository source_repo
