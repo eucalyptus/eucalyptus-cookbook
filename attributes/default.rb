@@ -28,6 +28,7 @@ default['eucalyptus']['post-script-url'] = ""
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"
 default['eucalyptus']['user-console']['source-repo'] = "https://github.com/eucalyptus/eucaconsole"
+default['eucalyptus']['user-console']['install-type'] = "packages"
 
 #### GLOBALS
 default['eucalyptus']['admin-cred-dir'] = "/root"
