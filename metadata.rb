@@ -4,7 +4,7 @@ maintainer_email 'viglesiasce@gmail.com'
 license          'Apache 2'
 description      'Installs/Configures eucalyptus'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.3.11'
+version          '0.3.12'
 depends          'yum'
 depends          'ntp'
 depends          'selinux'
