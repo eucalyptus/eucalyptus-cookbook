@@ -21,6 +21,12 @@ return if node.recipe?("eucalyptus::cloud-controller")
 
 include_recipe "eucalyptus::cloud-service"
 
+ruby_block "Sync keys for User Facing Services" do
+  block do
+    Eucalyptus::KeySync.get_cloud_keys(node)
+  end
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
