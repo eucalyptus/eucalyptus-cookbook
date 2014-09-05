@@ -5,7 +5,7 @@ CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
 NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
 CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
-<% if node["eucalyptus"]["topology"] && node["eucalyptus"]["topology"]["clusters"].has_key?(Eucalyptus::KeySync.get_local_cluster_name(node)) -%>
+<% if (node.recipe? "eucalyptus::cluster-controller") && node["eucalyptus"]["topology"]["clusters"].has_key?(Eucalyptus::KeySync.get_local_cluster_name(node)) -%>
 NODES="<%= node["eucalyptus"]["topology"]["clusters"][Eucalyptus::KeySync.get_local_cluster_name(node)]["nodes"] %>"
 <% else -%>
 NODES=""
