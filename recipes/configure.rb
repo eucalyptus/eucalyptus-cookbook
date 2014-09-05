@@ -98,6 +98,8 @@ clusters.each do |cluster, info|
   end
   execute "Set storage backend" do
      command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
+     ### Patch for EUCA-9963
+     not_if "#{describe_property} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
   end
