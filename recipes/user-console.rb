@@ -20,7 +20,7 @@
 include_recipe "eucalyptus::default"
 
 if node['eucalyptus']['user-console']['install-type'] == 'source'
-  %w{openssl-devel python-devel swig gcc}.each do |package_name|
+  %w{openssl-devel python-devel swig gcc libmemcached1 python-pylibmc}.each do |package_name|
     package package_name
   end
   source_branch = node['eucalyptus']['user-console']['source-branch']
