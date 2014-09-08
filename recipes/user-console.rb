@@ -40,11 +40,11 @@ if node['eucalyptus']['user-console']['install-type'] == 'source'
   end
   execute "Copy config file into place" do
     command "cp conf/console.default.ini console.ini"
-     cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
+    cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
   end
   execute "Run eucaconsole in background" do
     command "./launcher &"
-     cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
+    cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
   end
 else
   yum_package "eucaconsole" do
