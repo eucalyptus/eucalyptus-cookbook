@@ -66,6 +66,7 @@ ruby_block "Sync keys for SC" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
   end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 service "eucalyptus-cloud" do

@@ -37,6 +37,7 @@ ruby_block "Sync keys for CC" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
   end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 template "eucalyptus.conf" do

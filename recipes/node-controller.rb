@@ -93,6 +93,7 @@ ruby_block "Sync keys for NC" do
   block do
     Eucalyptus::KeySync.get_node_keys(node)
   end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

@@ -38,6 +38,8 @@ default["eucalyptus"]["set-bind-addr"] = false
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
+### Topology must be set for key sync to work
+default['eucalyptus']['sync-keys'] = true
 default["eucalyptus"]["install-load-balancer"] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
 default["eucalyptus"]["default-image"] = "cirros"
