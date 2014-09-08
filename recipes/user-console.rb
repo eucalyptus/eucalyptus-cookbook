@@ -21,7 +21,9 @@ include_recipe "eucalyptus::default"
 
 if node['eucalyptus']['user-console']['install-type'] == 'source'
   %w{openssl-devel python-devel swig gcc libmemcached1 python-pylibmc}.each do |package_name|
-    package package_name
+    yum_package package_name do
+      options node['eucalyptus']['yum-options']
+    end
   end
   source_branch = node['eucalyptus']['user-console']['source-branch']
   source_repo = node['eucalyptus']['user-console']['source-repo']
@@ -31,20 +33,19 @@ if node['eucalyptus']['user-console']['install-type'] == 'source'
   git source_directory do
     repository source_repo
     revision source_branch
-    checkout_branch source_branch
     action :sync
   end
   execute "Install python dependencies" do
     command "python setup.py develop"
-    cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
+    cwd source_directory
   end
   execute "Copy config file into place" do
     command "cp conf/console.default.ini console.ini"
-    cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
+    cwd source_directory
   end
   execute "Run eucaconsole in background" do
     command "./launcher &"
-    cwd source_directory = node['eucalyptus']['home-directory'] + "/eucaconsole"
+    cwd source_directory
   end
 else
   yum_package "eucaconsole" do
