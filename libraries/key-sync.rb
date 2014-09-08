@@ -116,10 +116,27 @@ module Eucalyptus
       if node.recipe? "eucalyptus::cloud-controller"
         clc = node
       else
-        clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-        environment = node.chef_environment
-        Chef::Log.info "Getting keys from CLC #{clc_ip} in environment #{environment}"
-        clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first.first
+        retry_count = 1
+        retry_delay = 10
+        total_retries = 12
+        begin
+          clc_ip = node["eucalyptus"]["topology"]["clc-1"]
+          environment = node.chef_environment
+          Chef::Log.info "Getting keys from CLC #{clc_ip}"
+          clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first.first
+          if clc.nil?
+            raise "Unable to find CLC:#{clc_ip} on chef server"
+          end
+        rescue Exception => e
+          if retry_count < total_retries
+            sleep retry_delay
+            retry_count += 1
+            Chef::Log.info "Retrying search for CLC:#{clc_ip}"
+            retry
+          else
+            raise e
+          end
+        end
       end
       return clc
     end
