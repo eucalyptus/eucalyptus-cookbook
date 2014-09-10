@@ -24,6 +24,9 @@ user "eucalyptus" do
   shell "/bin/bash"
 end
 
+### Used for monitoring in 4.1
+group "eucalyptus-status"
+
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 home_directory =  node['eucalyptus']["home-directory"]
 
