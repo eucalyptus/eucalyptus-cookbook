@@ -48,6 +48,13 @@ if Eucalyptus::Enterprise.is_san?(node)
     case info['storage-backend']
     when 'emc'
       san_package = 'eucalyptus-enterprise-storage-san-emc'
+      remote_file "#{Chef::Config[:file_cache_path]}/navicli.rpm" do
+        source node["eucalyptus"]["storage"]["emc"]["navicli-url"]
+      end
+      yum_package "#{Chef::Config[:file_cache_path]}/navicli.rpm"
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+      end  
     when 'netapp'
       san_package = 'eucalyptus-enterprise-storage-san-netapp'
     when 'equallogic'
