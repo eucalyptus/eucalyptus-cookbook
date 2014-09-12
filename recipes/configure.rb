@@ -42,7 +42,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   if Eucalyptus::Enterprise.is_san?(node)
     node['eucalyptus']['topology']['clusters'].each do |cluster, info|
       case info['storage-backend']
-      when 'emc'
+      when 'emc-vnx'
         san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
       when 'netapp'
         san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'

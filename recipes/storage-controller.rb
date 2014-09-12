@@ -46,13 +46,15 @@ end
 if Eucalyptus::Enterprise.is_san?(node)
   node['eucalyptus']['topology']['clusters'].each do |cluster, info|
     case info['storage-backend']
-    when 'emc'
+    when 'emc-vnx'
       san_package = 'eucalyptus-enterprise-storage-san-emc'
-      remote_file "#{Chef::Config[:file_cache_path]}/navicli.rpm" do
+      navicli_package = "#{Chef::Config[:file_cache_path]}/NaviCLI-Linux-64-x86-en_US.rpm"
+      remote_file navicli_package do
         source node["eucalyptus"]["storage"]["emc"]["navicli-url"]
       end
-      yum_package "#{Chef::Config[:file_cache_path]}/navicli.rpm" do
-        action :upgrade
+      yum_package "NaviCLI-Linux-64-x86-en_US" do
+        action :install
+        source navicli_package
         options node['eucalyptus']['yum-options']
       end
     when 'netapp'
