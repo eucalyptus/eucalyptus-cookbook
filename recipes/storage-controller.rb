@@ -51,10 +51,10 @@ if Eucalyptus::Enterprise.is_san?(node)
       remote_file "#{Chef::Config[:file_cache_path]}/navicli.rpm" do
         source node["eucalyptus"]["storage"]["emc"]["navicli-url"]
       end
-      yum_package "#{Chef::Config[:file_cache_path]}/navicli.rpm"
+      yum_package "#{Chef::Config[:file_cache_path]}/navicli.rpm" do
         action :upgrade
         options node['eucalyptus']['yum-options']
-      end  
+      end
     when 'netapp'
       san_package = 'eucalyptus-enterprise-storage-san-netapp'
     when 'equallogic'
