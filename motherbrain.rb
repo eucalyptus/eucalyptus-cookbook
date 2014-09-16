@@ -103,27 +103,27 @@ component 'ceph' do
   description "ceph cookbook application"
 
   group 'all-in-one' do
-    recipe 'ceph-cookbook::default'
-    recipe 'ceph-cookbook::mons'
-    recipe 'ceph-cookbook::osds'
-    recipe 'ceph-cookbook::admin'
-    recipe 'ceph-cookbook::mds'
+    recipe 'ceph-deploy::default'
+    recipe 'ceph-deploy::mons'
+    recipe 'ceph-deploy::osds'
+    recipe 'ceph-deploy::admin'
+    recipe 'ceph-deploy::mds'
   end
 
   group 'setup-osds' do
-    recipe 'ceph-cookbook::osds'
+    recipe 'ceph-deploy::osds'
   end
 
   group 'setup-mons' do
-    recipe 'ceph-cookbook::default'
-    recipe 'ceph-cookbook::mons'
+    recipe 'ceph-deploy::default'
+    recipe 'ceph-deploy::mons'
   end
 
   group 'setup-admin' do
-    recipe 'ceph-cookbook::admin'
+    recipe 'ceph-deploy::admin'
   end
 
   group 'setup-mds' do
-    recipe 'ceph-cookbook::mds'
+    recipe 'ceph-deploy::mds'
   end
 end
