@@ -1,6 +1,6 @@
 {
-  "name": "edge-nightly",
-  "description": "4.0 Nightlies EDGE Testing",
+  "name": "eucalyptus-default",
+  "description": "Default environment file for installing Eucalyptus.",
   "cookbook_versions": {
   },
   "json_class": "Chef::Environment",
