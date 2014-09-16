@@ -64,6 +64,14 @@ clusters.each do |cluster, info|
     command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1 #{dont_sync_keys}"
     not_if "euca-describe-services | grep #{cluster}-sc-1"
   end
+
+  if info["vmware-broker"]
+    execute "Register VMware Broker" do
+      command "#{euca_conf} --register-vmwarebroker -P #{cluster} -H #{info["vmware-broker"]} -C #{cluster}-vb #{dont_sync_keys}"
+      not_if "euca-describe-services | grep #{cluster}-vb"
+    end
+  end
+
   #### Sync cluster keys
   cluster_keys_dir = "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/#{cluster}"
   ruby_block "Upload cluster keys Chef Server" do
