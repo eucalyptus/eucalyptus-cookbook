@@ -53,7 +53,6 @@ component 'cloud' do
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::storage-controller'
-    recipe 'eucalyptus::configure'
   end
   group 'configure' do
     recipe 'eucalyptus::configure'
