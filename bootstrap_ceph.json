@@ -1,7 +1,7 @@
 {
   "nodes": [
     {
-      "groups": ["ceph::setup-mons", "ceph::setup-admin", "ceph::setup-mds"],
+      "groups": ["ceph::setup-mons", "ceph::setup-admin"],
       "hosts": ["10.111.5.159"]
     },
     {
