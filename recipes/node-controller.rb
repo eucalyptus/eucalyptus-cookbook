@@ -27,19 +27,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     flush_cache [:before]
   end
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    yum_package "eucanetd" do
-      action :upgrade
-      options node['eucalyptus']['yum-options']
-    end
-    execute "Set ip_forward sysctl values on NC" do
-      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
-    end
-    execute "Set bridge-nf-call-iptables sysctl values on NC" do
-      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
-    end
-    execute "Reload sysctl values on NC" do
-      command "sysctl -p"
-    end
+    include_recipe "eucalyptus::eucanetd"
   end
 else
   include_recipe "eucalyptus::install-source"
@@ -85,36 +73,20 @@ execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
 ### Ensure hostname resolves
-execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts"
+execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts" do
+  not_if "ping -c \`hostname --fqdn\`"
+end
 
-### Determine local cluster name
-if not Chef::Config[:solo]
-  ### Look through each cluster
-  node["eucalyptus"]["topology"]["clusters"].each do |name, cluster_data|
-    ### Try to match all of this NCs interfaces
-    node["network"]["interfaces"].each do |interface, iface_data|
-      ### Look through each of the addresses on the interfaces
-      iface_data["addresses"].each do |address, addr_data|
-        ### If my addresss is in the nodes list for this cluster
-        if cluster_data["nodes"].include?(address) and not Chef::Config[:solo]
-          node.set["eucalyptus"]["local-cluster-name"] = name
-          node.save
-        end
-      end
-    end
+ruby_block "Sync keys for NC" do
+  block do
+    Eucalyptus::KeySync.get_node_keys(node)
   end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
-end
-
-ruby_block "Get node keys from CC" do
-  block do
-    Eucalyptus::KeySync.get_node_keys(node)
-  end
-  not_if "#{Chef::Config[:solo]}"
 end
 
 if node["eucalyptus"]["nc"]["install-qemu-migration"]
@@ -132,11 +104,4 @@ end
 service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
-end
-
-if node["eucalyptus"]["network"]["mode"] == "EDGE"
-  service "eucanetd" do
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
 end

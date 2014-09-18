@@ -20,7 +20,7 @@ command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{nod
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
 describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
-if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
+if node['eucalyptus']['topology']['riakcs']
   execute "Set OSG providerclient to riakcs" do
     command "#{modify_property} -p objectstorage.providerclient=riakcs"
     retries 15
@@ -32,9 +32,39 @@ if node['eucalyptus']['topology']['riakcs']['endpoint'] != ""
 else
   execute "Set OSG providerclient" do
     command "#{modify_property} -p objectstorage.providerclient=walrus"
-    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
     retries 15
     retry_delay 20
+  end
+end
+
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_san?(node)
+    node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+      case info['storage-backend']
+      when 'emc-vnx'
+        san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
+        execute "#{modify_property} -p #{cluster}.storage.clipath=#{node["eucalyptus"]["storage"]["emc"]["navicli-path"]}"
+      when 'netapp'
+        san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
+      when 'equallogic'
+        san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
+      end
+      yum_package san_package do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+    if Eucalyptus::Enterprise.is_vmware?(node)
+      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
   end
 end
 
@@ -68,7 +98,9 @@ clusters.each do |cluster, info|
 
   end
   execute "Set storage backend" do
-     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{info["storage-backend"]}"
+     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
+     ### Patch for EUCA-9963
+     not_if "#{describe_property} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
   end
@@ -113,7 +145,7 @@ if node['eucalyptus']['install-imaging-worker']
   yum_package "eucalyptus-imaging-worker-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    only_if "grep 4.0 #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
     only_if "#{describe_property} imaging.imaging_worker_emi | grep 'NULL'"
@@ -125,5 +157,16 @@ node['eucalyptus']['system-properties'].each do |key, value|
     retries 10
     retry_delay 5
     not_if "#{describe_property} #{key} | grep \"#{value}\""
+  end
+end
+
+## Post script
+if node['eucalyptus']['post-script-url'] != ""
+  remote_file "#{node['eucalyptus']['home-directory']}/post.sh" do
+    source node['eucalyptus']['post-script-url']
+    mode "777"
+  end
+  execute 'Running post script' do
+    command "bash #{node['eucalyptus']['home-directory']}/post.sh"
   end
 end

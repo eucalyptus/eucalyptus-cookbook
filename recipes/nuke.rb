@@ -22,12 +22,14 @@ service "eucalyptus-nc" do
   action [ :stop ]
 end
 
-service "eucanetd" do
-  action [ :stop ]
-end
+if node['eucalyptus']['network']['mode'] == 'EDGE'
+  service "eucanetd" do
+    action [ :stop ]
+  end
 
-execute "eucanetd -F" do
-  only_if "which eucanetd"
+  execute "eucanetd -F || true" do
+    only_if "which eucanetd"
+  end
 end
 
 service "eucalyptus-cc" do
@@ -93,14 +95,21 @@ end
 yum_repository 'eucalyptus-release' do
   description 'Eucalyptus Package Repo'
   url node['eucalyptus']['eucalyptus-repo']
-  gpgkey 'http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub'
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
+  action :remove
+end
+
+yum_repository 'eucalyptus-enterprise-release' do
+  description 'Eucalyptus Enterprise Package Repo'
+  url node['eucalyptus']['enterprise-repo']
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
   action :remove
 end
 
 yum_repository 'euca2ools-release' do
   description 'Euca2ools Package Repo'
   url node['eucalyptus']['euca2ools-repo']
-  gpgkey 'http://www.eucalyptus.com/sites/all/files/c1240596-eucalyptus-release-key.pub'
+  gpgkey node['eucalyptus']['euca2ools-gpg-key']
   action :remove
 end
 
@@ -121,6 +130,16 @@ if node['eucalyptus']['install-type'] == 'source'
     action :remove
   end
 
+  execute 'Remove init script symlinks' do
+    command 'rm -rf /etc/init.d/euca*'
+  end
+
+  directory "#{node['eucalyptus']['home-directory']}/usr/share/eucalyptus" do
+    recursive true
+    action :delete
+    only_if "ls #{node['eucalyptus']['home-directory']}/usr/share/eucalyptus"
+  end
+
   directory "#{node['eucalyptus']['home-directory']}/source" do
     recursive true
     action :delete
@@ -135,33 +154,29 @@ if node['eucalyptus']['install-type'] == 'source'
   end
 end
 
-execute "Clear yum cache" do
-  command "yum clean all"
-end
-
 ## Delete File system artifacts
-directory '/etc/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /etc/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/etc/eucalyptus"
 end
 
-directory '/etc/euca2ools' do
+directory "#{node["eucalyptus"]["home-directory"]}/etc/euca2ools" do
   recursive true
   action :delete
-  only_if 'ls /etc/euca2ools'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/etc/euca2ools"
 end
 
-directory '/var/log/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/log/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/log/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/log/eucalyptus"
 end
 
-directory '/var/run/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/run/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/run/eucalyptus"
 end
 
 bash "Remove devmapper and losetup entries" do
@@ -175,10 +190,10 @@ bash "Remove devmapper and losetup entries" do
   retry_delay 2
 end
 
-directory '/var/lib/eucalyptus' do
+directory "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus" do
   recursive true
   action :delete
-  only_if 'ls /var/lib/eucalyptus'
+  only_if "ls #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus"
 end
 
 directory "#{node['eucalyptus']['home-directory']}/source/vmware-broker" do
@@ -205,10 +220,12 @@ execute 'delete tgtdadm eucalyptus account' do
   only_if 'tgtadm --mode account --op show | grep eucalyptus'
 end
 
-execute "yum clean all"
-
 directory "/var/chef/cache" do
   recursive true
   action :delete
   only_if "ls /var/chef/cache"
+end
+
+execute "Clear yum cache" do
+  command "yum clean all"
 end

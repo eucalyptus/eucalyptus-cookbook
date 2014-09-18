@@ -24,7 +24,15 @@
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
+    notifies :restart, 'service[eucalyptus-cloud]', :immediately
   end
+end
+
+ruby_block "Sync keys for VMware Broker" do
+  block do
+    Eucalyptus::KeySync.get_cloud_keys(node)
+  end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 service "eucalyptus-cloud" do
