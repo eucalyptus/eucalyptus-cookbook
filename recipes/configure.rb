@@ -45,6 +45,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
       when 'emc-vnx'
         san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
         execute "#{modify_property} -p #{cluster}.storage.clipath=#{node["eucalyptus"]["storage"]["emc"]["navicli-path"]}"
+        execute "#{modify_property} -p #{cluster}.storage.storagepool=0"
       when 'netapp'
         san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
       when 'equallogic'
