@@ -19,12 +19,12 @@ stack_order do
   bootstrap 'cloud::walrus'
   bootstrap 'cloud::user-console'
   bootstrap 'node::default'
+  bootstrap 'cloud::configure'
   bootstrap 'midokura::all-in-one'
   bootstrap 'midokura::midokura-cp'
   bootstrap 'midokura::midokura-api'
   bootstrap 'midokura::midolman'
   bootstrap 'midokura::zookeeper'
-  bootstrap 'cloud::configure'
   bootstrap 'cloud::create-first-resources'
   bootstrap 'nuke::default'
 end
