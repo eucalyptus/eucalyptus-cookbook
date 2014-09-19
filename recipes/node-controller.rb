@@ -41,6 +41,18 @@ template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]
   group "root"
 end
 
+execute "Set ip_forward sysctl values on NC" do
+  command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+end
+
+execute "Set bridge-nf-call-iptables sysctl values on NC" do
+  command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+end
+
+execute "Reload sysctl values" do
+  command "sysctl -p"
+end
+
 if node["eucalyptus"]["network"]["bridge-ip"] != ""
   bridge_template = "ifcfg-br0-static.erb"
 else
