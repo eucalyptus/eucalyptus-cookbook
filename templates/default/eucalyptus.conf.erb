@@ -52,3 +52,10 @@ METADATA_USE_VM_PRIVATE="<%= node["eucalyptus"]["network"]["metadata-use-private
 METADATA_IP="<%= node["eucalyptus"]["network"]["metadata-ip"] %>"
 <% end -%>
 DISABLE_TUNNELING="<%= node["eucalyptus"]["network"]["disable-tunneling"] %>"
+<% if (node.recipe? "eucalyptus::cloud-controller") and node["eucalyptus"]["network"]["mode"] == "VPCMIDO" -%>
+MIDOGWHOST="<%= node["eucalyptus"]["network"]["midonet"]['gw-host'] %>"
+MIDOGWIP="<%= node["eucalyptus"]["network"]["midonet"]['gw-ip'] %>"
+MIDOGWIFACE="<%= node["eucalyptus"]["network"]["midonet"]['gw-interface'] %>"
+MIDOPUBNW="<%= node["eucalyptus"]["network"]["midonet"]['public-network'] %>"
+MIDOPUBGWIP="<%= node["eucalyptus"]["network"]["midonet"]['public-gw-ip'] %>"
+<% end -%>

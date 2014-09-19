@@ -29,6 +29,10 @@ execute "Initialize Eucalyptus DB" do
  creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
 end
 
+if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+  include_recipe "eucalyptus::eucanetd"
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

@@ -19,6 +19,11 @@ stack_order do
   bootstrap 'cloud::walrus'
   bootstrap 'cloud::user-console'
   bootstrap 'node::default'
+  bootstrap 'midokura::all-in-one'
+  bootstrap 'midokura::midokura-cp'
+  bootstrap 'midokura::midokura-api'
+  bootstrap 'midokura::midolman'
+  bootstrap 'midokura::zookeeper'
   bootstrap 'cloud::configure'
   bootstrap 'cloud::create-first-resources'
   bootstrap 'nuke::default'
@@ -53,7 +58,6 @@ component 'cloud' do
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::storage-controller'
-    recipe 'eucalyptus::configure'
   end
   group 'configure' do
     recipe 'eucalyptus::configure'
@@ -91,5 +95,25 @@ component 'nuke' do
   versioned
   group 'default' do
     recipe 'eucalyptus::nuke'
+  end
+end
+
+component 'midokura' do
+  description "Midonet installation"
+  versioned
+  group 'all-in-one' do
+    recipe 'midokura::default'
+  end
+  group 'midolman' do
+    recipe 'midokura::midolman'
+  end
+  group 'midokura-api' do
+    recipe 'midokura::midokura-api'
+  end
+  group 'midokura-cp' do
+    recipe 'midokura::midokura-cp'
+  end
+  group 'zookeeper' do
+    recipe 'midokura::zookeeper'
   end
 end
