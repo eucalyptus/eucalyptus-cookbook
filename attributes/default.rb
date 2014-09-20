@@ -108,7 +108,8 @@ default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
 
 ## Storage
 default["eucalyptus"]["storage"]["emc"]["navicli-url"] = "http://mirror.eucalyptus-systems.com/mirrors/emc/NaviCLI-Linux-64-latest.rpm"
-default["eucalyptus"]["storage"]["emc"]["navicli-path"] = "/opt/Navisphere/bin/naviseccli" 
+default["eucalyptus"]["storage"]["emc"]["navicli-path"] = "/opt/Navisphere/bin/naviseccli"
+default["eucalyptus"]["storage"]["emc"]["storagepool"] = "0" 
 
 ## NC Specific
 default["eucalyptus"]["nc"]["install-qemu-migration"] = true
