@@ -75,6 +75,13 @@ default["eucalyptus"]["network"]["dns-server"] = "8.8.8.8"
 default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
 default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 
+### Midonet
+#default["eucalyptus"]["network"]["midonet"]['gw-host']
+#default["eucalyptus"]["network"]["midonet"]['gw-ip']
+#default["eucalyptus"]["network"]["midonet"]['gw-interface']
+#default["eucalyptus"]["network"]["midonet"]['public-network']
+#default["eucalyptus"]["network"]["midonet"]['public-gw-ip']
+
 ## Define Topology - Used for registration on CLC
 #default["eucalyptus"]["topology"]["clc-1"] = ""
 #default["eucalyptus"]["topology"]["clusters"] = {}
@@ -83,6 +90,7 @@ default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 ##############################################################################
 #default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
+#default["eucalyptus"]["topology"]["clusters"]["default"]["vmware-broker"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 #default["eucalyptus"]["topology"]["clusters"]["default"]["hypervisor"] = "kvm"

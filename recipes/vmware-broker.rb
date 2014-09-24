@@ -24,6 +24,7 @@
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
+    notifies :restart, 'service[eucalyptus-cloud]', :immediately
   end
 end
 

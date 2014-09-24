@@ -2,7 +2,6 @@ EUCALYPTUS="<%= node["eucalyptus"]["home-directory"] %>"
 LOGLEVEL="<%= node["eucalyptus"]["log-level"] %>"
 EUCA_USER="<%= node["eucalyptus"]["user"] %>"
 CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
-NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
 CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
 <% if (node.recipe? "eucalyptus::cluster-controller") && node["eucalyptus"]["topology"]["clusters"].has_key?(Eucalyptus::KeySync.get_local_cluster_name(node)) -%>
@@ -10,7 +9,13 @@ NODES="<%= node["eucalyptus"]["topology"]["clusters"][Eucalyptus::KeySync.get_lo
 <% else -%>
 NODES=""
 <% end -%>
+<% if (node.recipe? "eucalyptus::vmware-broker") -%>
+NC_SERVICE="/services/EucalyptusBroker"
+NC_PORT="8773"
+<% else -%>
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
+NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
+<% end -%>
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
 NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
 <% end -%>
@@ -47,3 +52,10 @@ METADATA_USE_VM_PRIVATE="<%= node["eucalyptus"]["network"]["metadata-use-private
 METADATA_IP="<%= node["eucalyptus"]["network"]["metadata-ip"] %>"
 <% end -%>
 DISABLE_TUNNELING="<%= node["eucalyptus"]["network"]["disable-tunneling"] %>"
+<% if (node.recipe? "eucalyptus::cloud-controller") and node["eucalyptus"]["network"]["mode"] == "VPCMIDO" -%>
+MIDOGWHOST="<%= node["eucalyptus"]["network"]["midonet"]['gw-host'] %>"
+MIDOGWIP="<%= node["eucalyptus"]["network"]["midonet"]['gw-ip'] %>"
+MIDOGWIFACE="<%= node["eucalyptus"]["network"]["midonet"]['gw-interface'] %>"
+MIDOPUBNW="<%= node["eucalyptus"]["network"]["midonet"]['public-network'] %>"
+MIDOPUBGWIP="<%= node["eucalyptus"]["network"]["midonet"]['public-gw-ip'] %>"
+<% end -%>
