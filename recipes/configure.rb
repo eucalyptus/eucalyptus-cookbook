@@ -120,6 +120,28 @@ if node['eucalyptus']['install-imaging-worker']
   end
 end
 
+### setup UI accounts
+if node['eucalyptus']['install-ui-accounts']
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euare-useraddloginprofile -u admin -p password" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-accountcreate -a ui-test-acct-00; euare-useraddloginprofile -u admin -p mypassword0)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-usercreate --as-account ui-test-acct-00 -u user00; euare-useraddloginprofile -u user00 -p mypassword1)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-accountcreate -a ui-test-acct-01; euare-useraddloginprofile -u admin -p mypassword2)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-usercreate --as-account ui-test-acct-01 -u user00; euare-useraddloginprofile -u user00 -p mypassword3)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-accountcreate -a ui-test-acct-02; euare-useraddloginprofile -u admin -p mypassword4)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-usercreate --as-account ui-test-acct-02 -u user00; euare-useraddloginprofile -u user00 -p mypassword5)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-accountcreate -a ui-test-acct-03; euare-useraddloginprofile -u admin -p mypassword6)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (euare-usercreate --as-account ui-test-acct-03 -u user00; euare-useraddloginprofile -u user00 -p mypassword7)" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (mkdir cred_depot; cd cred_depot; mkdir ui-test-acct-00; cd ui-test-acct-00; mkdir admin; cd admin; euca_conf --get-credentials creds.zip --cred-account ui-test-account-00 --cred-user admin )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; cd ui-test-acct-00; mkdir user00; cd user00; euca_conf --get-credentials creds.zip --cred-account ui-test-account-00 --cred-user user00 )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; mkdir ui-test-acct-01; cd ui-test-acct-01; mkdir admin; cd admin; euca_conf --get-credentials creds.zip --cred-account ui-test-account-01 --cred-user admin )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; cd ui-test-acct-01; mkdir user00; cd user00; euca_conf --get-credentials creds.zip --cred-account ui-test-account-01 --cred-user user00 )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; mkdir ui-test-acct-02; cd ui-test-acct-02; mkdir admin; cd admin; euca_conf --get-credentials creds.zip --cred-account ui-test-account-02 --cred-user admin )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; cd ui-test-acct-02; mkdir user00; cd user00; euca_conf --get-credentials creds.zip --cred-account ui-test-account-02 --cred-user user00 )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; mkdir ui-test-acct-03; cd ui-test-acct-03; mkdir admin; cd admin; euca_conf --get-credentials creds.zip --cred-account ui-test-account-03 --cred-user admin )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (cd cred_depot; cd ui-test-acct-03; mkdir user00; cd user00; euca_conf --get-credentials creds.zip --cred-account ui-test-account-03 --cred-user user00 )" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && (echo \"{ \"Statement\": [ { \"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\" } ] }\" >all.policy; euare-useruploadpolicy --as-account ui-test-acct-00 -u user00 -p fullaccess -f all.policy; euare-useruploadpolicy --as-account ui-test-acct-01 -u user00 -p fullaccess -f all.policy; euare-useruploadpolicy --as-account ui-test-acct-02 -u user00 -p fullaccess -f all.policy; euare-useruploadpolicy --as-account ui-test-acct-03 -u user00 -p fullaccess -f all.policy )" do
+end
+
 node['eucalyptus']['system-properties'].each do |key, value|
   execute "#{modify_property} -p #{key}=\"#{value}\"" do
     retries 10

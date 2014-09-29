@@ -87,7 +87,7 @@ def check_dependencies():
         print_error("Error: Unable to find EC2_URL\nMake sure your eucarc is sourced.")
         sys.exit(1)
     if not "S3_URL" in env:
-        print_error("Error: Unable to find EC2_URL\nMake sure your eucarc is sourced.")
+        print_error("Error: Unable to find S3_URL\nMake sure your eucarc is sourced.")
         sys.exit(1)
 
 
