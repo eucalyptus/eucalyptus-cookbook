@@ -16,7 +16,7 @@ default['eucalyptus']['install-load-balancer'] = true
 default['eucalyptus']['imaging-worker-repo'] = ""
 default['eucalyptus']['install-imaging-worker'] = true
 default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
-default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/euca-master-plugin-build-bootstrap/centos/$releasever/$basearch/"
+default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/enterprise-devel/centos/$releasever/$basearch/"
 default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
 default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
 default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
@@ -108,7 +108,7 @@ default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
 ## Storage
 default["eucalyptus"]["storage"]["emc"]["navicli-url"] = "http://mirror.eucalyptus-systems.com/mirrors/emc/NaviCLI-Linux-64-latest.rpm"
 default["eucalyptus"]["storage"]["emc"]["navicli-path"] = "/opt/Navisphere/bin/naviseccli"
-default["eucalyptus"]["storage"]["emc"]["storagepool"] = "0" 
+default["eucalyptus"]["storage"]["emc"]["storagepool"] = "0"
 
 ## NC Specific
 default["eucalyptus"]["nc"]["install-qemu-migration"] = true
