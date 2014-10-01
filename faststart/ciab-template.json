@@ -1,7 +1,7 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/",
+      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/",
       "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/",
       "install-load-balancer": EXTRASERVICES,
       "install-imaging-worker": EXTRASERVICES,
