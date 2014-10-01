@@ -1,0 +1,70 @@
+{
+  "name": "eucalyptus-default",
+  "description": "Default environment file for installing Eucalyptus.",
+  "cookbook_versions": {
+  },
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+    "eucalyptus": {
+      "topology": {
+        "clc-1": "10.0.1.185",
+        "walrus": "10.0.1.185",
+        "user-facing": ["10.0.1.185"],
+        "clusters": {
+          "default": {
+            "cc-1": "10.0.1.186",
+            "sc-1": "10.0.1.186",
+            "nodes": "10.0.1.187 10.0.1.181"
+          }
+        }
+      },
+      "network": {
+        "mode": "EDGE",
+        "config-json": {
+          "InstanceDnsDomain": "eucalyptus.internal",
+          "InstanceDnsServers": [
+            "8.8.8.8"
+          ],
+          "PublicIps": [
+            "10.0.2.1-10.0.2.100"
+          ],
+          "Clusters": [
+            {
+              "Subnet": {
+                "Name": "10.0.0.0",
+                "Subnet": "10.0.0.0",
+                "Netmask": "255.255.0.0",
+                "Gateway": "10.0.1.1",
+                "PrivateIps": [
+                  "10.0.2.101-10.0.2.200"
+                ]
+              }
+            }
+          ]
+        },
+        "public-interface": "br0",
+        "private-interface": "br0"
+      },
+      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
+      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
+      "yum-options": "--nogpg"
+    },
+    "ceph": {
+      "mons": ["10.111.5.159"],
+      "osds": {
+        "one": {
+          "ipaddr": "10.111.5.160",
+          "device": "/var/local/osd1"
+        },
+        "two": {
+          "ipaddr": "10.111.5.161",
+          "device": "/var/local/osd2"
+        }
+      },
+      "mds_hosts": ["10.111.5.159"]
+    }
+  },
+  "override_attributes": {
+  }
+}
