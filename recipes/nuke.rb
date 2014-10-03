@@ -229,3 +229,9 @@ end
 execute "Clear yum cache" do
   command "yum clean all"
 end
+
+directory "/var/cache/yum/euca*" do
+  recursive true
+  action :delete
+  only_if "ls /var/cache/yum/euca*"
+end
