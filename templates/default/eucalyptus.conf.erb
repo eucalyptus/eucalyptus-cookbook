@@ -48,7 +48,7 @@ VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
 VNET_DOMAINNAME="<%= node["eucalyptus"]["network"]["domain-name"] %>"
 <% end -%>
 METADATA_USE_VM_PRIVATE="<%= node["eucalyptus"]["network"]["metadata-use-private-ip"] %>"
-<% if node["eucalyptus"]["network"]["metadata-ip"] -%>
+<% if node["eucalyptus"]["network"]["metadata-ip"] != '' -%>
 METADATA_IP="<%= node["eucalyptus"]["network"]["metadata-ip"] %>"
 <% end -%>
 DISABLE_TUNNELING="<%= node["eucalyptus"]["network"]["disable-tunneling"] %>"
