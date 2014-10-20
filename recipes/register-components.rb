@@ -110,8 +110,7 @@ end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{euca_conf}  --register-service -T user-api -H #{uf_ip} -N API_#{uf_ip} #{dont_sync_keys}"
-    not_if "euca-describe-services | egrep 'API_#{uf_ip}'"
-    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
+    not_if "egrep '3.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version || euca-describe-services | egrep 'API_#{uf_ip}'"
   end
 end
 
