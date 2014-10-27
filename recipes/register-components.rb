@@ -114,17 +114,6 @@ user_facing.each do |uf_ip|
   end
 end
 
-if node['eucalyptus']['network']['mode'] == "EDGE"
-  file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-    content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-    mode "644"
-    action :create
-  end
-  execute "Configure network" do
-    command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
-  end
-end
-
 if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
     command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus-1 #{dont_sync_keys}"
