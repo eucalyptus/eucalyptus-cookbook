@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
                                       "install-imaging-worker" => false,
                                       "nc" => {"hypervisor" => "qemu", "work-size" => "50000"},
                                       "topology" => {  "clc-1" => "192.168.192.101", "walrus" => "192.168.192.101", 
-                                                       "user-facing" => "192.168.192.101",
+                                                       "user-facing" => ["192.168.192.101"],
                                                        "clusters" => {"default" => { "storage-backend" => "overlay ",
                                                                                      "cc-1" => "192.168.192.101",
                                                                                      "sc-1" => "192.168.192.101",

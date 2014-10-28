@@ -18,6 +18,17 @@
 ##
 require 'json'
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_vmware?(node)
+    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      notifies :restart, "service[eucalyptus-cloud]", :immediately
+      flush_cache [:before]
+    end
+  end
+end
+
 execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
@@ -43,9 +54,9 @@ dont_sync_keys = "--no-scp --no-rsync --no-sync"
 
 clusters.each do |cluster, info|
   if info["cc-1"] == ""
-	  cc_ip = node['ipaddress']
+    cc_ip = node['ipaddress']
   else
-	  cc_ip = info["cc-1"]
+    cc_ip = info["cc-1"]
   end
 
   execute "Register CC" do
@@ -55,9 +66,9 @@ clusters.each do |cluster, info|
     retry_delay 10
   end
   if info["sc-1"] == ""
-	  sc_ip = node['ipaddress']
+    sc_ip = node['ipaddress']
   else
-	  sc_ip = info["sc-1"]
+    sc_ip = info["sc-1"]
   end
 
   execute "Register SC" do
@@ -110,19 +121,7 @@ end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{euca_conf}  --register-service -T user-api -H #{uf_ip} -N API_#{uf_ip} #{dont_sync_keys}"
-    not_if "euca-describe-services | egrep 'API_#{uf_ip}'"
-    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
-  end
-end
-
-if node['eucalyptus']['network']['mode'] == "EDGE"
-  file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-    content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-    mode "644"
-    action :create
-  end
-  execute "Configure network" do
-    command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
+    not_if "egrep '3.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version || euca-describe-services | egrep 'API_#{uf_ip}'"
   end
 end
 
