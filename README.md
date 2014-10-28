@@ -56,7 +56,7 @@ To deploy a distributed topology it is necessary to define an environment with a
 #### Platforms
 This cookbook only supports RHEL/CentOS 6 at the time being.
 
-#### Bershelf
+#### Berkshelf
 A Berksfile is included to allow users to easily download the required cookbook dependencies.
 - Install Berkshelf: `gem install berkshelf`
 - Install Deps from inside this cookbook: `berks install`
