@@ -80,6 +80,7 @@ default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 #default["eucalyptus"]["network"]["midonet"]['gw-interface']
 #default["eucalyptus"]["network"]["midonet"]['public-network']
 #default["eucalyptus"]["network"]["midonet"]['public-gw-ip']
+#default["eucalyptus"]["network"]["midonet"]['eucanetd-host']
 
 ## Define Topology - Used for registration on CLC
 #default["eucalyptus"]["topology"]["clc-1"] = ""
