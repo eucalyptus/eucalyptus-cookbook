@@ -202,10 +202,9 @@ directory "#{node['eucalyptus']['home-directory']}/source/vmware-broker" do
   only_if "ls #{node["eucalyptus"]["home-directory"]}/source/vmware-broker"
 end
 
-directory '/tmp/*release*' do
-  recursive true
-  action :delete
-  only_if 'ls /tmp/*release*'
+execute "remove all temporary release directories" do
+  command "rm -rf /tmp/*release*"
+  ignore_failure true
 end
 
 execute 'clean iscsi sessions' do
@@ -226,12 +225,9 @@ directory "/var/chef/cache" do
   only_if "ls /var/chef/cache"
 end
 
-$euca_loc = "/var/cache/yum/x86_64/6/euca*"
-
-directory "$euca_loc" do
-  recursive true
-  action :delete
-  only_if "ls $euca_loc"
+execute "remove all eucalyptus cache repositories" do
+  command "rm -rf /var/cache/yum/x86_64/6/euca*"
+  ignore_failure true
 end
 
 execute "Clear yum cache" do
