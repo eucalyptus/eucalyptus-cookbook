@@ -14,6 +14,10 @@ stack_order do
   bootstrap 'ceph::setup-osds'
   bootstrap 'ceph::setup-admin'
   bootstrap 'ceph::setup-mds'
+  bootstrap 'riakcs-cluster::head'
+  bootstrap 'riakcs-cluster::node'
+  bootstrap 'riakcs-cluster::commit'
+  bootstrap 'riakcs-cluster::nuke'
   bootstrap 'cloud::full'
   bootstrap 'cloud::default'
   bootstrap 'cloud::frontend'
@@ -130,6 +134,40 @@ component 'ceph' do
   group 'setup-mds' do
     recipe 'ceph-deploy::mds'
   end
+end
+
+component 'riakcs-cluster' do
+  description "Riakcs-cluster application"
+
+  group 'head' do
+    recipe 'riak-cs::package'
+    recipe 'riak'
+    recipe 'sysctl'
+    recipe 'riak-cs'
+    recipe 'riak-cs::stanchion'
+    recipe 'riak-cs-create-admin-user'
+    recipe 'riakcs-cluster::credentials'
+    recipe 'riakcs-cluster::sync'
+  end
+
+  group 'commit' do
+    recipe 'riakcs-cluster::plancommit'
+  end
+
+  group 'node' do
+    recipe 'riakcs-cluster::sync'
+    recipe 'riak-cs::package'
+    recipe 'riak'
+    recipe 'sysctl'
+    recipe 'riak-cs'
+    recipe 'riakcs-cluster::join'
+    recipe 'riakcs-cluster::mergecreds'
+  end
+
+  group 'nuke' do
+    recipe 'riakcs-cluster::nuke'
+  end
+
 end
 
 component 'midokura' do
