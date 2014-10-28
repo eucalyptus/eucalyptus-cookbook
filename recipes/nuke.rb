@@ -226,6 +226,14 @@ directory "/var/chef/cache" do
   only_if "ls /var/chef/cache"
 end
 
+$euca_loc = "/var/cache/yum/x86_64/6/euca*"
+
+directory "$euca_loc" do
+  recursive true
+  action :delete
+  only_if "ls $euca_loc"
+end
+
 execute "Clear yum cache" do
   command "yum clean all"
 end
