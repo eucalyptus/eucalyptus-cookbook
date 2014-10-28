@@ -18,6 +18,17 @@
 ##
 require 'json'
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_vmware?(node)
+    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      notifies :restart, "service[eucalyptus-cloud]", :immediately
+      flush_cache [:before]
+    end
+  end
+end
+
 execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
@@ -43,9 +54,9 @@ dont_sync_keys = "--no-scp --no-rsync --no-sync"
 
 clusters.each do |cluster, info|
   if info["cc-1"] == ""
-	  cc_ip = node['ipaddress']
+    cc_ip = node['ipaddress']
   else
-	  cc_ip = info["cc-1"]
+    cc_ip = info["cc-1"]
   end
 
   execute "Register CC" do
@@ -55,9 +66,9 @@ clusters.each do |cluster, info|
     retry_delay 10
   end
   if info["sc-1"] == ""
-	  sc_ip = node['ipaddress']
+    sc_ip = node['ipaddress']
   else
-	  sc_ip = info["sc-1"]
+    sc_ip = info["sc-1"]
   end
 
   execute "Register SC" do
