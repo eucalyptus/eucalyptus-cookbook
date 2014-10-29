@@ -59,7 +59,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
       end
     end
     if Eucalyptus::Enterprise.is_vmware?(node)
-      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      yum_package 'eucalyptus-enterprise-vmware-broker' do
         action :upgrade
         options node['eucalyptus']['yum-options']
         notifies :restart, "service[eucalyptus-cloud]", :immediately
