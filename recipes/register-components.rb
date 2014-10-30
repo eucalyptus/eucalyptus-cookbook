@@ -18,17 +18,6 @@
 ##
 require 'json'
 
-if Eucalyptus::Enterprise.is_enterprise?(node)
-  if Eucalyptus::Enterprise.is_vmware?(node)
-    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
-      action :upgrade
-      options node['eucalyptus']['yum-options']
-      notifies :restart, "service[eucalyptus-cloud]", :immediately
-      flush_cache [:before]
-    end
-  end
-end
-
 execute "wait-for-credentials" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']

@@ -68,6 +68,14 @@ if Eucalyptus::Enterprise.is_san?(node)
       notifies :restart, "service[eucalyptus-cloud]", :immediately
       flush_cache [:before]
     end
+    if Eucalyptus::Enterprise.is_vmware?(node)
+      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
   end
 end
 

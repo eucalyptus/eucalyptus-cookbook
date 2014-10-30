@@ -31,6 +31,17 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_vmware?(node)
+    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      notifies :restart, "service[eucalyptus-cloud]", :immediately
+      flush_cache [:before]
+    end
+  end
+end
+
 yum_package "euca2ools" do
   action :upgrade
   options node['eucalyptus']['yum-options']
