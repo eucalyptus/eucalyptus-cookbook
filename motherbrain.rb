@@ -85,6 +85,15 @@ component 'cluster' do
   group 'storage-controller' do
     recipe 'eucalyptus::storage-controller'
   end
+  group 'vmware-default' do
+    recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::vmware-broker'
+    recipe 'eucalyptus::storage-controller'
+  end
+  group 'vmware-cluster-controller' do
+    recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::vmware-broker'
+  end
 end
 
 component 'node' do
