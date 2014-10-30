@@ -145,6 +145,7 @@ component 'riakcs-cluster' do
     recipe 'sysctl'
     recipe 'riak-cs'
     recipe 'riak-cs::stanchion'
+    recipe 'riak-cs::control'
     recipe 'riak-cs-create-admin-user'
     recipe 'riakcs-cluster::credentials'
     recipe 'riakcs-cluster::sync'
@@ -152,6 +153,7 @@ component 'riakcs-cluster' do
 
   group 'commit' do
     recipe 'riakcs-cluster::plancommit'
+    recipe 'riakcs-cluster::mergecreds'
   end
 
   group 'node' do
@@ -169,6 +171,7 @@ component 'riakcs-cluster' do
   end
 
 end
+
 
 component 'midokura' do
   description "Midonet installation"
