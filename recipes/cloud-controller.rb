@@ -31,6 +31,10 @@ end
 
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
   include_recipe "eucalyptus::eucanetd"
+  yum_package "nginx" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+  end
 end
 
 service "eucalyptus-cloud" do
