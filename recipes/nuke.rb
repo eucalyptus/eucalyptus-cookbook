@@ -233,3 +233,8 @@ end
 execute "Clear yum cache" do
   command "yum clean all"
 end
+
+execute "remove all eucalyptus cache repositories" do
+  command "rm -rf /var/cache/yum/x86_64/6/euca*"
+  ignore_failure true
+end
