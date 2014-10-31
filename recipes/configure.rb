@@ -37,8 +37,8 @@ if node['eucalyptus']['topology']['riakcs']
          node["eucalyptus"]["topology"]["riakcs"]["endpoint"],
          node["eucalyptus"]["topology"]["riakcs"]["port"],
     )
-    Chef::Log.info "shaon: admin_key: #{admin_key}"
-    Chef::Log.info "shaon: admin_secret: #{admin_secret}"
+    Chef::Log.info "RiakCS admin_key: #{admin_key}"
+    Chef::Log.info "RiakCS admin_secret: #{admin_secret}"
   end
 
   execute "Set S3 endpoint" do
