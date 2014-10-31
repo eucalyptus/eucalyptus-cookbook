@@ -20,6 +20,8 @@ stack_order do
   bootstrap 'cluster::default'
   bootstrap 'cluster::cluster-controller'
   bootstrap 'cluster::storage-controller'
+  bootstrap 'cluster::vmware-default'
+  bootstrap 'cluster::vmware-cluster-controller'
   bootstrap 'cloud::user-facing'
   bootstrap 'cloud::walrus'
   bootstrap 'cloud::user-console'
