@@ -26,9 +26,28 @@ if node['eucalyptus']['topology']['riakcs']
     retries 15
     retry_delay 20
   end
-  execute "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['riakcs']['access-key']}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['riakcs']['secret-key']}"
+
+  admin_key = node['eucalyptus']['topology']['riakcs']['access-key']
+  admin_secret = node['eucalyptus']['topology']['riakcs']['secret-key']
+
+  if admin_key == ""
+    admin_key, admin_secret = RiakCSHelper::CreateUser.create_riakcs_user(
+         node["eucalyptus"]["topology"]["riakcs"]["admin-name"],
+         node["eucalyptus"]["topology"]["riakcs"]["admin-email"],
+         node["eucalyptus"]["topology"]["riakcs"]["endpoint"],
+         node["eucalyptus"]["topology"]["riakcs"]["port"],
+    )
+    Chef::Log.info "RiakCS admin_key: #{admin_key}"
+    Chef::Log.info "RiakCS admin_secret: #{admin_secret}"
+  end
+
+  execute "Set S3 endpoint" do
+    command "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+    retries 15
+    retry_delay 20
+  end
+  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{admin_key}"
+  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{admin_secret}"
 else
   execute "Set OSG providerclient" do
     command "#{modify_property} -p objectstorage.providerclient=walrus"
