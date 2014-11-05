@@ -15,6 +15,7 @@ stack_order do
   bootstrap 'ceph::setup-admin'
   bootstrap 'ceph::setup-mds'
   bootstrap 'cloud::full'
+  bootstrap 'cloud::vmware-full'
   bootstrap 'cloud::default'
   bootstrap 'cloud::frontend'
   bootstrap 'cluster::default'
@@ -64,6 +65,15 @@ component 'cloud' do
     recipe 'eucalyptus::register-components'
     recipe 'eucalyptus::walrus'
     recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::storage-controller'
+  end
+  group 'vmware-full' do
+    recipe 'eucalyptus::cloud-controller'
+    recipe 'eucalyptus::user-console'
+    recipe 'eucalyptus::register-components'
+    recipe 'eucalyptus::walrus'
+    recipe 'eucalyptus::cluster-controller'
+    recipe 'eucalyptus::vmware-broker'
     recipe 'eucalyptus::storage-controller'
   end
   group 'configure' do
