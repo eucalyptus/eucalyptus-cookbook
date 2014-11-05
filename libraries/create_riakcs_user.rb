@@ -1,3 +1,8 @@
+#
+# This piece of code is inspired from:
+# https://github.com/hectcastro/chef-riak-cs-create-admin-user
+#
+
 require "net/http"
 require "json"
 require "uri"
