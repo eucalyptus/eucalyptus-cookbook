@@ -198,6 +198,8 @@ if __name__ == "__main__":
             else:
                 try:
                     number = int(input)
+                    if number < 1:
+                        raise ValueError()
                     image = get_image(number - 1)
                     install_image(image=image)
                 except (ValueError, KeyError, IndexError):
