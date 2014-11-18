@@ -52,7 +52,7 @@ class bcolors:
     ENDC = '\033[0m'
 
 def main_menu():
-    return raw_input("Would you like to install an image? (Y/n): ").strip()
+    return raw_input("Would you like to install an image? (image number or n): ").strip()
 
 
 def check_output(command):
@@ -111,9 +111,7 @@ def print_catalog():
     print
 
 
-def install_image():
-    number = 0
-    image = None
+def install_image(number=0, image=None):
     while number == 0 or not image:
         try:
             number = int(raw_input("Enter the image ID you "
@@ -194,11 +192,16 @@ if __name__ == "__main__":
                 input = main_menu()
             except ValueError:
                 input = 0
-            if input == 'y' or input == 'Y' or input == '':
-                install_image()
-            elif input == 'n' or input == 'N':
+            if input == 'n' or input == 'N':
                 exit_message()
                 sys.exit(0)
+            else:
+                try:
+                    number = int(input)
+                    image = get_image(number - 1)
+                except (ValueError, KeyError, IndexError):
+                    print_error("Invalid image selected")
+                install_image(image=image)
             else:
                 print_error("Invalid selection: " + str(input))
     except KeyboardInterrupt:
