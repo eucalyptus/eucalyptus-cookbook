@@ -305,7 +305,7 @@ fi
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
-grep "6.5" /etc/redhat-release 1>>$LOGFILE
+cat /etc/issue | egrep 'CentOS.*6.[5-6]'
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
