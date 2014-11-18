@@ -199,11 +199,9 @@ if __name__ == "__main__":
                 try:
                     number = int(input)
                     image = get_image(number - 1)
+                    install_image(image=image)
                 except (ValueError, KeyError, IndexError):
                     print_error("Invalid image selected")
-                install_image(image=image)
-            else:
-                print_error("Invalid selection: " + str(input))
     except KeyboardInterrupt:
         exit_message()
 
