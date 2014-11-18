@@ -112,7 +112,7 @@ def print_catalog():
 
 
 def install_image(number=0, image=None):
-    while number == 0 or not image:
+    while not image:
         try:
             number = int(raw_input("Enter the image ID you "
                                    "would like to install: "))
