@@ -1,3 +1,6 @@
+# This library is inspired from
+# https://github.com/hectcastro/chef-riak-cs-create-admin-user
+
 require "net/http"
 require "json"
 require "uri"
@@ -8,6 +11,9 @@ module RiakCSHelper
 
     def self.create_riakcs_user(name, email, fqdn, port)
       Chef::Log.info "Creating RiakCS user..."
+      Chef::Log.info "Username: #{name} and email: #{email}"
+      Chef::Log.info "RiakCS URL: http://#{fqdn}:#{port}/#{USER_RESOURCE_PATH}"
+
       uri = URI.parse("http://#{fqdn}:#{port}/#{USER_RESOURCE_PATH}")
       request = Net::HTTP::Post.new(uri.request_uri, "Content-Type" => "application/json")
       request.body  = {
@@ -16,9 +22,9 @@ module RiakCSHelper
       }.to_json
 
       http = Net::HTTP.new(uri.host, uri.port)
-      response = http.start do |h|
-        h.request(request)
-      end
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      
+      response = http.request(request)
       json = JSON.parse(response.body)
 
       [ json["key_id"], json["key_secret"] ]
@@ -30,3 +36,4 @@ module RiakCSHelper
 
   end
 end
+
