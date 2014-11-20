@@ -117,6 +117,9 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
   end
 end
 
+# Remove default virsh network which runs its own dhcp server
+execute 'virsh net-destroy default'
+
 service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
