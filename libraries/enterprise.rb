@@ -19,7 +19,7 @@
 #
 module Eucalyptus
   module Enterprise
-    @oss_backends = ['overlay', 'das']
+    @oss_backends = ['overlay', 'das', 'ceph-rbd']
     @enterprise_backends = ['equallogic', 'netapp', 'emc-vnx']
 
     def self.is_san?(node)

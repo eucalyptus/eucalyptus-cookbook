@@ -117,7 +117,24 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
   end
 end
 
+if CephHelper::SetCephRbd.is_ceph?(node)
+  directory "/etc/ceph" do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+  end
+end
+
+ruby_block "Set Ceph Credentials" do
+  block do
+    CephHelper::SetCephRbd.set_ceph_credentials(node)
+  end
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
 service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
+
