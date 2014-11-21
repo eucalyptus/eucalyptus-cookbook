@@ -43,6 +43,17 @@ template "eucalyptus.conf" do
   action :create
 end
 
+
+if CephHelper::SetCephRbd.is_ceph?(node)
+  directory "/etc/ceph" do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+  end
+end
+
+
 if Eucalyptus::Enterprise.is_san?(node)
   node['eucalyptus']['topology']['clusters'].each do |cluster, info|
     case info['storage-backend']
@@ -86,7 +97,15 @@ ruby_block "Sync keys for SC" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
+ruby_block "Get Ceph Credentials" do
+  block do
+    CephHelper::SetCephRbd.make_ceph_config(node)
+  end
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
+
