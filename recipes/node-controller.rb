@@ -119,6 +119,7 @@ end
 
 # Remove default virsh network which runs its own dhcp server
 execute 'virsh net-destroy default'
+execute 'virsh net-autostart default --disable'
 
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
