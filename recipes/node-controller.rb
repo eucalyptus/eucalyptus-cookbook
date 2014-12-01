@@ -117,6 +117,12 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
   end
 end
 
+# make sure libvirt is started
+# when we want to delete its networks
+service 'libvirtd' do
+  action [ :enable, :start ]
+end
+
 # Remove default virsh network which runs its own dhcp server
 execute 'virsh net-destroy default' do
   only_if 'virsh net-list | grep default'
