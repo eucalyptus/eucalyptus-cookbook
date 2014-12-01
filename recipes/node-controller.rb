@@ -118,8 +118,12 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
 end
 
 # Remove default virsh network which runs its own dhcp server
-execute 'virsh net-destroy default'
-execute 'virsh net-autostart default --disable'
+execute 'virsh net-destroy default' do
+  only_if 'virsh net-list | grep default'
+end
+execute 'virsh net-autostart default --disable' do
+  only_if 'virsh net-list | grep default'
+end
 
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
