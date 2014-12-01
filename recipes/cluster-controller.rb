@@ -46,6 +46,14 @@ template "eucalyptus.conf" do
   action :create
 end
 
+execute "Set ip_forward sysctl values on NC" do
+  command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+end
+
+execute "Reload sysctl values" do
+  command "sysctl -p"
+end
+
 service "eucalyptus-cc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
