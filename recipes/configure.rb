@@ -133,9 +133,6 @@ clusters.each do |cluster, info|
       retries 15
       retry_delay 20
     end
-  when "emc-vnx"
-    execute "#{modify_property} -p #{cluster}.storage.clipath=#{node["eucalyptus"]["storage"]["emc"]["navicli-path"]}"
-    execute "#{modify_property} -p #{cluster}.storage.storagepool=#{node["eucalyptus"]["storage"]["emc"]["storagepool"]}"
   end
 end
 
