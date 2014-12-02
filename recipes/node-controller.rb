@@ -39,6 +39,9 @@ if node["eucalyptus"]["install-type"] == "packages"
     execute 'virsh net-autostart default --disable' do
       ignore_failure true
     end
+    execute 'killall dnsmasq' do
+      ignore_failure true
+    end
     include_recipe "eucalyptus::eucanetd"
   end
 else
