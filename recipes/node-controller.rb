@@ -27,6 +27,18 @@ if node["eucalyptus"]["install-type"] == "packages"
     flush_cache [:before]
   end
   if node["eucalyptus"]["network"]["mode"] == "EDGE"
+    # make sure libvirt is started
+    # when we want to delete its networks
+    service 'libvirtd' do
+      action [ :enable, :start ]
+    end
+    # Remove default virsh network which runs its own dhcp server
+    execute 'virsh net-destroy default' do
+      ignore_failure true
+    end
+    execute 'virsh net-autostart default --disable' do
+      ignore_failure true
+    end
     include_recipe "eucalyptus::eucanetd"
   end
 else
@@ -117,20 +129,6 @@ if node["eucalyptus"]["nc"]["install-qemu-migration"]
   end
 end
 
-# make sure libvirt is started
-# when we want to delete its networks
-service 'libvirtd' do
-  action [ :enable, :start ]
-end
-
-# Remove default virsh network which runs its own dhcp server
-execute 'virsh net-destroy default' do
-  ignore_failure true
-end
-execute 'virsh net-autostart default --disable' do
-  ignore_failure true
-end
-
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
     owner 'root'
@@ -151,4 +149,3 @@ service "eucalyptus-nc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
-
