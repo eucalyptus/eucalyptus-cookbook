@@ -63,8 +63,6 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
       case info['storage-backend']
       when 'emc-vnx'
         san_package = 'eucalyptus-enterprise-storage-san-emc-libs'
-        execute "#{modify_property} -p #{cluster}.storage.clipath=#{node["eucalyptus"]["storage"]["emc"]["navicli-path"]}"
-        execute "#{modify_property} -p #{cluster}.storage.storagepool=#{node["eucalyptus"]["storage"]["emc"]["storagepool"]}"
       when 'netapp'
         san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
       when 'equallogic'
@@ -135,6 +133,9 @@ clusters.each do |cluster, info|
       retries 15
       retry_delay 20
     end
+  when "emc-vnx"
+    execute "#{modify_property} -p #{cluster}.storage.clipath=#{node["eucalyptus"]["storage"]["emc"]["navicli-path"]}"
+    execute "#{modify_property} -p #{cluster}.storage.storagepool=#{node["eucalyptus"]["storage"]["emc"]["storagepool"]}"
   end
 end
 
