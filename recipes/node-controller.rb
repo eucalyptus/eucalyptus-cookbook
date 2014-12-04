@@ -26,26 +26,27 @@ if node["eucalyptus"]["install-type"] == "packages"
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
   end
-  if node["eucalyptus"]["network"]["mode"] == "EDGE"
-    # make sure libvirt is started
-    # when we want to delete its networks
-    service 'libvirtd' do
-      action [ :enable, :start ]
-    end
-    # Remove default virsh network which runs its own dhcp server
-    execute 'virsh net-destroy default' do
-      ignore_failure true
-    end
-    execute 'virsh net-autostart default --disable' do
-      ignore_failure true
-    end
-    execute 'killall dnsmasq' do
-      ignore_failure true
-    end
-    include_recipe "eucalyptus::eucanetd"
-  end
 else
   include_recipe "eucalyptus::install-source"
+end
+
+if node["eucalyptus"]["network"]["mode"] == "EDGE"
+  # make sure libvirt is started
+  # when we want to delete its networks
+  service 'libvirtd' do
+    action [ :enable, :start ]
+  end
+  # Remove default virsh network which runs its own dhcp server
+  execute 'virsh net-destroy default' do
+    ignore_failure true
+  end
+  execute 'virsh net-autostart default --disable' do
+    ignore_failure true
+  end
+  execute 'killall dnsmasq' do
+    ignore_failure true
+  end
+  include_recipe "eucalyptus::eucanetd"
 end
 
 ## Setup Bridge
