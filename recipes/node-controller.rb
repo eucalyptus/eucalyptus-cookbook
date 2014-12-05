@@ -44,7 +44,7 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
     ignore_failure true
   end
   execute 'killall dnsmasq' do
-    ignore_failure true
+    only_if 'ps aux | grep dnsmasq'
   end
   include_recipe "eucalyptus::eucanetd"
 end
