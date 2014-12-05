@@ -43,9 +43,6 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   execute 'virsh net-autostart default --disable' do
     ignore_failure true
   end
-  execute 'killall dnsmasq' do
-    only_if 'ps aux | grep dnsmasq'
-  end
   include_recipe "eucalyptus::eucanetd"
 end
 
