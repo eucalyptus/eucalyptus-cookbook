@@ -90,7 +90,23 @@ execute "Wait for ENABLED compute" do
   retry_delay 20
 end
 
-execute "Redownload credentials" do
+execute "Redownload credentials with EUARE_URL" do
+  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  cwd node['eucalyptus']['admin-cred-dir']
+  retries 15
+  retry_delay 20
+end
+
+bash "Remove old certs" do
+  cwd node['eucalyptus']['admin-cred-dir']
+  code <<-EOH
+  for cert in `euare-userlistcerts | grep -v Active`;do
+    euare-userdelcert -c $cert
+  done
+  EOH
+end
+
+execute "Download credentials with certs" do
   command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 15
