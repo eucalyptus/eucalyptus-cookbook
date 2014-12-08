@@ -16,7 +16,8 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{node['eucalyptus']['home-directory']}"
+source_creds = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc"
+command_prefix = "#{source_creds} && #{node['eucalyptus']['home-directory']}"
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
 describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
@@ -100,8 +101,8 @@ end
 bash "Remove old certs" do
   cwd node['eucalyptus']['admin-cred-dir']
   code <<-EOH
-  for cert in `euare-userlistcerts | grep -v Active`;do
-    euare-userdelcert -c $cert
+  for cert in `#{source_creds} && euare-userlistcerts | grep -v Active`;do
+    #{source_creds} && euare-userdelcert -c $cert
   done
   EOH
 end
