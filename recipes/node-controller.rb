@@ -131,6 +131,7 @@ end
 
 # Remove default virsh network which runs its own dhcp server
 execute 'virsh net-destroy default'
+execute 'virsh net-autostart default --disable'
 
 service "eucalyptus-nc" do
   action [ :enable, :start ]
