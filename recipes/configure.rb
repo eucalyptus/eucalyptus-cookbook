@@ -156,40 +156,25 @@ clusters.each do |cluster, info|
   end
 end
 
-### Register ELB Image
-if node['eucalyptus']['install-load-balancer']
-  if node['eucalyptus']['load-balancer-repo'] != ""
-    yum_repository "eucalyptus-load-balancer" do
-      description "Eucalyptus LoadBalancer Repo"
-      url node["eucalyptus"]["load-balancer-repo"]
+### Register Service Image
+if node['eucalyptus']['install-service-image']
+  if node['eucalyptus']['service-image-repo'] != ""
+    yum_repository "eucalyptus-service-image" do
+      description "Eucalyptus Service Image Repo"
+      url node["eucalyptus"]["service-image-repo"]
       gpgcheck false
     end
   end
-  yum_package "eucalyptus-load-balancer-image" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-  end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default" do
-    only_if "#{describe_property} loadbalancing.loadbalancer_emi | grep 'NULL'"
-  end
-end
-
-### Register Imaging Service Image
-if node['eucalyptus']['install-imaging-worker']
-  if node['eucalyptus']['imaging-worker-repo'] != ""
-    yum_repository "eucalyptus-imaging-worker" do
-      description "Eucalyptus Imaging Repo"
-      url node["eucalyptus"]["imaging-worker-repo"]
-      gpgcheck false
-    end
-  end
-  yum_package "eucalyptus-imaging-worker-image" do
+  yum_package "eucalyptus-service-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
-    only_if "#{describe_property} imaging.imaging_worker_emi | grep 'NULL'"
+    only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
+  end
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default" do
+    only_if "#{describe_property} services.loadbalancing.worker.image | grep 'NULL'"
   end
 end
 

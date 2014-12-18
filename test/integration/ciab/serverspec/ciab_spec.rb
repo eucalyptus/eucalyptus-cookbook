@@ -1,13 +1,6 @@
 require 'serverspec'
 
-include Serverspec::Helper::Exec
-include Serverspec::Helper::DetectOS
-
-RSpec.configure do |c|
-  c.before :all do
-    c.path = '/sbin:/usr/sbin'
-  end
-end
+set :backend, :exec
 
 describe "Eucalyptus CIAB" do
   
@@ -43,6 +36,6 @@ describe "Eucalyptus CIAB" do
   end
 
   describe command('ping -c 1 `hostname --fqd`') do
-    it { should return_exit_status 0 }
+    its(:exit_status) { should eq 0 }
   end
 end
