@@ -16,13 +16,13 @@
         "one.storage.cephvolumepools": "rbd"
       },
       "topology": {
-        "clc-1": "10.111.5.201",
-        "walrus": "10.111.5.201",
-        "user-facing": ["10.111.5.201"],
+        "clc-1": "10.111.5.12",
+        "walrus": "10.111.5.12",
+        "user-facing": ["10.111.5.12"],
         "clusters": {
           "one": {
-            "cc-1": "10.111.5.201",
-            "sc-1": "10.111.5.201",
+            "cc-1": "10.111.5.12",
+            "sc-1": "10.111.5.12",
             "storage-backend": "ceph-rbd",
             "ceph_cluster": {
               "ceph_user": "qauser",
@@ -40,9 +40,13 @@
                 "mon_host": "10.111.5.185",
                 "mon_initial_members": "g-19-05",
                 "fsid": "ea4b07ca-ebf9-45a9-be9a-47428b810d84"
+              },
+              "mon": {
+                "mon host": "g-19-05,d-04,d-05",
+                "mon addr": "10.111.5.185:6789,10.111.5.188:6789,10.111.5.189:6789"
               }
             },
-            "nodes": "10.111.5.202"
+            "nodes": "10.111.5.13"
           }
         }
       },
@@ -52,7 +56,7 @@
       },
       "network": {
         "mode": "MANAGED-NOVLAN",
-        "public-ips":  "10.111.52.110-10.111.52.120",
+        "public-ips": "10.111.52.210-10.111.52.220",
         "public-interface": "em1",
         "private-interface": "em1",
         "bridge-interface": "br0",
@@ -67,4 +71,3 @@
     }
   }
 }
-
