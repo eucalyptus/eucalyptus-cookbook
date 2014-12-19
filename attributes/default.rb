@@ -73,14 +73,6 @@ default["eucalyptus"]["network"]["dns-server"] = "8.8.8.8"
 default["eucalyptus"]["network"]["dhcp-daemon"] = "/usr/sbin/dhcpd"
 default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 
-### Midonet
-#default["eucalyptus"]["network"]["midonet"]['gw-host']
-#default["eucalyptus"]["network"]["midonet"]['gw-ip']
-#default["eucalyptus"]["network"]["midonet"]['gw-interface']
-#default["eucalyptus"]["network"]["midonet"]['public-network']
-#default["eucalyptus"]["network"]["midonet"]['public-gw-ip']
-#default["eucalyptus"]["network"]["midonet"]['eucanetd-host']
-
 ## Define Topology - Used for registration on CLC
 #default["eucalyptus"]["topology"]["clc-1"] = ""
 #default["eucalyptus"]["topology"]["clusters"] = {}
