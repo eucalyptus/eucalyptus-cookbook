@@ -14,20 +14,22 @@ This method produces a dev/test environment in a single virtual machine, with al
 
 3. Install [git](http://git-scm.com)
 
-4. Install vagrant plugins
+4. Install [ChefDK](https://downloads.chef.io/chef-dk/) 
+
+5. Install vagrant plugins
 
         $ vagrant plugin install vagrant-berkshelf --plugin-version '>= 2.0.1'
         $ vagrant plugin install vagrant-omnibus
 
-5. Check out [eucadev](https://github.com/eucalyptus/eucalyptus-cookbook/eucadev.md) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute):
+6. Check out [eucadev](https://github.com/eucalyptus/eucalyptus-cookbook/eucadev.md) (ideally [fork](http://help.github.com/fork-a-repo/) it and clone the fork to your local machine, so you can contribute):
 
         $ git clone https://github.com/eucalyptus/eucalyptus-cookbook.git
 
-6. *Optionally:* Check the default parameters in `eucadev/Vagrantfile` and `eucadev/roles/cloud-in-a-box.json`
+7. *Optionally:* Check the default parameters in `eucadev/Vagrantfile` and `eucadev/roles/cloud-in-a-box.json`
   * `install-type` is `"source"` by default. Set the value to `"packages"` for an RPM-based installation,  which can take less than half the time of a source install (e.g., 20 min instead of 48), but won't allow you to edit and re-deploy code easily.
   * In Vagrantfile, `memory` is 3GB (`3072`) by default. For a source-based install without a Web console, you may be able to get away with less, such as 1GB. Giving the VM more should improve performance.
 
-7. Start the VM and wait for eucadev to install Eucalyptus in it (may take a long time, _20-60 min_ or more):
+8. Start the VM and wait for eucadev to install Eucalyptus in it (may take a long time, _20-60 min_ or more):
 
         $ cd eucadev; vagrant up
         
