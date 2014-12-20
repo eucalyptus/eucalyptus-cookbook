@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 options = {
-  :cores => 2,
+  :cores => 4,
   :memory => 3072,
 }
 Vagrant.configure("2") do |config|
