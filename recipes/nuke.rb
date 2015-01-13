@@ -56,10 +56,6 @@ end
   end
 end
 
-execute 'remove old euca creds' do
-  command "rm -rf #{node['eucalyptus']['admin-cred-dir']}/euca*"
-end
-
 ## Remove euca packages chef yum_package does not seem to like wildcard
 execute 'remove euca packages' do
   command "yum -y remove 'euca*'"
