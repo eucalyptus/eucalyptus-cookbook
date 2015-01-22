@@ -101,7 +101,7 @@ end
 bash "Remove old certs" do
   cwd node['eucalyptus']['admin-cred-dir']
   code <<-EOH
-  for cert in `#{source_creds} && euare-userlistcerts | grep -v Active`;do
+  for cert in `#{source_creds} && euare-userlistcerts | sed '/Active/ { N; d; }'`;do
     #{source_creds} && euare-userdelcert -c $cert
   done
   EOH
