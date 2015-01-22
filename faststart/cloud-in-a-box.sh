@@ -1,10 +1,25 @@
 #!/bin/bash
 
+# Taken from
+# http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+OPTIND=1  # Reset in case getopts has been used previously in the shell.
+
+# Initialize our own variables:
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks.tgz"
+
+while getopts "u:" opt; do
+    case "$opt" in
+    u)  cookbooks_url=$OPTARG
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
+
 ###############################################################################
 # TODOs:
-#   * Troubleshoot: Option to public pastebin the errors:
-#     http://pastebin.com/api (figure out the API)
-#     (and nice messaging about helping the community)
 #   * Put *all* output for *all* commands into log file
 ###############################################################################
 

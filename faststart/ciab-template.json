@@ -1,10 +1,9 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/",
-      "install-load-balancer": EXTRASERVICES,
-      "install-imaging-worker": EXTRASERVICES,
+      "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/centos/6/x86_64/",
+      "euca2ools-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/euca2ools-devel/centos/6/x86_64/",
+      "install-service-image": EXTRASERVICES,
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
@@ -13,7 +12,6 @@
           "default": {
             "cc-1": "IPADDR",
             "sc-1": "IPADDR",
-            "storage-backend": "overlay",
             "nodes": "IPADDR"
           }
         }
@@ -27,15 +25,12 @@
         "bridge-netmask": "NETMASK",
         "bridge-gateway": "GATEWAY",
         "config-json": {
-          "InstanceDnsDomain" : "eucalyptus.internal",
           "InstanceDnsServers": ["IPADDR"],
           "PublicIps": ["PUBLICIPS1-PUBLICIPS2"],
           "Clusters": [
             {
               "Name": "default",
-              "MacPrefix": "d0:0d",
               "Subnet": {
-                "Name": "SUBNET",
                 "Subnet": "SUBNET",
                 "Netmask": "NETMASK",
                 "Gateway": "GATEWAY"
