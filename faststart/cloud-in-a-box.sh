@@ -142,9 +142,9 @@ function offer_support()
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
         netstat -lnp >> /tmp/$uuid/env.log
 
-        cp $LOGFILE /tmp/$uuid/ 2&>> /dev/null
-        cp -r /var/log/eucalyptus/* /tmp/$uuid/ 2&>> /dev/null
-        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid 2&>> /dev/null
+        cp $LOGFILE /tmp/$uuid/ &> /dev/null
+        cp -r /var/log/eucalyptus/* /tmp/$uuid/ &> /dev/null
+        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid &> /dev/null
         echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
     fi
     echo ""
@@ -155,7 +155,7 @@ function offer_support()
  
    if [ "$emailAddress" != "" ]
    then
-       submit_support_request $emailAddress $errorCondition
+       submit_support_request $emailAddress $errorCondition "$uuid.tar.gz"
        echo ""
        echo "Eucalyptus support will contact you at $emailAddress as early as possible."
     else
@@ -172,11 +172,13 @@ function submit_support_request()
 {
     emailAddress=$1
     errorCondition=$2
+    installLogFile=$3
 
     # Build the URL used to call Marketo for this new account
     dataString="mktForm_116=mktForm_116"
     dataString="$dataString&""Email=$emailAddress"
     dataString="$dataString&""FastStart_Install_Error_Msg__c=$errorCondition"
+    dataString="$dataString&""fastStartInstallLog=$installLogFile"
     dataString="$dataString&""mktFrmSubmit=Submit"
     dataString="$dataString&""lpId=4976"
     dataString="$dataString&""subId=198"
@@ -318,7 +320,7 @@ fi
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
-grep "6.5" /etc/redhat-release 1>>$LOGFILE
+cat /etc/issue | egrep 'release.*6.[5-6]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"

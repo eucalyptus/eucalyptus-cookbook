@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 options = {
-  :cores => 2,
+  :cores => 4,
   :memory => 3072,
 }
 Vagrant.configure("2") do |config|
@@ -16,8 +16,8 @@ Vagrant.configure("2") do |config|
                                       "install-type" => "packages",
                                       ## Does not change package version, use "eucalyptus-repo" variable
                                       "source-branch" => "testing",
-                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
-                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
+                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/",
+                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
                                       "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
                                       "install-load-balancer" => false,
