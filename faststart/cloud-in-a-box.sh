@@ -506,35 +506,7 @@ echo ""
 echo ""
 
 ###############################################################################
-# SECTION 2: PREP THE INSTALLATION
-#
-###############################################################################
-
-echo "[Prep] Removing old Chef templates"
-# Get rid of old Chef stuff lying about.
-rm -rf /var/chef/* 1>>$LOGFILE
-
-echo "[Prep] Downloading necessary cookbooks"
-# Grab cookbooks from git
-yum install -y git 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to install git!"
-        echo ""
-        echo "Failed to install git. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-rm -rf cookbooks
-curl $cookbooks_url > cookbooks.tgz
-tar zxfv cookbooks.tgz
-
-# Copy the templates to the local directory
-cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
-cp -f cookbooks/eucalyptus/faststart/node-template.json node.json 
-
-###############################################################################
-# SECTION 3: USER INPUT
+# SECTION 2: USER INPUT
 #
 ###############################################################################
 
@@ -698,6 +670,35 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
+
+###############################################################################
+# SECTION 3: PREP Chef Artifacts
+#
+###############################################################################
+
+echo "[Chef] Removing old Chef templates"
+# Get rid of old Chef stuff lying about.
+rm -rf /var/chef/* 1>>$LOGFILE
+
+echo "[Chef] Downloading necessary cookbooks"
+# Grab cookbooks from git
+yum install -y git 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!"
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 25
+fi
+rm -rf cookbooks
+curl $cookbooks_url > cookbooks.tgz
+tar zxfv cookbooks.tgz
+
+# Copy the templates to the local directory
+cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json
+cp -f cookbooks/eucalyptus/faststart/node-template.json node.json
+
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
