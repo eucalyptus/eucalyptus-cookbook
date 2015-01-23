@@ -542,7 +542,7 @@ if [ "$?" != "0" ]; then
 fi
 rm -rf cookbooks
 curl $cookbooks_url > cookbooks.tgz
-tar zxfv eucalyptus-cookbooks.tgz
+tar zxfv cookbooks.tgz
 
 # Copy the templates to the local directory
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
