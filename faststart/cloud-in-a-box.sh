@@ -380,27 +380,6 @@ fi
 echo "[Precheck] OK, processor supports virtualization"
 echo ""
 
-# Check to see if chef-solo is installed
-echo "[Precheck] Checking if Chef Client is installed"
-which chef-solo
-if [ "$?" != "0" ]; then
-    echo "====="
-    echo "[INFO] Chef not found. Installing Chef Client"
-    echo ""
-    echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
-    if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Chef install failed!"
-        echo ""
-        echo "Failed to install Chef. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 22
-    fi
-fi
-echo "[Precheck] OK, Chef Client is installed"
-echo ""
-
 echo "[Precheck] Identifying primary network interface"
 
 # Get info about the primary network interface.
@@ -675,6 +654,27 @@ sed -i "s/NIC/$ciab_nic/g" $chef_template
 # SECTION 3: PREP Chef Artifacts
 #
 ###############################################################################
+
+# Check to see if chef-solo is installed
+echo "[Chef] Checking if Chef Client is installed"
+which chef-solo
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[INFO] Chef not found. Installing Chef Client"
+    echo ""
+    echo ""
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Chef install failed!"
+        echo ""
+        echo "Failed to install Chef. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 22
+    fi
+fi
+echo "[Chef] OK, Chef Client is installed"
+echo ""
 
 echo "[Chef] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
