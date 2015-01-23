@@ -501,23 +501,6 @@ if [ "$?" == "0" ]; then
     fi
 fi
 
-echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
-echo "To see the update in progress, run the following command in another terminal:"
-echo ""
-echo "  tail -f $LOGFILE"
-echo ""
-echo "[Precheck] Package update in progress..."
-yum -y update
-if [ "$?" != "0" ]; then
-    echo "====="
-    echo "[FATAL] Yum update failed!"
-    echo ""
-    echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
-    echo "may also have some details related to the same."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
-    exit 24
-fi
-
 echo "[Precheck] Precheck successful."
 echo ""
 echo ""
@@ -753,6 +736,23 @@ fi
 # exists or not.
 
 rm -f faststart-successful.log
+
+echo "[Yum Update] OK, running a full update of the OS. This could take a bit; please wait."
+echo "To see the update in progress, run the following command in another terminal:"
+echo ""
+echo "  tail -f $LOGFILE"
+echo ""
+echo "[Yum Update] Package update in progress..."
+yum -y update
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[FATAL] Yum update failed!"
+    echo ""
+    echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
+    echo "may also have some details related to the same."
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
+    exit 24
+fi
 
 #
 # OK, THIS IS THE BIG STEP!  Install whichever chef template we're going with here.
