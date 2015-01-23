@@ -631,25 +631,6 @@ if [ "$nc_install_only" == "0" ]; then
     fi
 fi
 
-# Decide which template we're using.
-if [ "$nc_install_only" == "0" ]; then
-    chef_template="ciab.json"
-else
-    chef_template="node.json"
-fi
-
-# Perform variable interpolation in the proper template.
-sed -i "s/IPADDR/$ciab_ipaddr/g" $chef_template
-sed -i "s/NETMASK/$ciab_netmask/g" $chef_template
-sed -i "s/GATEWAY/$ciab_gateway/g" $chef_template
-sed -i "s/SUBNET/$ciab_subnet/g" $chef_template
-sed -i "s/PUBLICIPS1/$ciab_publicips1/g" $chef_template
-sed -i "s/PUBLICIPS2/$ciab_publicips2/g" $chef_template
-sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
-sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
-sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
-sed -i "s/NIC/$ciab_nic/g" $chef_template
-
 ###############################################################################
 # SECTION 3: PREP Chef Artifacts
 #
@@ -699,6 +680,24 @@ tar zxfv cookbooks.tgz
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json
 cp -f cookbooks/eucalyptus/faststart/node-template.json node.json
 
+# Decide which template we're using.
+if [ "$nc_install_only" == "0" ]; then
+    chef_template="ciab.json"
+else
+    chef_template="node.json"
+fi
+
+# Perform variable interpolation in the proper template.
+sed -i "s/IPADDR/$ciab_ipaddr/g" $chef_template
+sed -i "s/NETMASK/$ciab_netmask/g" $chef_template
+sed -i "s/GATEWAY/$ciab_gateway/g" $chef_template
+sed -i "s/SUBNET/$ciab_subnet/g" $chef_template
+sed -i "s/PUBLICIPS1/$ciab_publicips1/g" $chef_template
+sed -i "s/PUBLICIPS2/$ciab_publicips2/g" $chef_template
+sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
+sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
+sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
+sed -i "s/NIC/$ciab_nic/g" $chef_template
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
