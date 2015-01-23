@@ -541,49 +541,8 @@ if [ "$?" != "0" ]; then
         exit 25
 fi
 rm -rf cookbooks
-mkdir -p cookbooks
-pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
-        echo ""
-        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_EUCA_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/yum 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch yum cookbook!"
-        echo ""
-        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_YUM_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/selinux 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch selinux cookbook!"
-        echo ""
-        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_SELINUX_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/ntp 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch ntp cookbook!"
-        echo ""
-        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_NTP_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-popd
-
-echo "[Prep] Tarring up cookbooks"
-# Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
+curl $cookbooks_url > cookbooks.tgz
+tar zxfv eucalyptus-cookbooks.tgz
 
 # Copy the templates to the local directory
 cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
