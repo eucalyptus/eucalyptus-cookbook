@@ -17,6 +17,17 @@
 ##    limitations under the License.
 ##
 include_recipe "eucalyptus::default"
+## Install vmware broker libs if needed
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_vmware?(node)
+    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      flush_cache [:before]
+    end
+  end
+end
+
 ## Install packages for the Walrus
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-walrus" do
@@ -31,8 +42,7 @@ else
 end
 
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]["walrus"]
-  node.save
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]["walrus"]
 end
 
 template "eucalyptus.conf" do
@@ -41,11 +51,11 @@ template "eucalyptus.conf" do
   action :create
 end
 
-ruby_block "Get cloud keys for walrus service" do
+ruby_block "Sync keys for Walrus" do
   block do
     Eucalyptus::KeySync.get_cloud_keys(node)
   end
-  not_if "#{Chef::Config[:solo]}"
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 service "eucalyptus-cloud" do

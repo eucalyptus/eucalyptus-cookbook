@@ -6,10 +6,9 @@ provisioner:
   name: chef_solo
 
 platforms:
-  - name: centos-6.4
+  - name: centos-6.5
     driver_config:
-      box: euca-deps
-      box_url: https://vagrantcloud.com/viglesiasce/euca-deps/version/1/provider/virtualbox.box
+      box: chef/centos-6.5
       network:
         - [private_network, ip: "33.33.33.10"]
       customize:
@@ -31,11 +30,9 @@ suites:
       - recipe[eucalyptus::create-first-resources]
     attributes:
       eucalyptus: 
-        "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/"
-        "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/"
+        "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/centos/6/x86_64/"
+        "euca2ools-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/euca2ools-devel/centos/6/x86_64/"
         "yum-options": "--nogpg"
-        "install-load-balancer": false
-        "install-imaging-worker": false
         nc:
           hypervisor: qemu
           "work-size": 10000

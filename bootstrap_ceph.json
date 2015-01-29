@@ -1,0 +1,12 @@
+{
+  "nodes": [
+    {
+      "groups": ["ceph::setup-mons", "ceph::setup-admin"],
+      "hosts": ["10.111.5.159"]
+    },
+    {
+      "groups": ["ceph::setup-osds"],
+      "hosts": ["10.111.5.160", "10.111.5.161"]
+    }
+  ]
+}

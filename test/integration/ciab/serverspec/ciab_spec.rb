@@ -1,13 +1,6 @@
 require 'serverspec'
 
-include Serverspec::Helper::Exec
-include Serverspec::Helper::DetectOS
-
-RSpec.configure do |c|
-  c.before :all do
-    c.path = '/sbin:/usr/sbin'
-  end
-end
+set :backend, :exec
 
 describe "Eucalyptus CIAB" do
   
@@ -24,18 +17,18 @@ describe "Eucalyptus CIAB" do
        it { should be_listening }
      end
   end
-  
+
   %w{eucalyptus-cloud eucalyptus-cc eucanetd
      eucalyptus-nc eucaconsole}.each do |service_name|
      describe service(service_name) do
        it { should be_enabled }
        it { should be_running }
      end
-  end   
+  end
 
   describe command('euca-version') do
-    it { should return_stdout /euca2ools.*3\.1\.0/ }
-    it { should return_stdout /eucalyptus.*4\.0\.0/ }
+    it { should return_stdout /euca2ools.*3\.1/ }
+    it { should return_stdout /eucalyptus.*4\.0/ }
   end
 
   describe selinux do
@@ -43,6 +36,6 @@ describe "Eucalyptus CIAB" do
   end
 
   describe command('ping -c 1 `hostname --fqd`') do
-    it { should return_exit_status 0 }
+    its(:exit_status) { should eq 0 }
   end
 end

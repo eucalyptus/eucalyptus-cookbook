@@ -19,6 +19,17 @@
 #
 
 include_recipe "eucalyptus::default"
+## Install vmware broker libs if needed
+if Eucalyptus::Enterprise.is_enterprise?(node)
+  if Eucalyptus::Enterprise.is_vmware?(node)
+    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      flush_cache [:before]
+    end
+  end
+end
+
 ## Install packages for the User Facing Services
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
@@ -45,8 +56,7 @@ if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].
       end
     end
   end
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
-  node.save
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
 end
 
 template "eucalyptus.conf" do

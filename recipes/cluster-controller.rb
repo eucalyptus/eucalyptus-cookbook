@@ -32,11 +32,12 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-ruby_block "Sync CC keys" do
+cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+ruby_block "Sync keys for CC" do
   block do
     Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
   end
-  not_if "#{Chef::Config[:solo]}"
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
 template "eucalyptus.conf" do
@@ -45,19 +46,31 @@ template "eucalyptus.conf" do
   action :create
 end
 
+execute "Set ip_forward sysctl values on CC" do
+  command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+end
+
+execute "Set bridge-nf-call-iptables sysctl values on NC" do
+  command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+end
+
+execute "Ensure bridge modules loaded into the kernel on NC" do
+  command "modprobe bridge"
+end
+
+execute "Reload sysctl values" do
+  command "sysctl -p"
+end
+
 service "eucalyptus-cc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-ruby_block "Register nodes" do
-  block do
-    nodes = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"]
-    nodes.split().each do |nc_ip|
-      r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
-      r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
-      r.run_action :run
-    end
+nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
+log "Registering the following nodes: #{nc_ips}"
+nc_ips.each do |nc_ip|
+  execute 'Register Nodes' do
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
   end
-  not_if "#{Chef::Config[:solo]}"
 end

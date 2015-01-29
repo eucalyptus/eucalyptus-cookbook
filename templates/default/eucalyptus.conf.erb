@@ -2,13 +2,20 @@ EUCALYPTUS="<%= node["eucalyptus"]["home-directory"] %>"
 LOGLEVEL="<%= node["eucalyptus"]["log-level"] %>"
 EUCA_USER="<%= node["eucalyptus"]["user"] %>"
 CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
-NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
 CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
-<% if node["eucalyptus"]["topology"]["clusters"].has_key?(node["eucalyptus"]["local-cluster-name"]) -%>
-NODES="<%= node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"] %>"
+<% if (node.recipe? "eucalyptus::cluster-controller") && node["eucalyptus"]["topology"]["clusters"].has_key?(Eucalyptus::KeySync.get_local_cluster_name(node)) -%>
+NODES="<%= node["eucalyptus"]["topology"]["clusters"][Eucalyptus::KeySync.get_local_cluster_name(node)]["nodes"] %>"
+<% else -%>
+NODES=""
 <% end -%>
+<% if (node.recipe? "eucalyptus::vmware-broker") -%>
+NC_SERVICE="/services/EucalyptusBroker"
+NC_PORT="8773"
+<% else -%>
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
+NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
+<% end -%>
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
 NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>
 <% end -%>
@@ -41,4 +48,10 @@ VNET_ROUTER="<%= node["eucalyptus"]["network"]["router"] %>"
 VNET_DOMAINNAME="<%= node["eucalyptus"]["network"]["domain-name"] %>"
 <% end -%>
 METADATA_USE_VM_PRIVATE="<%= node["eucalyptus"]["network"]["metadata-use-private-ip"] %>"
+<% if node["eucalyptus"]["network"]["metadata-ip"] != '' -%>
+METADATA_IP="<%= node["eucalyptus"]["network"]["metadata-ip"] %>"
+<% end -%>
+<% if node["eucalyptus"]["network"]["nc-router"] != '' -%>
+NC_ROUTER="<%= node["eucalyptus"]["network"]["nc-router"] %>"
+<% end -%>
 DISABLE_TUNNELING="<%= node["eucalyptus"]["network"]["disable-tunneling"] %>"

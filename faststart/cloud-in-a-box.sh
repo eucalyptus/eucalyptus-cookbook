@@ -1,10 +1,25 @@
 #!/bin/bash
 
+# Taken from
+# http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+OPTIND=1  # Reset in case getopts has been used previously in the shell.
+
+# Initialize our own variables:
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.0.tgz"
+
+while getopts "u:" opt; do
+    case "$opt" in
+    u)  cookbooks_url=$OPTARG
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
+
 ###############################################################################
 # TODOs:
-#   * Troubleshoot: Option to public pastebin the errors:
-#     http://pastebin.com/api (figure out the API)
-#     (and nice messaging about helping the community)
 #   * Put *all* output for *all* commands into log file
 ###############################################################################
 
@@ -365,27 +380,6 @@ fi
 echo "[Precheck] OK, processor supports virtualization"
 echo ""
 
-# Check to see if chef-solo is installed
-echo "[Precheck] Checking if Chef Client is installed"
-which chef-solo
-if [ "$?" != "0" ]; then
-    echo "====="
-    echo "[INFO] Chef not found. Installing Chef Client"
-    echo ""
-    echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
-    if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Chef install failed!"
-        echo ""
-        echo "Failed to install Chef. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 22
-    fi
-fi
-echo "[Precheck] OK, Chef Client is installed"
-echo ""
-
 echo "[Precheck] Identifying primary network interface"
 
 # Get info about the primary network interface.
@@ -486,98 +480,12 @@ if [ "$?" == "0" ]; then
     fi
 fi
 
-echo "[Precheck] OK, running a full update of the OS. This could take a bit; please wait."
-echo "To see the update in progress, run the following command in another terminal:"
-echo ""
-echo "  tail -f $LOGFILE"
-echo ""
-echo "[Precheck] Package update in progress..."
-yum -y update
-if [ "$?" != "0" ]; then
-    echo "====="
-    echo "[FATAL] Yum update failed!"
-    echo ""
-    echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
-    echo "may also have some details related to the same."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
-    exit 24
-fi
-
 echo "[Precheck] Precheck successful."
 echo ""
 echo ""
 
 ###############################################################################
-# SECTION 2: PREP THE INSTALLATION
-#
-###############################################################################
-
-echo "[Prep] Removing old Chef templates"
-# Get rid of old Chef stuff lying about.
-rm -rf /var/chef/* 1>>$LOGFILE
-
-echo "[Prep] Downloading necessary cookbooks"
-# Grab cookbooks from git
-yum install -y git 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to install git!"
-        echo ""
-        echo "Failed to install git. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-rm -rf cookbooks
-mkdir -p cookbooks
-pushd cookbooks
-git clone https://github.com/eucalyptus/eucalyptus-cookbook eucalyptus 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch Eucalyptus cookbook!"
-        echo ""
-        echo "Failed to fetch Eucalyptus cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_EUCA_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/yum 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch yum cookbook!"
-        echo ""
-        echo "Failed to fetch yum cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_YUM_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/selinux 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch selinux cookbook!"
-        echo ""
-        echo "Failed to fetch selinux cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_SELINUX_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-git clone https://github.com/opscode-cookbooks/ntp 1>>$LOGFILE
-if [ "$?" != "0" ]; then
-        echo "====="
-        echo "[FATAL] Failed to fetch ntp cookbook!"
-        echo ""
-        echo "Failed to fetch ntp cookbook. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_CLONE_NTP_FAILED&id=$uuid" >> /tmp/fsout.log
-        exit 25
-fi
-popd
-
-echo "[Prep] Tarring up cookbooks"
-# Tar up the cookbooks for use by chef-solo.
-tar czvf cookbooks.tgz cookbooks 1>>$LOGFILE
-
-# Copy the templates to the local directory
-cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json 
-cp -f cookbooks/eucalyptus/faststart/node-template.json node.json 
-
-###############################################################################
-# SECTION 3: USER INPUT
+# SECTION 2: USER INPUT
 #
 ###############################################################################
 
@@ -723,6 +631,55 @@ if [ "$nc_install_only" == "0" ]; then
     fi
 fi
 
+###############################################################################
+# SECTION 3: PREP Chef Artifacts
+#
+###############################################################################
+
+# Check to see if chef-solo is installed
+echo "[Chef] Checking if Chef Client is installed"
+which chef-solo
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[INFO] Chef not found. Installing Chef Client"
+    echo ""
+    echo ""
+    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
+    if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Chef install failed!"
+        echo ""
+        echo "Failed to install Chef. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 22
+    fi
+fi
+echo "[Chef] OK, Chef Client is installed"
+echo ""
+
+echo "[Chef] Removing old Chef templates"
+# Get rid of old Chef stuff lying about.
+rm -rf /var/chef/* 1>>$LOGFILE
+
+echo "[Chef] Downloading necessary cookbooks"
+# Grab cookbooks from git
+yum install -y git 1>>$LOGFILE
+if [ "$?" != "0" ]; then
+        echo "====="
+        echo "[FATAL] Failed to install git!"
+        echo ""
+        echo "Failed to install git. See $LOGFILE for details."
+        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+        exit 25
+fi
+rm -rf cookbooks
+curl $cookbooks_url > cookbooks.tgz
+tar zxfv cookbooks.tgz
+
+# Copy the templates to the local directory
+cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json
+cp -f cookbooks/eucalyptus/faststart/node-template.json node.json
+
 # Decide which template we're using.
 if [ "$nc_install_only" == "0" ]; then
     chef_template="ciab.json"
@@ -779,6 +736,23 @@ fi
 # exists or not.
 
 rm -f faststart-successful.log
+
+echo "[Yum Update] OK, running a full update of the OS. This could take a bit; please wait."
+echo "To see the update in progress, run the following command in another terminal:"
+echo ""
+echo "  tail -f $LOGFILE"
+echo ""
+echo "[Yum Update] Package update in progress..."
+yum -y update
+if [ "$?" != "0" ]; then
+    echo "====="
+    echo "[FATAL] Yum update failed!"
+    echo ""
+    echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
+    echo "may also have some details related to the same."
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
+    exit 24
+fi
 
 #
 # OK, THIS IS THE BIG STEP!  Install whichever chef template we're going with here.
