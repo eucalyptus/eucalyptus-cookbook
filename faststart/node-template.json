@@ -2,9 +2,9 @@
     "eucalyptus": {
       "yum-options": "--nogpg",
       "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
-      "run_list": [
+      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/"
+    },
+    "run_list": [
         "recipe[eucalyptus::node-controller]"
       ]
-    }
 }

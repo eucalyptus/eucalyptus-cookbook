@@ -6,17 +6,28 @@ OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
 cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.0.tgz"
+nc_install_only=0
 
-while getopts "u:" opt; do
-    case "$opt" in
-    u)  cookbooks_url=$OPTARG
-        ;;
+function usage
+{
+    echo "usage: cloud-in-a-box.sh [[[-u path-to-cookbooks-tgz ] [--nc]] | [-h]]"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -u | --cookbooks-url )           shift
+                                         cookbooks_url=$1
+                                ;;
+        --nc )                  nc_install_only=1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
     esac
+    shift
 done
-
-shift $((OPTIND-1))
-
-[ "$1" = "--" ] && shift
 
 ###############################################################################
 # TODOs:
@@ -192,23 +203,6 @@ function submit_support_request()
 
 # Create uuid
 uuid=`uuidgen -t`
-
-# By default, not an NC-only install
-nc_install_only=0
-
-# Pull command-line args. Default is cloud-in-a-box, but --nc
-# will run NC installation only.
-while [ $# -gt 0 ]
-do
-    case $1 in
-        --nc)
-            echo ""
-            echo "NC ONLY"
-            echo ""
-            nc_install_only=1
-            shift
-    esac
-done
 
 ###############################################################################
 # SECTION 1: PRECHECK.
