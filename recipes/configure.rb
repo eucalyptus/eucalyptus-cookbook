@@ -81,12 +81,14 @@ end
 
 execute "Wait for ENABLED objectstorage" do
   command "#{describe_services} | grep objectstorage | grep ENABLED"
+  only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   retries 15
   retry_delay 20
 end
 
 execute "Wait for ENABLED compute" do
   command "#{describe_services} | grep compute | grep ENABLED"
+  only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   retries 15
   retry_delay 20
 end
