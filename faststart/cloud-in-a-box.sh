@@ -312,14 +312,14 @@ if [ "$?" == "0" ]; then
     exit 9
 fi
 
-# Check to see that we're running on CentOS or RHEL 6.5.
+# Check to see that we're running on CentOS or RHEL 6.6.
 echo "[Precheck] Checking OS"
-cat /etc/issue | egrep 'release.*6.[5-6]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*6.[5-6]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.5."
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.6."
     echo "To try Faststart on another platform, consider trying Eucadev:"
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
