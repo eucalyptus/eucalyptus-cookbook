@@ -13,7 +13,7 @@ The following table descirbes the branch to use for each Eucalyptus release:
 | ------------- |------------- | ------------- |------------- |
 |master   | 0.3.x | 4.1.0 | maps to latest released eucalyptus version |
 |euca-4.0 | 0.3.x| 4.0.2 |Stable branch for 4.0.x installs |
-|euca-4.1 | 0.4.x | 4.1.1 | Maint branch for 4.1.1 installs|
+|euca-4.1 | 0.4.x | 4.1.1 | Maint branch for 4.1.x installs|
 |euca-4.2 | 1.0.x | 4.2.0 |breaks the attribute API |
 
 ### Environment
