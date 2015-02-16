@@ -488,6 +488,7 @@ ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | 
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
 ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
+ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/ntp.conf | head -1`
 
 
 echo "====="
@@ -506,6 +507,13 @@ else
 fi
 echo "Note: it's STRONGLY suggested that you accept the default values where"
 echo "they are provided, unless you know that the values are incorrect."
+
+echo ""
+echo "What's the NTP server which we will update time from? ($ciab_ntp_guess)"
+read ciab_ntp
+[[ -z "$ciab_ntp" ]] && ciab_ntp=$ciab_ntp_guess
+echo "NTP="$ciab_ntp
+echo ""
 
 echo ""
 echo "What's the physical NIC that will be used for bridging? ($ciab_nic_guess)"
@@ -692,6 +700,7 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
+sed -i "s/NTP/$ciab_ntp/g" $chef_template
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
