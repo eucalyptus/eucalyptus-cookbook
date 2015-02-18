@@ -15,5 +15,9 @@ A few notes:
 * Must not be run behind a web proxy
 
 Once the installation is complete, you can access the "Eucaconsole" web console on port 8888.
+Default credentials are:
+Account Name: eucalyptus
+Username: admin
+Password: password
 
 See eucalyptus.com/docs for more documentation
