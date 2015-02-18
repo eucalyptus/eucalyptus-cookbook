@@ -12,3 +12,8 @@ A few notes:
 * Must have a fixed IP address for the host (i.e. no DHCP);
 * Must have some IP addresses set aside on the local network;
 * Runs on CentOS or RHEL 6.5 only.
+* Must not be run behind a web proxy
+
+Once the installation is complete, you can access the "Eucaconsole" web console on port 8888.
+
+See eucalyptus.com/docs for more documentation
