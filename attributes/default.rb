@@ -1,5 +1,5 @@
 #### Install Info
-default["eucalyptus"]["install-type"] = "source"
+default["eucalyptus"]["install-type"] = "packages"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
 default["eucalyptus"]["source-branch"] = "maint-4.1"
 default['eucalyptus']['rm-source-dir'] = false
