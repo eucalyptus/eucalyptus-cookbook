@@ -109,7 +109,7 @@ Some common attributes are:
     <td><tt>["eucalyptus"]["source-branch"]</tt></td>
     <td>String</td>
     <td>Branch to use when building from source</td>
-    <td><tt>testing</tt></td>
+    <td><tt>maint-4.1</tt></td>
   </tr>
 </table>
 
