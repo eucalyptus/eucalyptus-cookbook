@@ -1,7 +1,7 @@
 #### Install Info
 default["eucalyptus"]["install-type"] = "packages"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
-default["eucalyptus"]["source-branch"] = "testing"
+default["eucalyptus"]["source-branch"] = "maint-4.1"
 default['eucalyptus']['rm-source-dir'] = false
 default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/4.0/centos/6/x86_64/"
 default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.1/centos/6/x86_64/"
