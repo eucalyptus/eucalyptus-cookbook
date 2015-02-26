@@ -62,6 +62,11 @@ execute "Reload sysctl values" do
   command "sysctl -p"
 end
 
+network_mode = node["eucalyptus"]["network"]["mode"]
+if network_mode == "MANAGED" or network_mode == "MANAGED-NOVLAN"
+  include_recipe "eucalyptus::eucanetd"
+end
+
 service "eucalyptus-cc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

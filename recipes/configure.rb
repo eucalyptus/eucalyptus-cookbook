@@ -118,15 +118,13 @@ execute "Set DNS server on CLC" do
   command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
-if %w(EDGE VPCMIDO).include? node['eucalyptus']['network']['mode']
-  file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-    content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-    mode '644'
-    action :create
-  end
-  execute "Configure network" do
-    command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
-  end
+file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
+  content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
+  mode '644'
+  action :create
+end
+execute "Configure network" do
+  command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
 end
 
 clusters = node["eucalyptus"]["topology"]["clusters"]
