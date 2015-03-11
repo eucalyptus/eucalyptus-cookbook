@@ -60,7 +60,7 @@ end
 
 ### Runtime deps
 %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c
-  axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
+  axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt perl-XML-Simple
   dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod
   drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
   PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
