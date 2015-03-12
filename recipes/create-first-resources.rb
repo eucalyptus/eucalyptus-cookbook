@@ -32,7 +32,7 @@ script "install_image" do
   interpreter "bash"
   user "root"
   cwd "/tmp"
-  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep emi"
+  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep default"
   code <<-EOH
   curl #{node['eucalyptus']['default-img-url']} > default.img
   source #{node['eucalyptus']['admin-cred-dir']}/eucarc

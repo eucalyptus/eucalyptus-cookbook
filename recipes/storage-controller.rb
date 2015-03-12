@@ -18,10 +18,11 @@
 ##
 include_recipe "eucalyptus::default"
 
+### Need to know cluster name before setting bind-addr
+
 ### Set bind-addr if necessary
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  node.set['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][node["eucalyptus"]["local-cluster-name"]]["sc-1"]
-  node.save
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][Eucalyptus::KeySync.get_local_cluster_name(node)]["sc-1"]
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
@@ -36,20 +37,75 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-ruby_block "Sync SC keys" do
-  block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
-  end
-  not_if "#{Chef::Config[:solo]}"
-end
-
 template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   path "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
 end
 
+
+if CephHelper::SetCephRbd.is_ceph?(node)
+  directory "/etc/ceph" do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+  end
+end
+
+
+if Eucalyptus::Enterprise.is_san?(node)
+  node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+    case info['storage-backend']
+    when 'emc-vnx'
+      san_package = 'eucalyptus-enterprise-storage-san-emc'
+      navicli_package = "#{Chef::Config[:file_cache_path]}/NaviCLI-Linux-64-x86-en_US.rpm"
+      remote_file navicli_package do
+        source node["eucalyptus"]["storage"]["emc"]["navicli-url"]
+      end
+      yum_package "NaviCLI-Linux-64-x86-en_US" do
+        action :install
+        source navicli_package
+        options node['eucalyptus']['yum-options']
+      end
+    when 'netapp'
+      san_package = 'eucalyptus-enterprise-storage-san-netapp'
+    when 'equallogic'
+      san_package = 'eucalyptus-enterprise-storage-san-equallogic'
+    end
+    yum_package san_package do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      notifies :restart, "service[eucalyptus-cloud]", :immediately
+      flush_cache [:before]
+    end
+    if Eucalyptus::Enterprise.is_vmware?(node)
+      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+        action :upgrade
+        options node['eucalyptus']['yum-options']
+        notifies :restart, "service[eucalyptus-cloud]", :immediately
+        flush_cache [:before]
+      end
+    end
+  end
+end
+
+ruby_block "Sync keys for SC" do
+  block do
+    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+  end
+  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+end
+
+ruby_block "Get Ceph Credentials" do
+  block do
+    CephHelper::SetCephRbd.make_ceph_config(node)
+  end
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
+

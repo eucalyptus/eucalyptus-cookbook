@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 options = {
-  :cores => 2,
+  :cores => 4,
   :memory => 3072,
 }
 Vagrant.configure("2") do |config|
@@ -13,19 +13,18 @@ Vagrant.configure("2") do |config|
       chef.roles_path = "roles"
       chef.add_role "cloud-in-a-box"  
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
-                                      "install-type" => "packages",
+                                      "install-type" => "source",
                                       ## Does not change package version, use "eucalyptus-repo" variable
-                                      "source-branch" => "testing",
-                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
-                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
+                                      "source-branch" => "maint-4.1",
+                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
+                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
                                       "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
-                                      "source-directory" => "/vagrant/eucalyptus-src",
                                       "install-load-balancer" => false,
                                       "install-imaging-worker" => false,
                                       "nc" => {"hypervisor" => "qemu", "work-size" => "50000"},
                                       "topology" => {  "clc-1" => "192.168.192.101", "walrus" => "192.168.192.101", 
-                                                       "user-facing" => "192.168.192.101",
+                                                       "user-facing" => ["192.168.192.101"],
                                                        "clusters" => {"default" => { "storage-backend" => "overlay ",
                                                                                      "cc-1" => "192.168.192.101",
                                                                                      "sc-1" => "192.168.192.101",
@@ -54,7 +53,7 @@ Vagrant.configure("2") do |config|
     config.vm.provision "shell", path: "eucadev/post.sh"
     config.vm.define "eucadev-all" do |u|
       u.vm.hostname = "eucadev-all"
-      u.vm.box = "euca-deps"
+      u.vm.box = "chef/centos-6.5"
       u.vm.box_url = "http://euca-vagrant.s3.amazonaws.com/euca-deps-virtualbox.box"
       u.vm.network :forwarded_port, guest: 8888, host: 8888
       u.vm.network :forwarded_port, guest: 8773, host: 8773

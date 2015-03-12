@@ -1,0 +1,73 @@
+{
+  "name": "eucalyptus-ceph",
+  "description": "4.1.0 - Managed NOVLAN",
+  "json_class": "Chef::Environment",
+  "chef_type": "environment",
+  "default_attributes": {
+    "eucalyptus": {
+      "log-level": "DEBUG",
+       "system-properties": {
+        "cloud.network.global_min_network_tag": "1",
+        "cloud.network.global_max_network_tag": "4096",
+        "one.storage.cephkeyringfile": "/etc/ceph/ceph.client.qauser.keyring",
+        "one.storage.cephuser": "qauser",
+        "one.storage.cephconfigfile": "/etc/ceph/ceph.conf",
+        "one.storage.cephsnapshotpools": "rbd",
+        "one.storage.cephvolumepools": "rbd"
+      },
+      "topology": {
+        "clc-1": "10.111.5.12",
+        "walrus": "10.111.5.12",
+        "user-facing": ["10.111.5.12"],
+        "clusters": {
+          "one": {
+            "cc-1": "10.111.5.12",
+            "sc-1": "10.111.5.12",
+            "storage-backend": "ceph-rbd",
+            "ceph_cluster": {
+              "ceph_user": "qauser",
+              "keyring": {
+                "key": "AQAkAP1TYLICHRAAWON3vIDgMgf6VrsawQmTvQ=="
+              },
+              "global": {
+                "osd_pool_default_pgp_num": "128",
+                "auth_service_required": "cephx",
+                "osd_pool_default_size": 3,
+                "filestore_xattr_use_omap": true,
+                "auth_client_required": "cephx",
+                "osd_pool_default_pg_num": 128,
+                "auth_cluster_required": "cephx",
+                "mon_host": "10.111.5.185",
+                "mon_initial_members": "g-19-05",
+                "fsid": "ea4b07ca-ebf9-45a9-be9a-47428b810d84"
+              },
+              "mon": {
+                "mon host": "g-19-05,d-04,d-05",
+                "mon addr": "10.111.5.185:6789,10.111.5.188:6789,10.111.5.189:6789"
+              }
+            },
+            "nodes": "10.111.5.13"
+          }
+        }
+      },
+      "nc": {
+        "max-cores": 16,
+        "cache-size": 40000
+      },
+      "network": {
+        "mode": "MANAGED-NOVLAN",
+        "public-ips": "10.111.52.210-10.111.52.220",
+        "public-interface": "em1",
+        "private-interface": "em1",
+        "bridge-interface": "br0",
+        "bridged-nic": "em1"
+      },
+      "init-script-url": "https://gist.githubusercontent.com/tbeckham/2e3a3ea403f3a6cbe92a/raw/datapath-network-interface",
+      "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/centos/6/x86_64/",
+      "euca2ools-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/euca2ools-devel/centos/6/x86_64/",
+      "ceph-baseurl": "http://ceph.com/rpm-giant/el6/x86_64/",
+      "ceph-gpgkey": "https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc",
+      "yum-options": "--nogpg"
+    }
+  }
+}
