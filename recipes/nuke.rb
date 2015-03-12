@@ -137,10 +137,12 @@ if node['eucalyptus']['install-type'] == 'source'
     metadata_expire "1"
     sslverify false
     action :remove
+    only_if "ls /etc/yum.repos.d/datastax.repo"
   end
 
   execute 'Remove cassandra files' do
     command 'rm -rf /etc/cassandra'
+    only_if "ls /etc/cassandra"
   end
 
   execute 'Remove init script symlinks' do
