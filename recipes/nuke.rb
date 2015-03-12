@@ -44,6 +44,10 @@ service "eucalyptus-cloud" do
   action [ :stop ]
 end
 
+service "cassandra" do
+  action [ :stop ]
+end
+
 ## Destroy all running VMs
 execute 'Destroy VMs' do
   command "virsh list | grep 'running$' | sed -re 's/^\\s*[0-9-]+\\s+(.*?[^ ])\\s+running$/\"\\1\"/' | xargs -r -n 1 -P 1 virsh destroy"
@@ -124,6 +128,19 @@ if node['eucalyptus']['install-type'] == 'source'
     description 'Eucalyptus Build Dependencies repo'
     url node['eucalyptus']['build-deps-repo']
     action :remove
+  end
+
+  yum_repository 'datastax' do
+    description "DataStax Repo for Apache Cassandra"
+    url "http://rpm.datastax.com/community"
+    gpgcheck false
+    metadata_expire "1"
+    sslverify false
+    action :remove
+  end
+
+  execute 'Remove cassandra files' do
+    command 'rm -rf /etc/cassandra'
   end
 
   execute 'Remove init script symlinks' do
