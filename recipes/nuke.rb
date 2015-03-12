@@ -126,23 +126,6 @@ if node['eucalyptus']['install-type'] == 'source'
     action :remove
   end
 
-<<<<<<< HEAD
-  yum_repository 'datastax' do
-    description "DataStax Repo for Apache Cassandra"
-    url "http://rpm.datastax.com/community"
-    gpgcheck false
-    metadata_expire "1"
-    sslverify false
-    action :remove
-    only_if "ls /etc/yum.repos.d/datastax.repo"
-  end
-
-  execute 'Remove cassandra files' do
-    command 'rm -rf /etc/cassandra'
-    only_if "ls /etc/cassandra"
-  end
-  
-=======
   execute 'Remove init script symlinks' do
     command 'rm -rf /etc/init.d/euca*'
   end
@@ -153,7 +136,6 @@ if node['eucalyptus']['install-type'] == 'source'
     only_if "ls #{node['eucalyptus']['home-directory']}/usr/share/eucalyptus"
   end
 
->>>>>>> upstream/master
   directory "#{node['eucalyptus']['home-directory']}/source" do
     recursive true
     action :delete
