@@ -28,7 +28,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# Author: Vic Iglesias vic.iglesias@eucalyptus.com
+# Author: Vic Iglesias <vic.iglesias@eucalyptus.com>
+# qemu-img modifications: Brian Thomason <brian.thomason@hp.com>
 #
 import json
 import os
@@ -36,7 +37,6 @@ from subprocess import call, Popen, PIPE
 import sys
 import urllib
 import re
-
 
 catalog_url = "http://emis.eucalyptus.com/catalog-web"
 temp_dir_prefix = "emis"
@@ -81,6 +81,7 @@ def check_dependencies():
                     "https://www.eucalyptus.com/docs/eucalyptus/4.0/index.html#shared/installing_euca2ools.html")
         sys.exit(1)
 
+    ### Check that xz is installed
     while call(["which", "xz"], stdout=PIPE, stderr=PIPE):
         print_error("Unable to find xz binary.")
         response = raw_input("Would you like to install xz now? (Y/n) ")
@@ -90,6 +91,34 @@ def check_dependencies():
                 sys.exit(1)
         elif response == 'n' or response == 'N':
             print_info("Please install xz and try again.")
+            sys.exit(1)
+        else:
+            print_error("Invalid response.")
+
+    ### Check that wget is installed
+    while call(["which", "wget"], stdout=PIPE, stderr=PIPE):
+        print_error("Unable to find wget binary.")
+        response = raw_input("Would you like to install wget now? (Y/n) ")
+        if response == "" or response == 'y' or response == 'Y':
+            if call(["yum", "install", "-y", "wget"]):
+                print_error("Failed to install wget.")
+                sys.exit(1)
+        elif response == 'n' or response == 'N':
+            print_info("Please install wget and try again.")
+            sys.exit(1)
+        else:
+            print_error("Invalid response.")
+
+    ### Check that qemu-img is installed
+    while call(["which", "qemu-img"], stdout=PIPE, stderr=PIPE):
+        print_error("Unable to find qemu-img binary.")
+        response = raw_input("Would you like to install qemu-img now? (Y/n) ")
+        if response == "" or response == 'y' or response == 'Y':
+            if call(["yum", "install", "-y", "qemu-img"]):
+                print_error("Failed to install qemu-img.")
+                sys.exit(1)
+        elif response == 'n' or response == 'N':
+            print_info("Please install qemu-img and try again.")
             sys.exit(1)
         else:
             print_error("Invalid response.")
@@ -114,12 +143,11 @@ def get_image(number):
 
 def print_catalog():
     catalog = get_catalog()
-    format_spec = '{0:3} {1:20} {2:20} {3:20}'
-    print_info(format_spec.format("id", "version", "created-date", "description"))
+    format_spec = '{0:3} {1:20} {2:20}'
+    print_info(format_spec.format("id","version","description"))
     image_number = 1
     for image in catalog:
-        print format_spec.format(str(image_number), image["version"],
-                                 image["created-date"], image["description"])
+        print format_spec.format(str(image_number),image["version"],image["description"])
         image_number += 1
     print
 
@@ -147,19 +175,34 @@ def install_image(number=0, image=None):
     (tmpdir, stderr) = check_output('mktemp -d ' + directory_format)
 
     ### Download image
-    download_path = tmpdir.strip() + "/" + image_name + ".raw.xz"
-    print_info("Downloading image to: " + download_path)
-    if call(["curl", image["url"], "-o", download_path]):
+    download_path = tmpdir.strip() + "/" + image["url"].rsplit("/",1)[-1]
+    print_info("Downloading " + image['url'] + " image to: " + download_path)
+    if call(["wget", image["url"], "-O", download_path]):
         print_error("Image download failed attempting to download:\n" + image["url"])
         sys.exit(1)
 
-    print_info("Decompressing image...")
-    if call(["xz", "-d", download_path]):
-        print_error("Unable to decompress image downloaded to: " + download_path)
-        sys.exit(1)
-    image_path = download_path.strip(".xz")
-    print_info("Decompressed image can be found at: " + image_path)
+    ### Decompress image, if necessary
+    if image["url"].endswith(".xz"):
+        print_info("Decompressing image...")
+        if call(["xz", "-d", download_path]):
+            print_error("Unable to decompress image downloaded to: " + download_path)
+            sys.exit(1)
+        image_path = download_path.strip(".xz")
+        print_info("Decompressed image can be found at: " + image_path)
+    else:
+        image_path = download_path
 
+    ### Convert image to raw format, if necessary
+    if image_path.endswith(".img") or image_path.endswith(".qcow2"):
+        print_info("Converting image...")
+        image_basename = image_path[0:image_path.rindex(".")]
+        if call(["qemu-img", "convert", "-O", "raw", image_path, image_basename + ".raw"]):
+            print_error("Unable to convert image")
+            sys.exit(1)
+        image_path = image_path[0:image_path.rindex(".")] + ".raw"
+        print_info("Converted image can be found at: " + image_path)
+
+    ## Install image
     print_info("Installing image to bucket: " + image_name)
     install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1}".\
         format(image_path, image_name)
@@ -219,4 +262,3 @@ if __name__ == "__main__":
                     print_error("Invalid image selected")
     except KeyboardInterrupt:
         exit_message()
-
