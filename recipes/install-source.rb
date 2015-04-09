@@ -48,7 +48,7 @@ end
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
 
-%w{java-1.7.0-openjdk-devel ant ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
+%w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
   axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
   libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
   rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
