@@ -5,6 +5,10 @@
       "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
       "install-service-image": EXTRASERVICES,
       "ntp-server": "NTP",
+      "system-properties": {
+          "authentication.access_keys_limit": 10,
+          "authentication.signing_certificates_limit": 10
+      },
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
