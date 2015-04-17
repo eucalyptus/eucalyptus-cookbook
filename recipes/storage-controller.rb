@@ -72,6 +72,8 @@ if Eucalyptus::Enterprise.is_san?(node)
       san_package = 'eucalyptus-enterprise-storage-san-netapp'
     when 'equallogic'
       san_package = 'eucalyptus-enterprise-storage-san-equallogic'
+    when 'threepar'
+      san_package = 'eucalyptus-enterprise-storage-san-threepar'
     end
     yum_package san_package do
       action :upgrade
