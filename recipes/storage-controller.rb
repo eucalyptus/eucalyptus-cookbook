@@ -72,19 +72,26 @@ if Eucalyptus::Enterprise.is_san?(node)
       san_package = 'eucalyptus-enterprise-storage-san-netapp'
     when 'equallogic'
       san_package = 'eucalyptus-enterprise-storage-san-equallogic'
+    else
+      # This cluster is not SAN backed
+      san_package = nil
     end
-    yum_package san_package do
-      action :upgrade
-      options node['eucalyptus']['yum-options']
-      notifies :restart, "service[eucalyptus-cloud]", :immediately
-      flush_cache [:before]
-    end
-    if Eucalyptus::Enterprise.is_vmware?(node)
-      yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
-        action :upgrade
-        options node['eucalyptus']['yum-options']
-        notifies :restart, "service[eucalyptus-cloud]", :immediately
-        flush_cache [:before]
+    if node["eucalyptus"]["install-type"] == "packages"
+      if san_package
+        yum_package san_package do
+          action :upgrade
+          options node['eucalyptus']['yum-options']
+          notifies :restart, "service[eucalyptus-cloud]", :immediately
+          flush_cache [:before]
+        end
+      end
+      if Eucalyptus::Enterprise.is_vmware?(node)
+        yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
+          action :upgrade
+          options node['eucalyptus']['yum-options']
+          notifies :restart, "service[eucalyptus-cloud]", :immediately
+          flush_cache [:before]
+        end
       end
     end
   end
