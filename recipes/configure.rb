@@ -168,7 +168,7 @@ if node['eucalyptus']['install-service-image']
     options node['eucalyptus']['yum-options']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-service-image --install-default" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && esi-install-image --install-default" do
     only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
   end
 end
