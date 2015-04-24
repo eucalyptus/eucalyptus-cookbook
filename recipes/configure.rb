@@ -171,6 +171,9 @@ if node['eucalyptus']['install-service-image']
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && esi-install-image --install-default" do
     only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
   end
+  execute "#{modify_property} -p services.imaging.worker.configured=true" do
+    only_if "#{describe_property} services.imaging.worker.configured | grep 'false'"
+  end
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
