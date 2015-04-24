@@ -70,12 +70,17 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
       when 'threepar'
         san_package = 'eucalyptus-enterprise-storage-san-threepar-libs'
+      else
+        # This cluster is not SAN backed
+        san_package = nil
       end
-      yum_package san_package do
-        action :upgrade
-        options node['eucalyptus']['yum-options']
-        notifies :restart, "service[eucalyptus-cloud]", :immediately
-        flush_cache [:before]
+      if san_package and node["eucalyptus"]["install-type"] == "packages"
+        yum_package san_package do
+          action :upgrade
+          options node['eucalyptus']['yum-options']
+          notifies :restart, "service[eucalyptus-cloud]", :immediately
+          flush_cache [:before]
+        end
       end
     end
   end
