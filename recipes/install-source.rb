@@ -153,10 +153,9 @@ end
 execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
 
 ### Add udev rules
-udev_dir = "#{eucalyptus_dir}/clc/modules/block-storage-common/udev/"
-%w{55-openiscsi.rules 12-dm-permissions.rules}.each do |file_name|
-  execute "cp #{udev_dir}/#{file_name} /etc/udev/rules.d/"
+udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/',
+                'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/',
+                'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/'}
+udev_mapping.each do |src, dst|
+  execute "cp #{eucalyptus_dir}/#{src} #{dst}"
 end
-### Add udev scripts
-directory '/etc/udev/scripts'
-execute "cp #{udev_dir}/iscsidev.sh /etc/udev/scripts/"
