@@ -153,6 +153,8 @@ end
 execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
 
 ### Add udev rules
+directory '/etc/udev/rules.d'
+directory '/etc/udev/scripts'
 udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/55-openiscsi.rules',
                 'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/iscsidev.sh',
                 'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
