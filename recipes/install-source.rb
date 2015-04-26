@@ -153,9 +153,9 @@ end
 execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
 
 ### Add udev rules
-udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/',
-                'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/',
-                'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/'}
+udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/55-openiscsi.rules',
+                'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/iscsidev.sh',
+                'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
 udev_mapping.each do |src, dst|
   execute "cp #{eucalyptus_dir}/#{src} #{dst}"
 end
