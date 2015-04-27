@@ -128,11 +128,12 @@ execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAV
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
-tools_dir = "#{source_directory}/tools"
+eucalyptus_dir = source_directory
 if node['eucalyptus']['source-repo'].end_with?("internal")
-  tools_dir = "#{source_directory}/eucalyptus/tools"
+  eucalyptus_dir = "#{source_directory}/eucalyptus"
 end
 
+tools_dir = "#{eucalyptus_dir}/tools"
 %w{eucalyptus-cloud eucalyptus-cc eucalyptus-nc}.each do |init_script|
   execute "ln -sf #{tools_dir}/eucalyptus-cloud /etc/init.d/#{init_script}" do
     creates "/etc/init.d/#{init_script}"
@@ -150,3 +151,13 @@ execute "Copy Policy Kit file for NC" do
 end
 
 execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
+
+### Add udev rules
+directory '/etc/udev/rules.d'
+directory '/etc/udev/scripts'
+udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/55-openiscsi.rules',
+                'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/iscsidev.sh',
+                'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
+udev_mapping.each do |src, dst|
+  execute "cp #{eucalyptus_dir}/#{src} #{dst}"
+end
