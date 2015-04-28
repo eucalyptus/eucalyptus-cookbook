@@ -68,6 +68,8 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
       when 'equallogic'
         san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
+      when 'threepar'
+        san_package = 'eucalyptus-enterprise-storage-san-threepar-libs'
       else
         # This cluster is not SAN backed
         san_package = nil
