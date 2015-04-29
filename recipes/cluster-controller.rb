@@ -50,14 +50,11 @@ service "eucalyptus-cc" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-ruby_block "Register nodes" do
-  block do
-    nodes = node["eucalyptus"]["topology"]["clusters"][node["eucalyptus"]["local-cluster-name"]]["nodes"]
-    nodes.split().each do |nc_ip|
-      r = Chef::Resource::Execute.new('Register Nodes', node.run_context)
-      r.command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
-      r.run_action :run
-    end
+cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
+log "Registering the following nodes: #{nc_ips}"
+nc_ips.each do |nc_ip|
+  execute 'Register Nodes' do
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
   end
-  not_if "#{Chef::Config[:solo]}"
 end
