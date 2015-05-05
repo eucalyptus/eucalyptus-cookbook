@@ -17,7 +17,8 @@
 ##    limitations under the License.
 ##
 source_creds = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc"
-command_prefix = "#{source_creds} && #{node['eucalyptus']['home-directory']}"
+disable_proxy = 'http_proxy=""'
+command_prefix = "#{source_creds} && #{disable_proxy} #{node['eucalyptus']['home-directory']}"
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
 describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
@@ -177,10 +178,10 @@ if node['eucalyptus']['install-service-image']
     options node['eucalyptus']['yum-options']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-imaging-worker --install-default" do
     only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-load-balancer --install-default" do
     only_if "#{describe_property} services.loadbalancing.worker.image | grep 'NULL'"
   end
 end

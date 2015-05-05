@@ -3,8 +3,17 @@
       "yum-options": "--nogpg",
       "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
       "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
-      "run_list": [
+      "network": {
+        "mode": "EDGE",
+        "public-interface": "br0",
+        "private-interface": "br0",
+        "bridged-nic":"NIC",
+        "bridge-ip": "IPADDR",
+        "bridge-netmask": "NETMASK",
+        "bridge-gateway": "GATEWAY"
+      }
+    },
+    "run_list": [
         "recipe[eucalyptus::node-controller]"
       ]
-    }
 }
