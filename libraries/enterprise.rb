@@ -20,7 +20,7 @@
 module Eucalyptus
   module Enterprise
     @oss_backends = ['overlay', 'das', 'ceph-rbd']
-    @enterprise_backends = ['equallogic', 'netapp', 'emc-vnx']
+    @enterprise_backends = ['equallogic', 'netapp', 'emc-vnx', 'threepar']
 
     def self.is_san?(node)
       if node['eucalyptus']['topology']
