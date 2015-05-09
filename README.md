@@ -6,6 +6,16 @@ This cookbook installs and configures Eucalyptus on CentOS 6 physical and virtua
 Requirements
 ------------
 
+### Branches
+The following table descirbes the branch to use for each Eucalyptus release:
+
+| Branch       | Cookbook version | Euca version |Notes |
+| ------------- |------------- | ------------- |------------- |
+|master   | 0.3.x | 4.1.0 | maps to latest released eucalyptus version |
+|euca-4.0 | 0.3.x| 4.0.2 |Stable branch for 4.0.x installs |
+|euca-4.1 | 0.4.x | 4.1.1 | Maint branch for 4.1.x installs|
+|euca-4.2 | 1.0.x | 4.2.0 |breaks the attribute API |
+
 ### Environment
 To deploy a distributed topology it is necessary to define an environment with at least these attributes defined:
 - node['eucalyptus']['topology']
@@ -99,7 +109,7 @@ Some common attributes are:
     <td><tt>["eucalyptus"]["source-branch"]</tt></td>
     <td>String</td>
     <td>Branch to use when building from source</td>
-    <td><tt>testing</tt></td>
+    <td><tt>maint-4.1</tt></td>
   </tr>
 </table>
 

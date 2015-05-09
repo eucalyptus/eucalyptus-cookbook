@@ -17,7 +17,8 @@
 ##    limitations under the License.
 ##
 source_creds = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc"
-command_prefix = "#{source_creds} && #{node['eucalyptus']['home-directory']}"
+disable_proxy = 'http_proxy=""'
+command_prefix = "#{source_creds} && #{disable_proxy} #{node['eucalyptus']['home-directory']}"
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
 describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
@@ -68,12 +69,19 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         san_package = 'eucalyptus-enterprise-storage-san-netapp-libs'
       when 'equallogic'
         san_package = 'eucalyptus-enterprise-storage-san-equallogic-libs'
+      when 'threepar'
+        san_package = 'eucalyptus-enterprise-storage-san-threepar-libs'
+      else
+        # This cluster is not SAN backed
+        san_package = nil
       end
-      yum_package san_package do
-        action :upgrade
-        options node['eucalyptus']['yum-options']
-        notifies :restart, "service[eucalyptus-cloud]", :immediately
-        flush_cache [:before]
+      if san_package and node["eucalyptus"]["install-type"] == "packages"
+        yum_package san_package do
+          action :upgrade
+          options node['eucalyptus']['yum-options']
+          notifies :restart, "service[eucalyptus-cloud]", :immediately
+          flush_cache [:before]
+        end
       end
     end
   end
@@ -172,10 +180,10 @@ if node['eucalyptus']['install-service-image']
     options node['eucalyptus']['yum-options']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-imaging-worker --install-default" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-imaging-worker --install-default" do
     only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && euca-install-load-balancer --install-default" do
+  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-load-balancer --install-default" do
     only_if "#{describe_property} services.loadbalancing.worker.image | grep 'NULL'"
   end
 end

@@ -118,18 +118,6 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
   action :create
 end
 
-if node["eucalyptus"]["nc"]["install-qemu-migration"]
-  bash "Installing qemu-kvm that works for migration" do
-    code <<-EOH
-    yum downgrade -y http://vault.centos.org/6.4/os/x86_64/Packages/qemu-kvm-0.12.1.2-2.355.el6.x86_64.rpm http://vault.centos.org/6.4/os/x86_64/Packages/qemu-img-0.12.1.2-2.355.el6.x86_64.rpm
-    service libvirtd restart
-    yum -y install yum-plugin-versionlock
-    yum versionlock qemu-kvm
-    yum versionlock qemu-img
-    EOH
-  end
-end
-
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
     owner 'root'
