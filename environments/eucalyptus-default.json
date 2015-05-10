@@ -29,25 +29,22 @@
           "PublicIps": [
             "10.0.2.1-10.0.2.100"
           ],
-          "Clusters": [
+          "PrivateIps": [
+            "10.0.2.101-10.0.2.200"
+          ],
+          "Subnets": [
             {
-              "Subnet": {
-                "Name": "10.0.0.0",
                 "Subnet": "10.0.0.0",
                 "Netmask": "255.255.0.0",
-                "Gateway": "10.0.1.1",
-                "PrivateIps": [
-                  "10.0.2.101-10.0.2.200"
-                ]
-              }
+                "Gateway": "10.0.1.1"
             }
           ]
         },
         "public-interface": "br0",
         "private-interface": "br0"
       },
-      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.0/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/nightly/3.1/centos/6/x86_64/",
+      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6Server/x86_64/",
+      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6Server/x86_64/",
       "yum-options": "--nogpg"
     },
     "ceph": {
