@@ -5,18 +5,29 @@
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.0.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.1.tgz"
+nc_install_only=0
 
-while getopts "u:" opt; do
-    case "$opt" in
-    u)  cookbooks_url=$OPTARG
-        ;;
+function usage
+{
+    echo "usage: cloud-in-a-box.sh [[[-u path-to-cookbooks-tgz ] [--nc]] | [-h]]"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -u | --cookbooks-url )           shift
+                                         cookbooks_url=$1
+                                ;;
+        --nc )                  nc_install_only=1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
     esac
+    shift
 done
-
-shift $((OPTIND-1))
-
-[ "$1" = "--" ] && shift
 
 ###############################################################################
 # TODOs:
@@ -193,23 +204,6 @@ function submit_support_request()
 # Create uuid
 uuid=`uuidgen -t`
 
-# By default, not an NC-only install
-nc_install_only=0
-
-# Pull command-line args. Default is cloud-in-a-box, but --nc
-# will run NC installation only.
-while [ $# -gt 0 ]
-do
-    case $1 in
-        --nc)
-            echo ""
-            echo "NC ONLY"
-            echo ""
-            nc_install_only=1
-            shift
-    esac
-done
-
 ###############################################################################
 # SECTION 1: PRECHECK.
 # 
@@ -320,12 +314,12 @@ fi
 
 # Check to see that we're running on CentOS or RHEL 6.5.
 echo "[Precheck] Checking OS"
-cat /etc/issue | egrep 'release.*6.[5-6]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*6.[5-6]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.5."
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.5 or 6.6."
     echo "To try Faststart on another platform, consider trying Eucadev:"
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
@@ -494,6 +488,7 @@ ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | 
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
 ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
+ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/ntp.conf | head -1`
 
 
 echo "====="
@@ -512,6 +507,13 @@ else
 fi
 echo "Note: it's STRONGLY suggested that you accept the default values where"
 echo "they are provided, unless you know that the values are incorrect."
+
+echo ""
+echo "What's the NTP server which we will update time from? ($ciab_ntp_guess)"
+read ciab_ntp
+[[ -z "$ciab_ntp" ]] && ciab_ntp=$ciab_ntp_guess
+echo "NTP="$ciab_ntp
+echo ""
 
 echo ""
 echo "What's the physical NIC that will be used for bridging? ($ciab_nic_guess)"
@@ -698,6 +700,7 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
+sed -i "s/NTP/$ciab_ntp/g" $chef_template
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS

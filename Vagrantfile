@@ -13,9 +13,9 @@ Vagrant.configure("2") do |config|
       chef.roles_path = "roles"
       chef.add_role "cloud-in-a-box"  
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
-                                      "install-type" => "packages",
+                                      "install-type" => "source",
                                       ## Does not change package version, use "eucalyptus-repo" variable
-                                      "source-branch" => "testing",
+                                      "source-branch" => "maint-4.1",
                                       "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
                                       "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
