@@ -30,19 +30,21 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-# make sure libvirt is started
-# when we want to delete its networks
-service 'libvirtd' do
-  action [ :enable, :start ]
+if node["eucalyptus"]["network"]["mode"] == "EDGE"
+  # make sure libvirt is started
+  # when we want to delete its networks
+  service 'libvirtd' do
+    action [ :enable, :start ]
+  end
+  # Remove default virsh network which runs its own dhcp server
+  execute 'virsh net-destroy default' do
+    ignore_failure true
+  end
+  execute 'virsh net-autostart default --disable' do
+    ignore_failure true
+  end
+  include_recipe "eucalyptus::eucanetd"
 end
-# Remove default virsh network which runs its own dhcp server
-execute 'virsh net-destroy default' do
-  ignore_failure true
-end
-execute 'virsh net-autostart default --disable' do
-  ignore_failure true
-end
-include_recipe "eucalyptus::eucanetd"
 
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
