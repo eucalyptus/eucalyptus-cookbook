@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Taken from
 # http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
@@ -159,23 +159,11 @@ function offer_support()
         echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
     fi
     echo ""
-    echo "Free support is available for this error. Provide your email address below and"
-    echo "a member of the support team will contact you directly. Or hit Enter to continue."
-    echo -n "Email address: "
-    read emailAddress
- 
-   if [ "$emailAddress" != "" ]
-   then
-       submit_support_request $emailAddress $errorCondition "$uuid.tar.gz"
-       echo ""
-       echo "Eucalyptus support will contact you at $emailAddress as early as possible."
-    else
-       echo "You can ask the Eucalyptus community for assistance:"
-       echo ""
-       echo "     http://bit.ly/euca-users"
-       echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
-       echo "     http://bit.ly/euca-irc"
-    fi  
+    echo "Free support is available for this error. Visit this link to speak"
+    echo "with the Eucalyptus technical community:"
+    echo "     http://bit.ly/euca-users"
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo "     http://bit.ly/euca-irc"
 } 
 
 # Notify support team that a user wants help
