@@ -18,18 +18,34 @@ module CephHelper
 
     def self.make_ceph_config(node)
       if node['ceph'] != nil
-        # can't share library, need to fix,
-        # using alternative option
-        # CephCluster::DataHelper.retrieve_keyring_data(node)
-        # CephCluster::DataHelper.retrieve_config_data(node)
         mon_bootstrap = node['ceph']['topology']['mon_bootstrap']['ipaddr']
         environment = node.chef_environment
+
+        mon_hostnames = []
+        mon_ipaddrs = []
+        mons = node['ceph']['topology']['mons']
+        if mons != nil
+          mons.each do |value|
+            mon_hostnames << value['hostname']
+            mon_ipaddrs << "#{value['ipaddr']}:6789"
+          end
+        end
+        mon_hostnames << node['ceph']['topology']['mon_bootstrap']['hostname']
+        mon_ipaddrs << "#{node['ceph']['topology']['mon_bootstrap']['ipaddr']}:6789"
+
+
         file_name = "/etc/ceph/ceph.conf"
         Chef::Log.info "Getting all attributes from #{mon_bootstrap}"
         bootstrap_node = Chef::Search::Query.new.search(:node, "addresses:#{mon_bootstrap}").first.first
         config_data = bootstrap_node.attributes['ceph']['config']['conf_data']
+
+        mons_config_content = "[mon]\n"
+        mons_config_content = "#{mons_config_content}" + "mon host = " + mon_hostnames.join(",") + "\n"
+        mons_config_content = "#{mons_config_content}" + "mon addr = " + mon_ipaddrs.join(",") + "\n"
+        config_data = Base64.decode64(config_data) + "#{mons_config_content}"
+
         File.open(file_name, 'w') do |file|
-          file.puts Base64.decode64(config_data)
+          file.puts config_data
         end
         FileUtils.chmod 0744, file_name
 
