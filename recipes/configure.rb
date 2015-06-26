@@ -22,7 +22,43 @@ command_prefix = "#{source_creds} && #{disable_proxy} #{node['eucalyptus']['home
 modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
 describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
 describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
-if node['eucalyptus']['topology']['riakcs']
+
+if node['riak_cs']
+  admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
+  Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
+  Chef::Log.info "Existing RiakCS admin_secret: #{admin_secret}"
+  execute "Set-objectstorage.providerclient-to-riakcs" do
+    command "#{modify_property} -p objectstorage.providerclient=riakcs"
+    retries 15
+    retry_delay 20
+  end
+
+  if node['riakcs_cluster']['topology']['load_balancer']
+    if node['haproxy']['incoming_port']
+      s3_endpoint = "#{node['riakcs_cluster']['topology']['load_balancer']}:#{node['haproxy']['incoming_port']}"
+    else
+      s3_endpoint = "#{node['riakcs_cluster']['topology']['load_balancer']}:80"
+    end
+  else
+    s3_endpoint = "#{node['riakcs_cluster']['topology']['head']['ipaddr']}:8080"
+  end
+
+  execute "Set S3 endpoint" do
+    command "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{s3_endpoint}"
+    retries 15
+    retry_delay 20
+  end
+  execute "Set providerclient access-key" do
+    command "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{admin_key}"
+    retries 5
+    retry_delay 20
+  end
+  execute "Set providerclient secret-key" do
+    command "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{admin_secret}"
+    retries 5
+    retry_delay 20
+  end
+elsif node['eucalyptus']['topology']['riakcs']
   execute "Set OSG providerclient to riakcs" do
     command "#{modify_property} -p objectstorage.providerclient=riakcs"
     retries 15
@@ -177,6 +213,8 @@ if node['eucalyptus']['install-service-image']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-install-image --install-default" do
+    retries 5
+    retry_delay 20
     only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-manage-stack -a create imaging" do
