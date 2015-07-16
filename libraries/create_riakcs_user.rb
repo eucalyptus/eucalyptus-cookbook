@@ -34,6 +34,28 @@ module RiakCSHelper
       raise e
     end
 
+    def self.download_riak_credentials(node)
+      head = nil
+      head_ip = node['riakcs_cluster']['topology']['head']['ipaddr']
+      environment = node.chef_environment
+      Chef::Log.info "Getting all attributes from head"
+      head = Chef::Search::Query.new.search(:node, "addresses:#{head_ip}").first.first
+      cert = head.attributes['riak_cs']['credentials']
+      node.set['riak_cs']['credentials'] = cert
+      node.save
+
+      file_name = "/root/creds.txt"
+      File.open(file_name, 'w') do |file|
+        file.puts Base64.decode64(node['riak_cs']['credentials'])
+      end
+      FileUtils.chmod 0644, file_name
+      hash = Hash[File.read('/root/creds.txt').split("\n").map{|i|i.split(':')}]
+      admin_key = hash['RIAKCS_ACCESS_KEY_ID']
+      admin_secret = hash['RIAKCS_SECRET_ACCESS_KEY']
+
+      [ admin_key, admin_secret ]
+    end
+
   end
 end
 
