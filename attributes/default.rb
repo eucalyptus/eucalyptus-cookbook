@@ -81,7 +81,6 @@ default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 ##############################################################################
 #default["eucalyptus"]["topology"]["clusters"]["default"]["cc-1"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["sc-1"] = ""
-#default["eucalyptus"]["topology"]["clusters"]["default"]["vmware-broker"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["nodes"] = ""
 #default["eucalyptus"]["topology"]["clusters"]["default"]["storage-backend"] = "overlay"
 #default["eucalyptus"]["topology"]["clusters"]["default"]["hypervisor"] = "kvm"

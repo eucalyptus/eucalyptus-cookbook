@@ -17,16 +17,6 @@
 ##    limitations under the License.
 ##
 include_recipe "eucalyptus::default"
-## Install vmware broker libs if needed
-if Eucalyptus::Enterprise.is_enterprise?(node)
-  if Eucalyptus::Enterprise.is_vmware?(node)
-    yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
-      action :upgrade
-      options node['eucalyptus']['yum-options']
-      flush_cache [:before]
-    end
-  end
-end
 
 ## Install packages for the Walrus
 if node["eucalyptus"]["install-type"] == "packages"
