@@ -29,7 +29,7 @@ group "eucalyptus-status"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 home_directory =  node['eucalyptus']["home-directory"]
-cloud_libs_branch = node['eucalyptus']['cloud-libs']
+cloud_libs_branch = node['eucalyptus']['cloud-libs-branch']
 
 directory source_directory do
   recursive true
