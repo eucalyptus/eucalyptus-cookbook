@@ -29,6 +29,7 @@ group "eucalyptus-status"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 home_directory =  node['eucalyptus']["home-directory"]
+cloud_libs_branch = node['eucalyptus']['cloud-libs-branch']
 
 directory source_directory do
   recursive true
@@ -123,7 +124,7 @@ end
 
 execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
 
-execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make && make install" do
+execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH=#{cloud_libs_branch} && make install" do
   cwd source_directory
   timeout node["eucalyptus"]["compile-timeout"]
 end

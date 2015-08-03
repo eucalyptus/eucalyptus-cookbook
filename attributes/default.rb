@@ -22,6 +22,7 @@ default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
+default['eucalyptus']['cloud-libs-branch'] = "master"
 
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"
