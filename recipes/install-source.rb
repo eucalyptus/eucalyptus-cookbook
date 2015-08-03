@@ -66,7 +66,7 @@ end
   drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
   PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
   openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
-  postgresql92 postgresql92-server python-boto python-devel python-setuptools
+  postgresql92 postgresql92-server pv python-boto python-devel python-setuptools
   rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
   velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2}.each do |dependency|
   yum_package dependency do

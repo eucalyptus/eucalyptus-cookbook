@@ -30,7 +30,7 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-if node["eucalyptus"]["network"]["mode"] == "EDGE"
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   # make sure libvirt is started
   # when we want to delete its networks
   service 'libvirtd' do
