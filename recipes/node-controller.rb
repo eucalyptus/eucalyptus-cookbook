@@ -101,6 +101,11 @@ execute "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
+execute "kill dnsmasq service if exist" do
+  command "service dnsmasq stop; killall dnsmasq"
+  ignore_failure true
+end
+
 ### Ensure hostname resolves
 execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts" do
   not_if "ping -c \`hostname --fqdn\`"
@@ -135,6 +140,11 @@ ruby_block "Set Ceph Credentials" do
 end
 
 service "eucalyptus-nc" do
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
+end
+
+service "eucanetd" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
