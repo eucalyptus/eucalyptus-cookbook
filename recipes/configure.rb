@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: configure
 #
-#Copyright [2014] [Eucalyptus Systems]
+#Copyright [2014-2015] [Eucalyptus Systems]
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-source_creds = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc"
 disable_proxy = 'http_proxy=""'
-command_prefix = "#{source_creds} && #{disable_proxy} #{node['eucalyptus']['home-directory']}"
-modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
-describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
-describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
+command_prefix = "eval `clcadmin-assume-system-credentials` && #{node['eucalyptus']['home-directory']}"
+describe_services = "#{command_prefix}/usr/bin/empyrean-describe-services"
+euctl = "#{command_prefix}/usr/bin/euctl"
 
 if node['riak_cs']
   admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
   Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
   Chef::Log.info "Existing RiakCS admin_secret: #{admin_secret}"
   execute "Set-objectstorage.providerclient-to-riakcs" do
-    command "#{modify_property} -p objectstorage.providerclient=riakcs"
+    command "#{euctl} objectstorage.providerclient=riakcs"
     retries 15
     retry_delay 20
   end
@@ -44,23 +42,23 @@ if node['riak_cs']
   end
 
   execute "Set S3 endpoint" do
-    command "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{s3_endpoint}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{s3_endpoint}"
     retries 15
     retry_delay 20
   end
   execute "Set providerclient access-key" do
-    command "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{admin_key}"
+    command "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
     retries 5
     retry_delay 20
   end
   execute "Set providerclient secret-key" do
-    command "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{admin_secret}"
+    command "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
     retries 5
     retry_delay 20
   end
 elsif node['eucalyptus']['topology']['riakcs']
   execute "Set OSG providerclient to riakcs" do
-    command "#{modify_property} -p objectstorage.providerclient=riakcs"
+    command "#{euctl} objectstorage.providerclient=riakcs"
     retries 15
     retry_delay 20
   end
@@ -80,15 +78,15 @@ elsif node['eucalyptus']['topology']['riakcs']
   end
 
   execute "Set S3 endpoint" do
-    command "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
     retries 15
     retry_delay 20
   end
-  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{admin_key}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{admin_secret}"
+  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
+  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
 else
   execute "Set OSG providerclient" do
-    command "#{modify_property} -p objectstorage.providerclient=walrus"
+    command "#{euctl} objectstorage.providerclient=walrus"
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
     retries 15
     retry_delay 20
@@ -123,14 +121,14 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-execute "Wait for ENABLED objectstorage" do
-  command "#{describe_services} | grep objectstorage | grep ENABLED"
+execute "Wait for enabled objectstorage" do
+  command "#{describe_services} --filter service-type=objectstorage | grep enabled"
   retries 15
   retry_delay 20
 end
 
-execute "Wait for ENABLED compute" do
-  command "#{describe_services} | grep compute | grep ENABLED"
+execute "Wait for enabled compute" do
+  command "#{describe_services} --filter service-type=compute | grep enabled"
   retries 15
   retry_delay 20
 end
@@ -145,8 +143,8 @@ end
 bash "Remove old certs" do
   cwd node['eucalyptus']['admin-cred-dir']
   code <<-EOH
-  for cert in `#{source_creds} && euare-userlistcerts | sed '/Active/ { N; d; }'`;do
-    #{source_creds} && euare-userdelcert -c $cert
+  #{command_prefix} for cert in `euare-userlistcerts | sed '/Active/ { N; d; }'`;do
+    euare-userdelcert -c $cert
   done
   EOH
 end
@@ -159,7 +157,7 @@ execute "Download credentials with certs" do
 end
 
 execute "Set DNS server on CLC" do
-  command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
+  command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
 file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
@@ -168,7 +166,7 @@ file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
   action :create
 end
 execute "Configure network" do
-  command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
+  command "#{euctl} cloud.network.network_configuration=@#{node['eucalyptus']['admin-cred-dir']}/network.json"
 end
 
 clusters = node["eucalyptus"]["topology"]["clusters"]
@@ -181,9 +179,9 @@ clusters.each do |cluster, info|
 
   end
   execute "Set storage backend" do
-     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
+     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
      ### Patch for EUCA-9963
-     not_if "#{describe_property} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+     not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
   end
@@ -191,7 +189,7 @@ clusters.each do |cluster, info|
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
-      command "#{modify_property} -p #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
+      command "#{euctl} #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
       retries 15
       retry_delay 20
     end
@@ -215,18 +213,18 @@ if node['eucalyptus']['install-service-image']
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-install-image --install-default" do
     retries 5
     retry_delay 20
-    only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
+    only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
   end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-manage-stack -a create imaging" do
-    only_if "#{describe_property} services.imaging.worker.configured | grep 'false'"
+    only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
   end
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
-  execute "#{modify_property} -p #{key}=\"#{value}\"" do
+  execute "#{euctl} #{key}=\"#{value}\"" do
     retries 10
     retry_delay 5
-    not_if "#{describe_property} #{key} | grep \"#{value}\""
+    not_if "#{euctl} #{key} | grep \"#{value}\""
   end
 end
 

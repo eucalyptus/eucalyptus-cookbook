@@ -129,8 +129,6 @@ execute "Copy Policy Kit file for NC" do
   command "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
 end
 
-execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
-
 ### Add udev rules
 directory '/etc/udev/rules.d'
 directory '/etc/udev/scripts'
