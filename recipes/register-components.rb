@@ -51,7 +51,7 @@ clusters.each do |cluster, info|
 
   execute "Register CC" do
     command "#{euca_conf} --register-cluster -P #{cluster} -H #{cc_ip} -C #{cluster}-cc-1 #{dont_sync_keys}"
-    not_if "#{disable_proxy} euca-describe-services | grep #{cluster}-cc-1"
+    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-cc-1"
     retries 5
     retry_delay 10
   end
@@ -63,13 +63,13 @@ clusters.each do |cluster, info|
 
   execute "Register SC" do
     command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1 #{dont_sync_keys}"
-    not_if "#{disable_proxy} euca-describe-services | grep #{cluster}-sc-1"
+    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-sc-1"
   end
 
   if info["vmware-broker"]
     execute "Register VMware Broker" do
       command "#{euca_conf} --register-vmwarebroker -P #{cluster} -H #{info["vmware-broker"]} -C #{cluster}-vb #{dont_sync_keys}"
-      not_if "#{disable_proxy} euca-describe-services | grep #{cluster}-vb"
+      not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-vb"
     end
   end
 
@@ -111,13 +111,13 @@ end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{euca_conf}  --register-service -T user-api -H #{uf_ip} -N API_#{uf_ip} #{dont_sync_keys}"
-    not_if "egrep '3.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version || #{disable_proxy} euca-describe-services | egrep 'API_#{uf_ip}'"
+    not_if "egrep '3.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version || #{command_prefix}/usr/sbin/euca-describe-services | egrep 'API_#{uf_ip}'"
   end
 end
 
 if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
     command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus-1 #{dont_sync_keys}"
-    not_if "#{disable_proxy} euca-describe-services | grep walrus-1"
+    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep walrus-1"
   end
 end
