@@ -151,29 +151,6 @@ execute "Wait for enabled compute" do
   retry_delay 20
 end
 
-execute "Redownload credentials with EUARE_URL" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
-  cwd node['eucalyptus']['admin-cred-dir']
-  retries 15
-  retry_delay 20
-end
-
-bash "Remove old certs" do
-  cwd node['eucalyptus']['admin-cred-dir']
-  code <<-EOH
-  #{command_prefix} for cert in `euare-userlistcerts | sed '/Active/ { N; d; }'`;do
-    euare-userdelcert -c $cert
-  done
-  EOH
-end
-
-execute "Download credentials with certs" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
-  cwd node['eucalyptus']['admin-cred-dir']
-  retries 15
-  retry_delay 20
-end
-
 execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
