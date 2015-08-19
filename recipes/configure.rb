@@ -21,6 +21,24 @@ command_prefix = "eval `clcadmin-assume-system-credentials` && #{node['eucalyptu
 describe_services = "#{command_prefix}/usr/bin/empyrean-describe-services"
 euctl = "#{command_prefix}/usr/bin/euctl"
 
+if node['eucalyptus']['dns']['domain']
+  execute "Enable DNS delegation" do
+    command "#{euctl} bootstrap.webservices.use_dns_delegation=true"
+    retries 15
+    retry_delay 20
+  end
+  execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
+    retries 15
+    retry_delay 20
+  end
+  execute "Enable instance DNS" do
+    command "#{euctl} bootstrap.webservices.use_instance_dns=true"
+    retries 15
+    retry_delay 20
+  end
+end
+
 if node['riak_cs']
   admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
   Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
