@@ -203,14 +203,19 @@ if node['eucalyptus']['install-service-image']
   yum_package "eucalyptus-service-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-install-image --install-default" do
+  execute "eval `clcadmin-assume-system-credentials` && esi-install-image --install-default" do
+    environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
+                 "EC2_URL" => "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
+                 "S3_URL" => "http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
     retries 5
     retry_delay 20
     only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-manage-stack -a create imaging" do
+  execute "eval `clcadmin-assume-system-credentials` && esi-manage-stack -a create imaging" do
+    environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
+                 "AWS_CLOUDFORMATION_URL" => "http://cloudformation.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
+                 "TOKEN_URL" => "http://sts.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
     only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
   end
 end

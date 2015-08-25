@@ -17,40 +17,43 @@
 ##    limitations under the License.
 ##
 #
+
 execute "Add keypair: my-first-keypair" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-keypair my-first-keypair >/root/my-first-keypair.pem && chmod 0600 /root/my-first-keypair.pem"
-  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-keypairs my-first-keypair"
+  command "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-create-keypair my-first-keypair >/root/my-first-keypair.pem && chmod 0600 /root/my-first-keypair.pem"
+  not_if "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-describe-keypairs my-first-keypair"
   retries 10
   retry_delay 10
 end
 
 execute "Authorizing SSH and ICMP traffic for default security group" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-authorize -P icmp -t -1:-1 -s 0.0.0.0/0 default && euca-authorize -P tcp -p 22 -s 0.0.0.0/0 default"
+  command "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-authorize -P icmp -t -1:-1 -s 0.0.0.0/0 default && euca-authorize -P tcp -p 22 -s 0.0.0.0/0 default"
 end
 
 script "install_image" do
   interpreter "bash"
   user "root"
   cwd "/tmp"
-  not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-images | grep default"
+  not_if "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-describe-images | grep default"
   code <<-EOH
   curl #{node['eucalyptus']['default-img-url']} > default.img
-  source #{node['eucalyptus']['admin-cred-dir']}/eucarc
+  eval `clcadmin-assume-system-credentials`
+  EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/
+  S3_URL=http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/
   euca-install-image -i default.img -b default -n default -r x86_64 --virtualization-type hvm
   EOH
 end
 
 
 execute "Ensure default image is public" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-modify-image-attribute -l -a all $(euca-describe-images | grep default | grep emi | awk '{print $2}')" 
+  command "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-modify-image-attribute -l -a all $(euca-describe-images | grep default | grep emi | awk '{print $2}')"
 end
 
 execute "Wait for resource availability" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-availability-zones verbose | grep m1.small | grep -v 0000"
+  command "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-describe-availability-zones verbose | grep m1.small | grep -v 0000"
   retries 50
   retry_delay 10
 end
 
 execute "Running an instance" do
-  command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-run-instances -k my-first-keypair $(euca-describe-images | grep default | grep emi | cut -f 2)"
+  command "eval `clcadmin-assume-system-credentials` && EC2_URL=http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/ euca-run-instances -k my-first-keypair $(euca-describe-images | grep default | grep emi | cut -f 2)"
 end
