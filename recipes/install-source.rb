@@ -93,20 +93,6 @@ git source_directory do
   action :sync
 end
 
-yum_repository "euca-vmware-libs" do
-  description "VDDK libs repo"
-  url node['eucalyptus']['vddk-libs-repo']
-  action :add
-  only_if "ls #{source_directory}/vmware-broker"
-  metadata_expire "1"
-end
-
-yum_package "vmware-vix-disklib" do
-  only_if "ls #{source_directory}/vmware-broker"
-  options node['eucalyptus']['yum-options']
-  action :upgrade
-end
-
 configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.2 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
 
 ### Run configure for open source
