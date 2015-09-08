@@ -47,6 +47,11 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
 end
 
 ## Setup Bridge
+execute "network-restart" do
+  command "service network restart"
+  action :nothing
+end
+
 network_script_directory = '/etc/sysconfig/network-scripts'
 bridged_nic = node["eucalyptus"]["network"]["bridged-nic"]
 bridge_interface = node["eucalyptus"]["network"]["bridge-interface"]
@@ -73,11 +78,7 @@ template bridged_nic_file do
   mode 0644
   owner "root"
   group "root"
-end
-
-execute "network-restart" do
-  command "service network restart"
-  action :nothing
+  notifies :run, "execute[network-restart]", :immediately
 end
 
 execute "Set ip_forward sysctl values on NC" do
