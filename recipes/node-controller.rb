@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: default
+# Recipe:: node-controller
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
