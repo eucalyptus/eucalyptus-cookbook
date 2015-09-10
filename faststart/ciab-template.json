@@ -7,7 +7,8 @@
       "ntp-server": "NTP",
       "system-properties": {
           "authentication.access_keys_limit": 10,
-          "authentication.signing_certificates_limit": 10
+          "authentication.signing_certificates_limit": 10,
+          "authentication.credential_download_generate_certificate": "Limited"
       },
       "topology": {
         "clc-1": "IPADDR",
