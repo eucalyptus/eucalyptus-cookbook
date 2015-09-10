@@ -228,6 +228,13 @@ node['eucalyptus']['system-properties'].each do |key, value|
   end
 end
 
+if node['eucalyptus']['network']['mode'] == 'VPCMIDO'
+  execute 'Create default VPC for eucalyptus account' do
+    command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'`"
+    not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-vpcs | grep 'VPC.*default.*true'"
+  end
+end
+
 ## Post script
 if node['eucalyptus']['post-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/post.sh" do
