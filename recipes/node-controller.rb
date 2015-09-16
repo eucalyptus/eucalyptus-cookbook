@@ -46,6 +46,11 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   include_recipe "eucalyptus::eucanetd"
 end
 
+## Install tuned profile
+execute "Setting tuned profile" do
+  command "tuned-adm profile virtual-host"
+end
+
 ## Setup Bridge
 template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
   source "ifcfg-eth.erb"

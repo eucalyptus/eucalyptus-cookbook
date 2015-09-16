@@ -127,6 +127,10 @@ execute 'yum install -y *elrepo*.rpm' do
   not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
+yum_package 'tuned' do
+  action :install
+end
+
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
   not_if "ls /root/.ssh/id_rsa"
 end
