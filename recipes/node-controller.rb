@@ -30,7 +30,7 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-if node["eucalyptus"]["network"]["mode"] == "EDGE"
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   # make sure libvirt is started
   # when we want to delete its networks
   service 'libvirtd' do
@@ -47,11 +47,38 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
 end
 
 ## Setup Bridge
-template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridged-nic"] do
+execute "network-restart" do
+  command "service network restart"
+  action :nothing
+end
+
+network_script_directory = '/etc/sysconfig/network-scripts'
+bridged_nic = node["eucalyptus"]["network"]["bridged-nic"]
+bridge_interface = node["eucalyptus"]["network"]["bridge-interface"]
+bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
+bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
+
+execute "Copy existing interface config to bridge config" do
+  command "cp #{bridged_nic_file} #{bridge_file}"
+  not_if "ls #{bridge_file}"
+end
+
+execute "Add BRIDGE type to bridge file" do
+  command "echo 'TYPE=Bridge' >> #{bridge_file}"
+  not_if "grep 'TYPE=Bridge' #{bridge_file}"
+end
+
+execute "Set device name in bridge file" do
+  command "sed -i 's/DEVICE.*/DEVICE=#{bridge_interface}/g' #{bridge_file}"
+  not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
+end
+
+template bridged_nic_file do
   source "ifcfg-eth.erb"
   mode 0644
   owner "root"
   group "root"
+  notifies :run, "execute[network-restart]", :immediately
 end
 
 execute "Set ip_forward sysctl values on NC" do
@@ -69,27 +96,6 @@ end
 execute "Reload sysctl values" do
   command "sysctl -p"
 end
-
-if node["eucalyptus"]["network"]["bridge-ip"] != ""
-  bridge_template = "ifcfg-br0-static.erb"
-else
-  bridge_template = "ifcfg-br0-dhcp.erb"
-end
-
-template "/etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"] do
-  source bridge_template
-  mode 0644
-  owner "root"
-  group "root"
-  not_if "ls /etc/sysconfig/network-scripts/ifcfg-" + node["eucalyptus"]["network"]["bridge-interface"]
-  notifies :run, "execute[network-restart]", :immediately
-end
-
-execute "network-restart" do
-  command "service network restart"
-  action :nothing
-end
-
 
 service "messagebus" do
   supports :status => true, :restart => true, :reload => true
