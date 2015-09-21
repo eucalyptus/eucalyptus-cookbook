@@ -123,16 +123,13 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-execute "Wait for ENABLED objectstorage" do
-  command "#{describe_services} | grep objectstorage | grep ENABLED"
-  retries 15
-  retry_delay 20
-end
 
-execute "Wait for ENABLED compute" do
-  command "#{describe_services} | grep compute | grep ENABLED"
-  retries 15
-  retry_delay 20
+%w{objectstorage compute cloudformation}.each do |service|
+  execute "Wait for ENABLED #{service}" do
+    command "#{describe_services} | grep #{service} | grep ENABLED"
+    retries 15
+    retry_delay 20
+  end
 end
 
 execute "Redownload credentials with EUARE_URL" do
