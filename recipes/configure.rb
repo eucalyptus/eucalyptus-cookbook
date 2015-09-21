@@ -212,6 +212,20 @@ if node['eucalyptus']['install-service-image']
     options node['eucalyptus']['yum-options']
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
+  if node['eucalyptus']['imaging-vm-type']
+    execute "Set imaging VM instance type" do
+      command "#{modify_property} -p services.imaging.worker.instance_type=#{node['eucalyptus']['imaging-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
+  end
+  if node['eucalyptus']['loadbalancing-vm-type']
+    execute "Set loadbalancing VM instance type" do
+      command "#{modify_property} -p services.loadbalancing.worker.instance_type=#{node['eucalyptus']['loadbalancing-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
+  end
   execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} esi-install-image --install-default" do
     retries 5
     retry_delay 20
