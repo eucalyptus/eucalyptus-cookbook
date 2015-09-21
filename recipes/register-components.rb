@@ -117,7 +117,7 @@ end
 
 if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
-    command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus-1 #{dont_sync_keys}"
+    command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus #{dont_sync_keys}"
     not_if "#{disable_proxy} euca-describe-services | grep walrus-1"
   end
 end
