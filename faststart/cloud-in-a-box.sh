@@ -5,7 +5,7 @@
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.1.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.2.tgz"
 nc_install_only=0
 
 function usage
@@ -300,14 +300,14 @@ if [ "$?" == "0" ]; then
     exit 9
 fi
 
-# Check to see that we're running on CentOS or RHEL 6.5.
+# Check to see that we're running on CentOS or RHEL and the right version.
 echo "[Precheck] Checking OS"
-cat /etc/redhat-release | egrep 'release.*6.[5-6]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*6.[6-7]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.5 or 6.6."
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.6-6.7"
     echo "To try Faststart on another platform, consider trying Eucadev:"
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
