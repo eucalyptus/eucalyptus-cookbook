@@ -109,12 +109,12 @@ end
 
 remote_file "/tmp/epel-release.rpm" do
   source node["eucalyptus"]["epel-rpm"]
-  not_if "rpm -qa | grep 'epel-release'"
+  not_if "ls /etc/yum.repos.d/epel*"
 end
 
 remote_file "/tmp/elrepo-release.rpm" do
   source node["eucalyptus"]["elrepo-rpm"]
-  not_if "rpm -qa | grep 'elrepo-release'"
+  not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
 execute 'yum install -y *epel*.rpm' do
