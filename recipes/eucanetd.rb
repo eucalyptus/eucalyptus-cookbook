@@ -26,7 +26,7 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
   # configure ipset max_sets parameter on NC
   execute "Configure ip_set max_sets options in /etc/modprobe.d/ip_set.conf file" do
     command "echo 'options ip_set max_sets=#{maxsets}' > /etc/modprobe.d/ip_set.conf"
-    not_if "grep #{maxsets} /sys/module/ip_set/parameters/max_sets || grep \"options ip_set max_sets=#{maxsets}\" /etc/
+    not_if "grep #{maxsets} /sys/module/ip_set/parameters/max_sets || grep \"options ip_set max_sets=#{maxsets}\" /etc/"
     notifies :run, 'execute[unload-ipset-hash-net]', :immediately
     notifies :run, 'execute[unload-ipset]', :immediately
     notifies :run, 'execute[load-ipset]', :immediately
