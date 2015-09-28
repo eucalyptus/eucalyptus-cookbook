@@ -34,9 +34,10 @@ end
 
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
-command_prefix = "eval `clcadmin-assume-system-credentials` && #{node['eucalyptus']['home-directory']}"
-register_service = "#{command_prefix}/usr/bin/empyrean-register-service"
-describe_services = "#{command_prefix}/usr/bin/empyrean-describe-services"
+as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
+register_service = "#{command_prefix}/usr/bin/euserv-register-service"
+describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 
 
 clusters.each do |cluster, info|

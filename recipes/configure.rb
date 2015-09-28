@@ -17,8 +17,9 @@
 ##    limitations under the License.
 ##
 disable_proxy = 'http_proxy=""'
-command_prefix = "eval `clcadmin-assume-system-credentials` && #{node['eucalyptus']['home-directory']}"
-describe_services = "#{command_prefix}/usr/bin/empyrean-describe-services"
+as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
+describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 euctl = "#{command_prefix}/usr/bin/euctl"
 
 if node['eucalyptus']['dns']['domain']
@@ -204,7 +205,7 @@ if node['eucalyptus']['install-service-image']
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
-  execute "eval `clcadmin-assume-system-credentials` && esi-install-image --install-default" do
+  execute "#{as_admin} esi-install-image --install-default" do
     environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
                  "EC2_URL" => "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
                  "S3_URL" => "http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
@@ -212,7 +213,7 @@ if node['eucalyptus']['install-service-image']
     retry_delay 20
     only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
   end
-  execute "eval `clcadmin-assume-system-credentials` && esi-manage-stack -a create imaging" do
+  execute "#{as_admin} esi-manage-stack -a create imaging" do
     environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
                  "AWS_CLOUDFORMATION_URL" => "http://cloudformation.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
                  "TOKEN_URL" => "http://sts.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
@@ -230,8 +231,8 @@ end
 
 if node['eucalyptus']['network']['mode'] == 'VPCMIDO'
   execute 'Create default VPC for eucalyptus account' do
-    command "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'`"
-    not_if "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && euca-describe-vpcs | grep 'VPC.*default.*true'"
+    command "#{as_admin} euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'`"
+    not_if "#{as_admin} euca-describe-vpcs | grep 'VPC.*default.*true'"
   end
 end
 
