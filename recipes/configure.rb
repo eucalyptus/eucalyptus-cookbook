@@ -205,18 +205,12 @@ if node['eucalyptus']['install-service-image']
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
-  execute "#{as_admin} esi-install-image --install-default" do
-    environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
-                 "EC2_URL" => "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
-                 "S3_URL" => "http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
+  execute "#{as_admin} esi-install-image --region localhost --install-default" do
     retries 5
     retry_delay 20
     only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
   end
-  execute "#{as_admin} esi-manage-stack -a create imaging" do
-    environment {"EUCALYPTUS" => "#{node["eucalyptus"]["home-directory"]}",
-                 "AWS_CLOUDFORMATION_URL" => "http://cloudformation.#{node["eucalyptus"]["dns"]["domain"]}:8773/",
-                 "TOKEN_URL" => "http://sts.#{node["eucalyptus"]["dns"]["domain"]}:8773/"}
+  execute "#{as_admin} esi-manage-stack --region localhost -a create imaging" do
     only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
   end
 end
