@@ -108,7 +108,7 @@ end
 
 if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
-    command "#{register_service} -t walrus -h #{node['eucalyptus']['topology']['walrus']} walrus-1"
+    command "#{register_service} -t walrusbackend -h #{node['eucalyptus']['topology']['walrus']} walrus-1"
     not_if "#{describe_services} | grep walrus-1"
   end
 end
