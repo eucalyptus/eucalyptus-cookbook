@@ -205,7 +205,7 @@ if node['eucalyptus']['install-service-image']
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
-  execute "#{as_admin} esi-install-image --region localhost --install-default" do
+  execute "#{as_admin} S3_URL=http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/ esi-install-image --region localhost --install-default" do
     retries 5
     retry_delay 20
     only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
