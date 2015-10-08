@@ -140,16 +140,12 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-execute "Wait for enabled objectstorage" do
-  command "#{describe_services} --filter service-type=objectstorage | grep enabled"
-  retries 15
-  retry_delay 20
-end
-
-execute "Wait for enabled compute" do
-  command "#{describe_services} --filter service-type=compute | grep enabled"
-  retries 15
-  retry_delay 20
+%w{objectstorage compute cloudformation}.each do |service|
+  execute "Wait for enabled #{service}" do
+    command "#{describe_services} --filter service-type=#{service} | grep enabled"
+    retries 15
+    retry_delay 20
+  end
 end
 
 execute "Set DNS server on CLC" do
@@ -204,6 +200,20 @@ if node['eucalyptus']['install-service-image']
   yum_package "eucalyptus-service-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
+  end
+  if node['eucalyptus']['imaging-vm-type']
+    execute "Set imaging VM instance type" do
+      command "#{euctl} services.imaging.worker.instance_type=#{node['eucalyptus']['imaging-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
+  end
+  if node['eucalyptus']['loadbalancing-vm-type']
+    execute "Set loadbalancing VM instance type" do
+      command "#{euctl} services.loadbalancing.worker.instance_type=#{node['eucalyptus']['loadbalancing-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
   end
   execute "#{as_admin} S3_URL=http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/ esi-install-image --region localhost --install-default" do
     retries 5
