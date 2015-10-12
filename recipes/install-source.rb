@@ -112,15 +112,12 @@ execute 'Run make' do
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
-%w(/etc/eucalyptus /var/lib/eucalyptus /var/log/eucalyptus /var/run/eucalyptus).each do |runtime_dir|
-  directory runtime_dir do
-    recursive true
-    owner "eucalyptus"
-    group "eucalyptus"
-  end
+%w{/etc/eucalyptus /var/lib/eucalyptus /var/log/eucalyptus /var/run/eucalyptus}.each do |runtime_dir|
+  execute "mkdir -p #{home_directory}/#{runtime_dir}"
+  execute "chown -R eucalyptus:eucalyptus #{home_directory}/#{runtime_dir}"
 end
 
-%w(/usr/lib/eucalyptus/euca_mountwrap /usr/lib/eucalyptus/euca_rootwrap).each do |suid_exe|
+%w{/usr/lib/eucalyptus/euca_mountwrap /usr/lib/eucalyptus/euca_rootwrap}.each do |suid_exe|
   file suid_exe do
     mode '4755'
     group 'eucalyptus'
