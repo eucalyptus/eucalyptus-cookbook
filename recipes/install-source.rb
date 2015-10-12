@@ -107,6 +107,21 @@ execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAV
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
+%w(/etc/eucalyptus /var/lib/eucalyptus /var/log/eucalyptus /var/run/eucalyptus).each do |runtime_dir|
+  directory runtime_dir do
+    recursive true
+    owner "eucalyptus"
+    group "eucalyptus"
+  end
+end
+
+%w(/usr/lib/eucalyptus/euca_mountwrap /usr/lib/eucalyptus/euca_rootwrap).each do |suid_exe|
+  file suid_exe do
+    mode '4755'
+    group 'eucalyptus'
+  end
+end
+
 eucalyptus_dir = source_directory
 if node['eucalyptus']['source-repo'].end_with?("internal")
   eucalyptus_dir = "#{source_directory}/eucalyptus"
