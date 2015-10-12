@@ -89,21 +89,26 @@ git source_directory do
   repository node['eucalyptus']['source-repo']
   revision node['eucalyptus']['source-branch']
   enable_submodules true
+  notifies :run, 'execute[Run configure]', :immediately
   action :sync
 end
 
 configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.2 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make && make install"
 ### Run configure for open source
 execute "Run configure"  do
   command configure_command
+  action :nothing
+  notifies :run, 'execute[Run make]', :immediately
   cwd source_directory
 end
 
 execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
 
-execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make && make install" do
+execute 'Run make' do
+  command make_command
   cwd source_directory
+  action :nothing
   timeout node["eucalyptus"]["compile-timeout"]
 end
 
