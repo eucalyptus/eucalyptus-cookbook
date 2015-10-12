@@ -76,6 +76,6 @@ nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split
 log "Registering the following nodes: #{nc_ips}"
 nc_ips.each do |nc_ip|
   execute 'Register Nodes' do
-    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/clusteradmin-register-nodes #{nc_ip}"
   end
 end

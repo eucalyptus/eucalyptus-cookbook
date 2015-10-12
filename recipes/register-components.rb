@@ -19,7 +19,7 @@
 require 'json'
 
 execute "wait-for-credentials" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
+  command "/usr/sbin/clcadmin-assume-system-credentials | grep -q AWS_ACCESS_KEY_ID"
   cwd node['eucalyptus']['admin-cred-dir']
   retries 15
   retry_delay 30
@@ -34,12 +34,10 @@ end
 
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
-disable_proxy = 'http_proxy=""'
-command_prefix = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && #{disable_proxy} #{node['eucalyptus']['home-directory']}"
-euca_conf = "#{command_prefix}/usr/sbin/euca_conf"
-modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
-describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
-dont_sync_keys = "--no-scp --no-rsync --no-sync"
+as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
+register_service = "#{command_prefix}/usr/bin/euserv-register-service"
+describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 
 
 clusters.each do |cluster, info|
@@ -50,8 +48,8 @@ clusters.each do |cluster, info|
   end
 
   execute "Register CC" do
-    command "#{euca_conf} --register-cluster -P #{cluster} -H #{cc_ip} -C #{cluster}-cc-1 #{dont_sync_keys}"
-    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-cc-1"
+    command "#{register_service} -t cluster -z #{cluster} -h #{cc_ip} #{cluster}-cc-1"
+    not_if "#{describe_services} | grep #{cluster}-cc-1"
     retries 5
     retry_delay 10
   end
@@ -62,15 +60,8 @@ clusters.each do |cluster, info|
   end
 
   execute "Register SC" do
-    command "#{euca_conf} --register-sc -P #{cluster} -H #{sc_ip} -C #{cluster}-sc-1 #{dont_sync_keys}"
-    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-sc-1"
-  end
-
-  if info["vmware-broker"]
-    execute "Register VMware Broker" do
-      command "#{euca_conf} --register-vmwarebroker -P #{cluster} -H #{info["vmware-broker"]} -C #{cluster}-vb #{dont_sync_keys}"
-      not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep #{cluster}-vb"
-    end
+    command "#{register_service} -t storage -z #{cluster} -h #{sc_ip} #{cluster}-sc-1"
+    not_if "#{describe_services} | grep #{cluster}-sc-1"
   end
 
   #### Sync cluster keys
@@ -110,14 +101,14 @@ if node['eucalyptus']['topology']['user-facing']
 end
 user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
-    command "#{euca_conf}  --register-service -T user-api -H #{uf_ip} -N API_#{uf_ip} #{dont_sync_keys}"
-    not_if "egrep '3.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version || #{command_prefix}/usr/sbin/euca-describe-services | egrep 'API_#{uf_ip}'"
+    command "#{register_service} -t user-api -h #{uf_ip} API_#{uf_ip}"
+    not_if "#{describe_services} | egrep 'API_#{uf_ip}'"
   end
 end
 
 if node['eucalyptus']['topology']['walrus']
   execute "Register Walrus" do
-    command "#{euca_conf} --register-walrus -P walrus -H #{node['eucalyptus']['topology']['walrus']} -C walrus #{dont_sync_keys}"
-    not_if "#{command_prefix}/usr/sbin/euca-describe-services | grep walrus"
+    command "#{register_service} -t walrusbackend -h #{node['eucalyptus']['topology']['walrus']} walrus-1"
+    not_if "#{describe_services} | grep walrus"
   end
 end

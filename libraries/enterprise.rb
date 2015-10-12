@@ -36,22 +36,8 @@ module Eucalyptus
       return false
     end
 
-    def self.is_vmware?(node)
-      if node['eucalyptus']['topology']
-        clusters = node['eucalyptus']['topology']['clusters']
-      else
-        return false
-      end
-      clusters.each do |name, info|
-        if info['hypervisor'] == "vmware"
-          return true
-        end
-      end
-      return false
-    end
-
     def self.is_enterprise?(node)
-      return self.is_vmware?(node) || self.is_san?(node)
+      return self.is_san?(node)
     end
   end
 end

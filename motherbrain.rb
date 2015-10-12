@@ -19,14 +19,11 @@ stack_order do
   bootstrap 'riakcs-cluster::commit'
   bootstrap 'riakcs-cluster::nuke'
   bootstrap 'cloud::full'
-  bootstrap 'cloud::vmware-full'
   bootstrap 'cloud::default'
   bootstrap 'cloud::frontend'
   bootstrap 'cluster::default'
   bootstrap 'cluster::cluster-controller'
   bootstrap 'cluster::storage-controller'
-  bootstrap 'cluster::vmware-default'
-  bootstrap 'cluster::vmware-cluster-controller'
   bootstrap 'cloud::user-facing'
   bootstrap 'cloud::walrus'
   bootstrap 'cloud::user-console'
@@ -71,15 +68,6 @@ component 'cloud' do
     recipe 'eucalyptus::cluster-controller'
     recipe 'eucalyptus::storage-controller'
   end
-  group 'vmware-full' do
-    recipe 'eucalyptus::cloud-controller'
-    recipe 'eucalyptus::user-console'
-    recipe 'eucalyptus::register-components'
-    recipe 'eucalyptus::walrus'
-    recipe 'eucalyptus::cluster-controller'
-    recipe 'eucalyptus::vmware-broker'
-    recipe 'eucalyptus::storage-controller'
-  end
   group 'configure' do
     recipe 'eucalyptus::configure'
   end
@@ -100,15 +88,6 @@ component 'cluster' do
   end
   group 'storage-controller' do
     recipe 'eucalyptus::storage-controller'
-  end
-  group 'vmware-default' do
-    recipe 'eucalyptus::cluster-controller'
-    recipe 'eucalyptus::vmware-broker'
-    recipe 'eucalyptus::storage-controller'
-  end
-  group 'vmware-cluster-controller' do
-    recipe 'eucalyptus::cluster-controller'
-    recipe 'eucalyptus::vmware-broker'
   end
 end
 

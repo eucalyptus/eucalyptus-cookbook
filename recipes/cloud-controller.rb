@@ -25,7 +25,7 @@ end
 include_recipe "eucalyptus::cloud-service"
 
 execute "Initialize Eucalyptus DB" do
- command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --initialize"
+ command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/clcadmin-initialize-cloud"
  creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
 end
 

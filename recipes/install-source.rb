@@ -92,33 +92,12 @@ git source_directory do
   action :sync
 end
 
-yum_repository "euca-vmware-libs" do
-  description "VDDK libs repo"
-  url node['eucalyptus']['vddk-libs-repo']
-  action :add
-  only_if "ls #{source_directory}/vmware-broker"
-  metadata_expire "1"
-end
-
-yum_package "vmware-vix-disklib" do
-  only_if "ls #{source_directory}/vmware-broker"
-  options node['eucalyptus']['yum-options']
-  action :upgrade
-end
-
 configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.2 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
 
 ### Run configure for open source
-execute "Run configure with open source bits"  do
+execute "Run configure"  do
   command configure_command
   cwd source_directory
-  not_if "ls #{source_directory}/vmware-broker"
-end
-### Run configure with enterprise bits
-execute "Run configure with enterprise bits" do
-  command configure_command + " --with-vddk=/opt/packages/vddk"
-  cwd source_directory
-  only_if "ls #{source_directory}/vmware-broker"
 end
 
 execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
@@ -149,8 +128,6 @@ end
 execute "Copy Policy Kit file for NC" do
   command "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
 end
-
-execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
 
 ### Add udev rules
 directory '/etc/udev/rules.d'
