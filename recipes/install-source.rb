@@ -68,7 +68,7 @@ end
   openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
   postgresql92 postgresql92-server pv python-boto python-devel python-setuptools
   rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2}.each do |dependency|
+  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
   yum_package dependency do
     options node['eucalyptus']['yum-options']
     action :upgrade
