@@ -9,6 +9,7 @@
           "authentication.access_keys_limit": 10,
           "authentication.signing_certificates_limit": 10
       },
+      "dns": {"domain": "IPADDR.xip.io"},
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
