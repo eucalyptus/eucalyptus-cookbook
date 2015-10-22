@@ -1,8 +1,8 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
+      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.2/centos/6/x86_64/",
+      "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.3/centos/6/x86_64/",
       "install-service-image": EXTRASERVICES,
       "ntp-server": "NTP",
       "system-properties": {
@@ -10,6 +10,7 @@
           "authentication.signing_certificates_limit": 10,
           "authentication.credential_download_generate_certificate": "Limited"
       },
+      "dns": {"domain": "IPADDR.xip.io"},
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",

@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: eucalyptus
-# Recipe:: default
+# Library:: bind-addr
 #
 #Copyright [2014] [Eucalyptus Systems]
 ##
@@ -16,26 +16,19 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+#
 
-
-## Install packages for the VB
-%w{eucalyptus-enterprise-vmware-broker}.each do |pkg|
-  yum_package pkg do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-    flush_cache [:before]
-    notifies :restart, 'service[eucalyptus-cloud]', :immediately
+module Eucalyptus
+  module BindAddr
+    def self.get_bind_interface_ip(node)
+      bind_interface = node["eucalyptus"]["bind-interface"]
+      raise "Setting the bind interface was requested but not bind-interface parameter was set" if bind_interface.nil?
+      if node["network"]["interfaces"].has_key? bind_interface
+        bind_addr = node[:network][:interfaces][bind_interface][:addresses].find {|addr, addr_info| addr_info[:family] == "inet"}.first
+        bind_addr
+      else
+        raise "Unable to find requested bind interface #{bind_interface} on #{node["ipaddress"]}"
+      end
+    end
   end
-end
-
-ruby_block "Sync keys for VMware Broker" do
-  block do
-    Eucalyptus::KeySync.get_cloud_keys(node)
-  end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
-end
-
-service "eucalyptus-cloud" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
 end
