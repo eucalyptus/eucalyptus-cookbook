@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: configure
 #
-#Copyright [2014] [Eucalyptus Systems]
+#Copyright [2014-2015] [Eucalyptus Systems]
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -16,15 +16,68 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-source_creds = "source #{node['eucalyptus']['admin-cred-dir']}/eucarc"
 disable_proxy = 'http_proxy=""'
-command_prefix = "#{source_creds} && #{disable_proxy} #{node['eucalyptus']['home-directory']}"
-modify_property = "#{command_prefix}/usr/sbin/euca-modify-property"
-describe_services = "#{command_prefix}/usr/sbin/euca-describe-services"
-describe_property = "#{command_prefix}/usr/sbin/euca-describe-properties"
-if node['eucalyptus']['topology']['riakcs']
+as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
+describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
+euctl = "#{command_prefix}/usr/bin/euctl"
+
+if node['eucalyptus']['dns']['domain']
+  execute "Enable DNS delegation" do
+    command "#{euctl} bootstrap.webservices.use_dns_delegation=true"
+    retries 15
+    retry_delay 20
+  end
+  execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
+    retries 15
+    retry_delay 20
+  end
+  execute "Enable instance DNS" do
+    command "#{euctl} bootstrap.webservices.use_instance_dns=true"
+    retries 15
+    retry_delay 20
+  end
+end
+
+if node['riak_cs']
+  admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
+  Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
+  Chef::Log.info "Existing RiakCS admin_secret: #{admin_secret}"
+  execute "Set-objectstorage.providerclient-to-riakcs" do
+    command "#{euctl} objectstorage.providerclient=riakcs"
+    retries 15
+    retry_delay 20
+  end
+
+  if node['riakcs_cluster']['topology']['load_balancer']
+    if node['haproxy']['incoming_port']
+      s3_endpoint = "#{node['riakcs_cluster']['topology']['load_balancer']}:#{node['haproxy']['incoming_port']}"
+    else
+      s3_endpoint = "#{node['riakcs_cluster']['topology']['load_balancer']}:80"
+    end
+  else
+    s3_endpoint = "#{node['riakcs_cluster']['topology']['head']['ipaddr']}:8080"
+  end
+
+  execute "Set S3 endpoint" do
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{s3_endpoint}"
+    retries 15
+    retry_delay 20
+  end
+  execute "Set providerclient access-key" do
+    command "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
+    retries 5
+    retry_delay 20
+  end
+  execute "Set providerclient secret-key" do
+    command "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
+    retries 5
+    retry_delay 20
+  end
+elsif node['eucalyptus']['topology']['riakcs']
   execute "Set OSG providerclient to riakcs" do
-    command "#{modify_property} -p objectstorage.providerclient=riakcs"
+    command "#{euctl} objectstorage.providerclient=riakcs"
     retries 15
     retry_delay 20
   end
@@ -44,15 +97,15 @@ if node['eucalyptus']['topology']['riakcs']
   end
 
   execute "Set S3 endpoint" do
-    command "#{modify_property} -p objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
     retries 15
     retry_delay 20
   end
-  execute "#{modify_property} -p objectstorage.s3provider.s3accesskey=#{admin_key}"
-  execute "#{modify_property} -p objectstorage.s3provider.s3secretkey=#{admin_secret}"
+  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
+  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
 else
   execute "Set OSG providerclient" do
-    command "#{modify_property} -p objectstorage.providerclient=walrus"
+    command "#{euctl} objectstorage.providerclient=walrus"
     only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
     retries 15
     retry_delay 20
@@ -87,54 +140,25 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-execute "Wait for ENABLED objectstorage" do
-  command "#{describe_services} | grep objectstorage | grep ENABLED"
-  retries 15
-  retry_delay 20
-end
-
-execute "Wait for ENABLED compute" do
-  command "#{describe_services} | grep compute | grep ENABLED"
-  retries 15
-  retry_delay 20
-end
-
-execute "Redownload credentials with EUARE_URL" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
-  cwd node['eucalyptus']['admin-cred-dir']
-  retries 15
-  retry_delay 20
-end
-
-bash "Remove old certs" do
-  cwd node['eucalyptus']['admin-cred-dir']
-  code <<-EOH
-  for cert in `#{source_creds} && euare-userlistcerts | sed '/Active/ { N; d; }'`;do
-    #{source_creds} && euare-userdelcert -c $cert
-  done
-  EOH
-end
-
-execute "Download credentials with certs" do
-  command "rm -rf admin.zip && #{node["eucalyptus"]["home-directory"]}/usr/sbin/euca_conf --get-credentials admin.zip && unzip -o admin.zip"
-  cwd node['eucalyptus']['admin-cred-dir']
-  retries 15
-  retry_delay 20
+%w{objectstorage compute cloudformation}.each do |service|
+  execute "Wait for enabled #{service}" do
+    command "#{describe_services} --filter service-type=#{service} | grep enabled"
+    retries 15
+    retry_delay 20
+  end
 end
 
 execute "Set DNS server on CLC" do
-  command "#{modify_property} -p system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
+  command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
-if %w(EDGE VPCMIDO).include? node['eucalyptus']['network']['mode']
-  file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-    content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-    mode '644'
-    action :create
-  end
-  execute "Configure network" do
-    command "#{modify_property} -f cloud.network.network_configuration=#{node['eucalyptus']['admin-cred-dir']}/network.json"
-  end
+file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
+  content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
+  mode '644'
+  action :create
+end
+execute "Configure network" do
+  command "#{euctl} cloud.network.network_configuration=@#{node['eucalyptus']['admin-cred-dir']}/network.json"
 end
 
 clusters = node["eucalyptus"]["topology"]["clusters"]
@@ -147,9 +171,9 @@ clusters.each do |cluster, info|
 
   end
   execute "Set storage backend" do
-     command "#{modify_property} -p #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
+     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
      ### Patch for EUCA-9963
-     not_if "#{describe_property} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+     not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
   end
@@ -157,7 +181,7 @@ clusters.each do |cluster, info|
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
-      command "#{modify_property} -p #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
+      command "#{euctl} #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
       retries 15
       retry_delay 20
     end
@@ -176,21 +200,43 @@ if node['eucalyptus']['install-service-image']
   yum_package "eucalyptus-service-image" do
     action :upgrade
     options node['eucalyptus']['yum-options']
-    only_if "egrep '4.[0-9].[0-9]' #{node['eucalyptus']['home-directory']}/etc/eucalyptus/eucalyptus-version"
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-imaging-worker --install-default" do
-    only_if "#{describe_property} services.imaging.worker.image | grep 'NULL'"
+  if node['eucalyptus']['imaging-vm-type']
+    execute "Set imaging VM instance type" do
+      command "#{euctl} services.imaging.worker.instance_type=#{node['eucalyptus']['imaging-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
   end
-  execute "source #{node['eucalyptus']['admin-cred-dir']}/eucarc && export EUCALYPTUS=#{node["eucalyptus"]["home-directory"]} && #{disable_proxy} euca-install-load-balancer --install-default" do
-    only_if "#{describe_property} services.loadbalancing.worker.image | grep 'NULL'"
+  if node['eucalyptus']['loadbalancing-vm-type']
+    execute "Set loadbalancing VM instance type" do
+      command "#{euctl} services.loadbalancing.worker.instance_type=#{node['eucalyptus']['loadbalancing-vm-type']}"
+      retries 15
+      retry_delay 20
+    end
+  end
+  execute "#{as_admin} S3_URL=http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/ esi-install-image --region localhost --install-default" do
+    retries 5
+    retry_delay 20
+    only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
+  end
+  execute "#{as_admin} esi-manage-stack --region localhost -a create imaging" do
+    only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
   end
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
-  execute "#{modify_property} -p #{key}=\"#{value}\"" do
+  execute "#{euctl} #{key}=\"#{value}\"" do
     retries 10
     retry_delay 5
-    not_if "#{describe_property} #{key} | grep \"#{value}\""
+    not_if "#{euctl} #{key} | grep \"#{value}\""
+  end
+end
+
+if node['eucalyptus']['network']['mode'] == 'VPCMIDO'
+  execute 'Create default VPC for eucalyptus account' do
+    command "#{as_admin} euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'`"
+    not_if "#{as_admin} euca-describe-vpcs | grep 'VPC.*default.*true'"
   end
 end
 

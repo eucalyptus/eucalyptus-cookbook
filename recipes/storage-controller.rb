@@ -22,7 +22,14 @@ include_recipe "eucalyptus::default"
 
 ### Set bind-addr if necessary
 if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + node["eucalyptus"]["topology"]['clusters'][Eucalyptus::KeySync.get_local_cluster_name(node)]["sc-1"]
+  if node["eucalyptus"]["bind-interface"]
+    # Auto detect IP from interface name
+    bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
+  else
+    # Use default gw interface IP
+    bind_addr = node["ipaddress"]
+  end
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
@@ -81,14 +88,6 @@ if Eucalyptus::Enterprise.is_san?(node)
     if node["eucalyptus"]["install-type"] == "packages"
       if san_package
         yum_package san_package do
-          action :upgrade
-          options node['eucalyptus']['yum-options']
-          notifies :restart, "service[eucalyptus-cloud]", :immediately
-          flush_cache [:before]
-        end
-      end
-      if Eucalyptus::Enterprise.is_vmware?(node)
-        yum_package 'eucalyptus-enterprise-vmware-broker-libs' do
           action :upgrade
           options node['eucalyptus']['yum-options']
           notifies :restart, "service[eucalyptus-cloud]", :immediately

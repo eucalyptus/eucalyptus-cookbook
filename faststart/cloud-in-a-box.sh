@@ -5,7 +5,7 @@
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.2.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.2.0.tgz"
 nc_install_only=0
 
 function usage
@@ -781,22 +781,19 @@ if [ "$nc_install_only" == "0" ]; then
 #
 # FINISH CLOUD-IN-A-BOX INSTALL
 #
-    # Add tipoftheday to the console
-    sed -i 's|<div class="clearfix">|<iframe width="0" height="0" src="https://www.eucalyptus.com/docs/tipoftheday.html?id=FSUUID" seamless="seamless" frameborder="0"></iframe>\n    <div class="clearfix">|' /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
-sed -i "s|FSUUID|$uuid|" /usr/lib/python2.6/site-packages/eucaconsole/templates/login.pt
 
-    # Add link to open IRC window for help
-    sed -i "s|© 2014 Eucalyptus Systems, Inc.|© 2014 Eucalyptus Systems, Inc. \&nbsp; \&nbsp; \&nbsp; \&nbsp; Need help\? <a href=\"javascript:poptastic('https://kiwiirc.com/client/irc.freenode.com/eucalyptus');\">Talk to us</a> on IRC.|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
-sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; function poptastic(url) { newwindow=window.open(url,'name','height=400,width=750'); if (window.focus) {newwindow.focus()} } </script>\n    <metal:block metal:define-slot=\"head_js\" />|" /usr/lib/python2.6/site-packages/eucaconsole/templates/master_layout.pt
+    echo ""
+    echo "[Config] Generating credentials"
+    export AWS_DEFAULT_REGION=localhost
 
     echo ""
     echo "[Config] Enabling web console"
-    source ~/eucarc && euare-useraddloginprofile --region localadmin@localhost --as-account eucalyptus -u admin -p password
+    euare-useraddloginprofile --as-account eucalyptus -u admin -p password
 
     echo "[Config] Adding ssh and http to default security group"
-    source ~/eucarc && euca-authorize -P tcp -p 22 default
-    source ~/eucarc && euca-authorize -P tcp -p 80 default
-    
+    euca-authorize -P tcp -p 22 default
+    euca-authorize -P tcp -p 80 default
+
     echo ""
     echo ""
     echo "[SUCCESS] Eucalyptus installation complete!"
@@ -817,7 +814,7 @@ sed -i "s|<metal:block metal:define-slot=\"head_js\" />|<script> var newwindow; 
                             (____/|_|
 
 To log in to the Management Console, go to:
-http://${ciab_ipaddr}:8888/
+https://${ciab_ipaddr}/
 
 Default User Credentials (unless changed):
   * Account: eucalyptus
@@ -831,7 +828,7 @@ Eucalyptus CLI Tutorials can be found at:
 EOF
 
     echo "To log in to the Management Console, go to:"
-    echo "http://${ciab_ipaddr}:8888/"
+    echo "https://${ciab_ipaddr}/"
     echo ""
     echo "User Credentials:"
     echo "  * Account: eucalyptus"
@@ -862,7 +859,7 @@ else
     echo ""
     echo "  /usr/sbin/euca_conf --register-nodes ${ciab_ipaddr}"
     echo ""
-    echo "Thanks for installing Eucalyptus!" 
+    echo "Thanks for installing Eucalyptus!"
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
 fi

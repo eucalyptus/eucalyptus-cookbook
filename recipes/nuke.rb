@@ -26,10 +26,6 @@ if node['eucalyptus']['network']['mode'] == 'EDGE'
   service "eucanetd" do
     action [ :stop ]
   end
-
-  execute "eucanetd -F || true" do
-    only_if "which eucanetd"
-  end
 end
 
 service "eucalyptus-cc" do
@@ -141,13 +137,6 @@ if node['eucalyptus']['install-type'] == 'source'
     action :delete
     only_if "ls #{node['eucalyptus']['home-directory']}/source"
   end
-
-  yum_repository 'euca-vmware-libs' do
-    description 'VDDK libs repo'
-    url node['eucalyptus']['vddk-libs-repo']
-    action :remove
-    only_if "ls #{node["eucalyptus"]["home-directory"]}/source/vmware-broker"
-  end
 end
 
 ## Delete File system artifacts
@@ -190,12 +179,6 @@ directory "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus" do
   recursive true
   action :delete
   only_if "ls #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus"
-end
-
-directory "#{node['eucalyptus']['home-directory']}/source/vmware-broker" do
-  recursive true
-  action :delete
-  only_if "ls #{node["eucalyptus"]["home-directory"]}/source/vmware-broker"
 end
 
 execute "remove all temporary release directories" do

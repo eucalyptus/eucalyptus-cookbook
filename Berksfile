@@ -1,6 +1,7 @@
-source "http://api.berkshelf.com"
+source "https://supermarket.chef.io"
 
 metadata
+cookbook "haproxy", github: "shaon/haproxy-cookbook"
 cookbook "ceph-cluster", github: "shaon/ceph-cluster"
 cookbook "riakcs-cluster", github: "shaon/riakcs-cluster"
 cookbook "riak-cs-create-admin-user", github: "hectcastro/chef-riak-cs-create-admin-user"
