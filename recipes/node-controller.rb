@@ -57,6 +57,7 @@ bridged_nic = node["eucalyptus"]["network"]["bridged-nic"]
 bridge_interface = node["eucalyptus"]["network"]["bridge-interface"]
 bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
 bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
+bridged_nic_hwaddr = `cat #{bridged_nic_file} | grep HWADDR`.strip
 
 execute "Copy existing interface config to bridge config" do
   command "cp #{bridged_nic_file} #{bridge_file}"
@@ -79,6 +80,11 @@ template bridged_nic_file do
   owner "root"
   group "root"
   notifies :run, "execute[network-restart]", :immediately
+end
+
+execute "Set HWADDR in bridged nic file" do
+  command "echo #{bridged_nic_hwaddr} >> #{bridge_nic_file}"
+  not_if "grep '#{bridged_nic_hwaddr}' #{bridge_nic_file}"
 end
 
 execute "Set ip_forward sysctl values on NC" do
