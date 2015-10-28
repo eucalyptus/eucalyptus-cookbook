@@ -83,8 +83,8 @@ template bridged_nic_file do
 end
 
 execute "Set HWADDR in bridged nic file" do
-  command "echo #{bridged_nic_hwaddr} >> #{bridge_nic_file}"
-  not_if "grep '#{bridged_nic_hwaddr}' #{bridge_nic_file}"
+  command "echo #{bridged_nic_hwaddr} >> #{bridged_nic_file}"
+  not_if "grep '#{bridged_nic_hwaddr}' #{bridged_nic_file}"
 end
 
 execute "Set ip_forward sysctl values on NC" do
