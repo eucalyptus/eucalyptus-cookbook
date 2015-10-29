@@ -28,7 +28,8 @@ ruby_block "Sync keys for User Facing Services" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
-service "eucalyptus-cloud" do
+service "ufs-eucalyptus-cloud" do
+  service_name "eucalyptus-cloud"
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
