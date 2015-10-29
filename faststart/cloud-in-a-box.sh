@@ -189,6 +189,27 @@ function submit_support_request()
     curl -s --data "$dataString"  http://go.eucalyptus.com/index.php/leadCapture/save >> /tmp/fsout.log
 }
 
+# Check SELinux
+function check_selinux()
+{
+    local check1=$(getenforce)
+    local check2=$(grep 'SELINUX=Enforcing' /etc/selinux/config)
+    local check3=$(grep 'SELINUX=enforcing' /etc/selinux/config)
+
+    if [[ $check1 == "Enforcing" || -n "$check2" || -n "$check3" ]]; then
+        echo ""
+        echo "Security-enabled Linux (SELinux) is security feature for Linux"
+        echo "that allows you to set access control through policies."
+        echo "Eucalyptus is not compatible with SELinux."
+        echo ""
+        echo "To install Eucalyptus you need to configure your SELinux"
+        echo "http://docs.hpcloud.com/eucalyptus/4.2.0/#install-guide/configure_selinux.html for more informations"
+        echo ""
+        exit 1
+    fi
+}
+
+
 # Create uuid
 uuid=`uuidgen -t`
 
@@ -214,6 +235,8 @@ then
     echo "Stopped by user request."
     exit 1
 fi
+
+check_selinux
 
 # Invoke timer start.
 t=$(timer)
