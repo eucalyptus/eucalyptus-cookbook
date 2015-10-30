@@ -159,9 +159,9 @@ For distributed topologies...
 Faststart
 -------------------
 ### Methodology
-Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for eucalyptus.com/install that points to that script in the master branch so that users can use the following to invoke it:
+Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for hphelion.com/eucalyptus-install that points to that script in the faststart branch so that users can use the following to invoke it:
 
-    bash <(curl -sL eucalyptus.com/install)
+    bash <(curl -Ls hphelion.com/eucalyptus-install)
 
 Once invoked the script does the following:
 1. Checks for necessary resources on the machine that it is installing on (ie disk, memory, virtualization extensions)
@@ -182,7 +182,7 @@ In order to release a new version of Faststart, you must first package up the cu
 4. Upload the tarball to S3 in the euca-chef bucket, then make the object publicly readable. To test this, simply try to download the file via its URL, by using your browser. An example URL is http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-$VERSION.tgz
 5. Change the $cookbooks_url variable in faststart/cloud-in-a-box.sh to point to your new publicly available tarball.
 6. Commit and push that change to the branch for this release, for example euca-4.2.
-7. In order to push the change live, merge the branch into master.
+7. In order to push the change live, merge the branch into faststart.
 
 Contributing
 ------------
