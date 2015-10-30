@@ -42,6 +42,7 @@ default["eucalyptus"]["set-bind-addr"] = false
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
+default['eucalyptus']['dns']['domain'] = ""
 ### Topology must be set for key sync to work
 default['eucalyptus']['sync-keys'] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
