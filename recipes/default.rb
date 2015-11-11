@@ -59,7 +59,7 @@ end
 
 ## Disable SELinux
 selinux_state "SELinux Disabled" do
-  action :disabled
+  action :permissive
 end
 
 ## Install repo rpms
