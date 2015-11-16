@@ -32,8 +32,6 @@ echo "Hit Enter to continue."
 
 read continue
 
-source /root/eucarc
-
 echo "Many Linux distributions now have preconfigured cloud images, so"
 echo "you can download and install them to your cloud easily. For this"
 echo "tutorial we will add a Fedora 20 cloud image to your cloud."
@@ -90,9 +88,12 @@ echo "Hit Enter to install the image."
 
 read continue
 
+# Assume Cloud Administrator (eucalyptus/admin user) credentials
+eval `clcadmin-assume-system-credentials`
+
 # Install the image.
 echo "+ ${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm${normal}"
-euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm
+euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region @localhost
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[OOPS] euca-install-image failed!"
@@ -115,9 +116,9 @@ echo "Hit Enter to modify the image attribute."
 read continue
 
 # get the EMI_ID
-EMI_ID=$(euca-describe-images | tail -n 1 | grep tutorial | grep emi | cut -f 2)
+EMI_ID=$(euca-describe-images --region @localhost | tail -n 1 | grep tutorial | grep emi | cut -f 2)
 echo "+ ${bold}euca-modify-image-attribute -l -a all $EMI_ID${normal}"
-euca-modify-image-attribute -l -a all $EMI_ID
+euca-modify-image-attribute -l -a all $EMI_ID --region @localhost
 
 echo ""
 echo "Your new Fedora machine image is installed and available to all"
@@ -129,8 +130,10 @@ echo "Hit Enter to show the list of images."
 read continue
 
 echo "+ ${bold}euca-describe-images${normal}"
-euca-describe-images
+euca-describe-images --region @localhost
+
+# Release Cloud Administrator (eucalyptus/admin user) credentials
+eval `euare-releaserole`
 
 echo ""
-
 

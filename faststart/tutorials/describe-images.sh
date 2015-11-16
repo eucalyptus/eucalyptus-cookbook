@@ -28,17 +28,23 @@ echo "Hit Enter to continue."
 read continue
 
 echo "Remember: when using Eucalyptus, you must \"log in\"."
-echo "When using euca2ools, the way to \"log in\" is to source"
-echo "the euca2ools credentials file. By default, Faststart"
-echo "installs your credentials file in the root directory."
+echo "When using euca2ools, the way to \"log in\" is to use"
+echo "euca2ools configuration credentials file. By default,"
+echo "Faststart uses \`clcadmin-assume-system-credentials\`"
+echo "to assume the eucalyptus/admin user credentials."
+echo "Refer to the Euca2ools Guide section entitled"
+echo "\"Working with Euca2ools Configuration Files\" in"
+echo "order to create euca2ools configuration files for the"
+echo "eucalyptus/admin and other cloud users:"
+echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#shared/euca2ools_working_with_config_files.html"
 echo ""
 echo "Hit Enter to run the command:"
-echo "  ${bold}source /root/eucarc${normal}"
+echo "  ${bold}eval \`clcadmin-assume-system-credentials\`${normal}"
 
 read continue
 
-echo "${bold}+ source /root/eucarc${normal}"
-source /root/eucarc
+echo "${bold}+ eval \`clcadmin-assume-system-credentials\`${normal}"
+eval `clcadmin-assume-system-credentials`
 
 echo "The euca2ools command for listing images is ${bold}euca-describe-images${normal}."
 echo "If you have ever worked with Amazon Web Services, you will"
@@ -49,12 +55,12 @@ echo "Press Enter to run ${bold}euca-describe-images${normal} now."
 read continue
 
 echo "${bold}+ euca-describe-images"
-euca-describe-images
+euca-describe-images --region @localhost
 echo "${normal}"
 
 echo "Now let's review some of the key output of that command:"
 echo ""
-imagelist=`euca-describe-images | tail -n 1`
+imagelist=`euca-describe-images --region @localhost | tail -n 1`
 imageid=`echo $imagelist | awk '{print $2}'`
 imagepath=`echo $imagelist | awk '{print $3}'`
 public=`echo $imagelist | awk '{print $6}'`
@@ -69,4 +75,4 @@ echo "  only be run by the owner of the image are marked private."
 echo "" 
 
 echo "To learn more about the euca-describe-images command, check out the documentaion:"
-echo "  https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#euca2ools-guide/euca-describe-images.html"
+echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#euca2ools-guide/euca-describe-images.html"
