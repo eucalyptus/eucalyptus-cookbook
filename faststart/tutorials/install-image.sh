@@ -76,7 +76,7 @@ echo ""
 echo "OK, now you are ready to install the image into your cloud."
 echo "To install the image, we will run the following command:"
 echo ""
-echo "${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm${normal}"
+echo "${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@localhost${normal}"
 echo ""
 echo "  ${bold}-n Fedora20${normal} specifies the name we're giving the image."
 echo "  ${bold}-b tutorial${normal} specifies the bucket we're putting the image into."
@@ -88,12 +88,9 @@ echo "Hit Enter to install the image."
 
 read continue
 
-# Assume Cloud Administrator (eucalyptus/admin user) credentials
-eval `clcadmin-assume-system-credentials`
-
 # Install the image.
-echo "+ ${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm${normal}"
-euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region @localhost
+echo "+ ${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@localhost${normal}"
+euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@localhost
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[OOPS] euca-install-image failed!"
@@ -116,9 +113,9 @@ echo "Hit Enter to modify the image attribute."
 read continue
 
 # get the EMI_ID
-EMI_ID=$(euca-describe-images --region @localhost | tail -n 1 | grep tutorial | grep emi | cut -f 2)
-echo "+ ${bold}euca-modify-image-attribute -l -a all $EMI_ID${normal}"
-euca-modify-image-attribute -l -a all $EMI_ID --region @localhost
+EMI_ID=$(euca-describe-images --region admin@localhost | grep tutorial | tail -n 1 | grep emi | cut -f 2)
+echo "+ ${bold}euca-modify-image-attribute -l -a all $EMI_ID --region admin@localhost${normal}"
+euca-modify-image-attribute -l -a all $EMI_ID --region admin@localhost
 
 echo ""
 echo "Your new Fedora machine image is installed and available to all"
@@ -129,11 +126,9 @@ echo "Hit Enter to show the list of images."
 
 read continue
 
-echo "+ ${bold}euca-describe-images${normal}"
-euca-describe-images --region @localhost
-
-# Release Cloud Administrator (eucalyptus/admin user) credentials
-eval `euare-releaserole`
+echo "+ ${bold}euca-describe-images --region admin@localhost${normal}"
+euca-describe-images --region admin@localhost
 
 echo ""
+
 

@@ -17,11 +17,8 @@ then
     exit 1
 fi
 
-# Assume Cloud Administrator (eucalyptus/admin user) credentials
-eval `clcadmin-assume-system-credentials`
-
 # Be sure the tutorial image is installed
-EMI_ID=$(euca-describe-images --region @localhost | grep tutorial | grep emi | tail -n 1 | cut -f 2)
+EMI_ID=$(euca-describe-images --region admin@localhost | grep tutorial | grep emi | tail -n 1 | cut -f 2)
 echo $EMI_ID
 if [ "$EMI_ID" == "" ]
 then
@@ -32,14 +29,14 @@ then
    exit 1
 fi
 
-echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID${normal}"
-euca-run-instances -k my-first-keypair $EMI_ID --region @localhost
+echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID --region admin@localhost${normal}"
+euca-run-instances -k my-first-keypair $EMI_ID --region admin@localhost
 
 # Capture the instance ID and public address
 echo "Capturing the instance ID"
-INSTANCE_ID=$(euca-describe-instances --region @localhost | grep $EMI_ID | grep -v terminated | cut -f2)
+INSTANCE_ID=$(euca-describe-instances --region admin@localhost | grep $EMI_ID | grep -v terminated | cut -f2)
 echo "Capturing the public ip address"
-INSTANCE_ADDR=$(euca-describe-instances --region @localhost | grep $INSTANCE_ID | cut -f4)
+INSTANCE_ADDR=$(euca-describe-instances --region admin@localhost | grep $INSTANCE_ID | cut -f4)
 
 
 # Wait up to 30 seconds for the instance to start.
@@ -49,17 +46,14 @@ STATUS=
 while [ $TIMER -le 5 ]
 do
    sleep 5
-   STATUS=$(euca-describe-instances $INSTANCE_ID --region @localhost | grep $EMI_ID | grep running)
+   STATUS=$(euca-describe-instances $INSTANCE_ID --region admin@localhost | grep $EMI_ID | grep running)
    [ "$STATUS" != "" ] && break;
    TIMER=$(( $TIMER + 1 ))
    echo $TIMER
 done
 
-# Release Cloud Administrator (eucalyptus/admin user) credentials
-eval `euare-releaserole`
-
 # Congratulations! You can now connect to your instance
 echo "Use this command to log into your new instance"
-ehco ""
+echo ""
 echo " ssh -i ~/my-first-keypair.pem fedora@$INSTANCE_ADDR"
 echo ""
