@@ -28,33 +28,38 @@ echo "Hit Enter to continue."
 read continue
 
 echo "Remember: when using Eucalyptus, you must \"log in\"."
-echo "When using euca2ools, the way to \"log in\" is to source"
-echo "the euca2ools credentials file. By default, Faststart"
-echo "installs your credentials file in the root directory."
+echo "When using euca2ools, the way to \"log in\" is to use"
+echo "the euca2ools configuration credentials file located"
+echo "under /root/.euca. By default, Faststart sets this"
+echo "configuration file up for you. Once this has been"
+echo "set up, with each euca2ools command, the"
+echo "\"--region\" option must be used. For FastStart,"
+echo "the region option will contain the value"
+echo "\"admin@localhost\".  For example:"
 echo ""
-echo "Hit Enter to run the command:"
-echo "  ${bold}source /root/eucarc${normal}"
+echo "${bold}euca-describe-availability-zones --region admin@localhost${normal}"
+echo ""
+echo "To learn more about using euca2ools configuration file, please refer to"
+echo "the Euca2ools Guide section entitled \"Working with Euca2ools Configuration Files\":"
+echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#shared/euca2ools_working_with_config_files.html"
 
 read continue
-
-echo "${bold}+ source /root/eucarc${normal}"
-source /root/eucarc
 
 echo "The euca2ools command for listing images is ${bold}euca-describe-images${normal}."
 echo "If you have ever worked with Amazon Web Services, you will"
 echo "notice that the command, and the output from the command, is"
 echo "nearly identical to the comparable AWS command; this is by design."
-echo "Press Enter to run ${bold}euca-describe-images${normal} now."
+echo "Press Enter to run ${bold}euca-describe-images --region admin@localhost${normal} now."
 
 read continue
 
-echo "${bold}+ euca-describe-images"
-euca-describe-images
+echo "${bold}+ euca-describe-images --region admin@localhost"
+euca-describe-images --region admin@localhost
 echo "${normal}"
 
 echo "Now let's review some of the key output of that command:"
 echo ""
-imagelist=`euca-describe-images | tail -n 1`
+imagelist=`euca-describe-images --region admin@localhost| tail -n 1`
 imageid=`echo $imagelist | awk '{print $2}'`
 imagepath=`echo $imagelist | awk '{print $3}'`
 public=`echo $imagelist | awk '{print $6}'`
@@ -69,4 +74,4 @@ echo "  only be run by the owner of the image are marked private."
 echo "" 
 
 echo "To learn more about the euca-describe-images command, check out the documentaion:"
-echo "  https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#euca2ools-guide/euca-describe-images.html"
+echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#euca2ools-guide/euca-describe-images.html"
