@@ -18,15 +18,27 @@
 directory node['eucalyptus']['home-directory'] do
   recursive true
 end
+
+## used for displaying NIC status for debugging purposes
+execute 'display-ifconfig-status' do
+  command "ifconfig"
+  action :nothing
+end
+
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
     retries 10
     source node['eucalyptus']['init-script-url']
     mode "777"
+    not_if { ::File.exist? "#{node['eucalyptus']['home-directory']}/init.sh" }
   end
   execute 'Running init script' do
-    command "bash #{node['eucalyptus']['home-directory']}/init.sh"
+    command "bash #{node['eucalyptus']['home-directory']}/init.sh && /usr/bin/sha256sum #{node['eucalyptus']['home-directory']}/init.sh | /bin/awk '{print $1}' > /tmp/finished-initscript.txt"
+    # tried to actually verify the sha256 hash of the file, but can't get it to work, just checking for file presence for now
+    #not_if { `/usr/bin/sha256sum #{node['eucalyptus']['home-directory']}/init.sh | /bin/awk '{print $1}'" == "echo /tmp/finished-initscript.txt" }
+    not_if { ::File.exist? "/tmp/finished-initscript.txt" }
+    notifies :run, 'execute[display-ifconfig-status]', :immediately
   end
 end
 

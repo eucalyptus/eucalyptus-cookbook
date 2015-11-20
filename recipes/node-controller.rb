@@ -74,12 +74,24 @@ execute "Set device name in bridge file" do
   not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
 end
 
+## used for displaying NIC status for debugging purposes
+execute 'display-ifconfig-status' do
+  command "ifconfig"
+  action :nothing
+end
+
 template bridged_nic_file do
   source "ifcfg-eth.erb"
   mode 0644
   owner "root"
   group "root"
   notifies :run, "execute[network-restart]", :immediately
+end
+
+## used for displaying NIC status for debugging purposes
+execute 'display-ifconfig-status' do
+  command "ifconfig"
+  action :nothing
 end
 
 execute "Set HWADDR in bridged nic file" do
