@@ -181,7 +181,8 @@ clusters.each do |cluster, info|
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
-      command "#{euctl} #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
+      # for the short term due to errors in CI, run with --debug
+      command "#{euctl} --debug #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
       retries 15
       retry_delay 20
     end
