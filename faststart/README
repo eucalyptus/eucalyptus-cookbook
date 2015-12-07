@@ -1,6 +1,6 @@
 Faststart for Cloud-in-a-box!
 
-To install your Eucalyptus cloud on a CentOS/RHEL 6.5 system, run the following
+To install your Eucalyptus cloud on a CentOS/RHEL 6.7 system, run the following
 on the command line:
 
 bash <(curl -s https://raw.githubusercontent.com/eucalyptus/eucalyptus-cookbook/master/faststart/cloud-in-a-box.sh)
@@ -11,4 +11,4 @@ A few notes:
 * Must have internet access;
 * Must have a fixed IP address for the host (i.e. no DHCP);
 * Must have some IP addresses set aside on the local network;
-* Runs on CentOS or RHEL 6.5 only.
+* Runs on CentOS or RHEL 6.7 only.
