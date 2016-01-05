@@ -107,7 +107,11 @@ end
 
 ruby_block "Get Ceph Credentials" do
   block do
-    CephHelper::SetCephRbd.make_ceph_config(node)
+    if node['ceph']
+      CephHelper::SetCephRbd.make_ceph_config(node, node['ceph']['users'][0]['name'])
+    else
+      CephHelper::SetCephRbd.make_ceph_config(node, "")
+    end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
 end
@@ -116,4 +120,3 @@ service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
 end
-
