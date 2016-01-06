@@ -40,7 +40,7 @@ if node['eucalyptus']['dns']['domain']
   end
 end
 
-if node['riak_cs']
+if node['riakcs_cluster']
   admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
   Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
   Chef::Log.info "Existing RiakCS admin_secret: #{admin_secret}"
