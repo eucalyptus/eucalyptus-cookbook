@@ -30,13 +30,13 @@ module CephHelper
             break
           end
         end
-        conf_file = "/root/ceph.conf"
+        conf_file = "/etc/ceph/ceph.conf"
         File.open(conf_file, 'w') do |file|
           file.puts Base64.decode64(data)
         end
         FileUtils.chmod 0744, conf_file
 
-        keyring_file = "/root/ceph.client.#{ceph_user}.keyring"
+        keyring_file = "/etc/ceph/ceph.client.#{ceph_user}.keyring"
         keyring_data = nil
         mons.each do |mon|
           Chef::Log.debug "trying: #{mon}"
