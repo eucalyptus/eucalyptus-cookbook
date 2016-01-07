@@ -51,8 +51,8 @@ module CephHelper
         File.open(keyring_file, 'w') do |file|
           file.puts Base64.decode64(keyring_data)
         end
-        FileUtils.chmod 0640, conf_file
-        FileUtils.chown "root", "eucalyptus", conf_file
+        FileUtils.chmod 0640, keyring_data
+        FileUtils.chown "root", "eucalyptus", keyring_data
       else
         clusters = node['eucalyptus']['topology']['clusters']
         clusters.each do |name, info|
