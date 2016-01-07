@@ -34,7 +34,8 @@ module CephHelper
         File.open(conf_file, 'w') do |file|
           file.puts Base64.decode64(data)
         end
-        FileUtils.chmod 0744, conf_file
+        FileUtils.chmod 0640, conf_file
+        FileUtils.chown "root", "eucalyptus", conf_file
 
         keyring_file = "/etc/ceph/ceph.client.#{ceph_user}.keyring"
         keyring_data = nil
@@ -50,6 +51,8 @@ module CephHelper
         File.open(keyring_file, 'w') do |file|
           file.puts Base64.decode64(keyring_data)
         end
+        FileUtils.chmod 0640, conf_file
+        FileUtils.chown "root", "eucalyptus", conf_file
       else
         clusters = node['eucalyptus']['topology']['clusters']
         clusters.each do |name, info|
