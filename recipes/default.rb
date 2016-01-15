@@ -124,19 +124,9 @@ remote_file "/tmp/epel-release.rpm" do
   not_if "rpm -qa | grep 'epel-release'"
 end
 
-remote_file "/tmp/elrepo-release.rpm" do
-  source node["eucalyptus"]["elrepo-rpm"]
-  not_if "rpm -qa | grep 'elrepo-release'"
-end
-
 execute 'yum install -y *epel*.rpm' do
   cwd '/tmp'
   not_if "ls /etc/yum.repos.d/epel*"
-end
-
-execute 'yum install -y *elrepo*.rpm' do
-  cwd '/tmp'
-  not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do

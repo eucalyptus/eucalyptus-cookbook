@@ -49,8 +49,8 @@ end
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
 
-%w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
-  axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
+%w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy axis2c-devel axis2
+  curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
   libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
   rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
   yum_package dependency do
@@ -60,15 +60,15 @@ end
 end
 
 ### Runtime deps
-%w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c
+%w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
   axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt perl-XML-Simple
-  dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod
-  drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
+  dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd84-utils kmod-drbd84
+  e2fsprogs file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
   PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
   openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
-  postgresql92 postgresql92-server pv python-boto python-devel python-setuptools
+  postgresql postgresql-server pv python-boto python-devel python-setuptools
   rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
+  velocity wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
   yum_package dependency do
     options node['eucalyptus']['yum-options']
     action :upgrade
@@ -76,8 +76,17 @@ end
 end
 
 ### Get WSDL2C
-execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-  cwd home_directory
+#execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
+#  cwd home_directory
+#end
+
+# MBACCHI FIXME don't do this get it from eucalyptus/devel in source tree
+cookbook_file '/euca-WSDL2C.sh' do
+  source 'euca-WSDL2C.sh'
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
 end
 
 execute "Remove source" do
