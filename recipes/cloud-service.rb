@@ -32,6 +32,14 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+cookbook_file '/etc/eucalyptus/cloud.d/postgresql-binaries.properties' do
+  source 'postgresql-binaries.properties'
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
 yum_package "euca2ools" do
   action :upgrade
   options node['eucalyptus']['yum-options']
