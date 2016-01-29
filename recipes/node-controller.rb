@@ -92,6 +92,13 @@ bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
 bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
 bridged_nic_hwaddr = `cat #{bridged_nic_file} | grep HWADDR`.strip
 
+template bridge_file do
+  source "ifcfg-br-dhcp.erb"
+  mode 0644
+  owner "root"
+  group "root"
+end
+
 execute "Copy existing interface config to bridge config" do
   command "cp #{bridged_nic_file} #{bridge_file}"
   not_if "ls #{bridge_file}"
@@ -107,24 +114,12 @@ execute "Set device name in bridge file" do
   not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
 end
 
-## used for displaying NIC status for debugging purposes
-execute 'display-ifconfig-status' do
-  command "ifconfig"
-  action :nothing
-end
-
 template bridged_nic_file do
   source "ifcfg-eth.erb"
   mode 0644
   owner "root"
   group "root"
   notifies :run, "execute[network-restart]", :immediately
-end
-
-## used for displaying NIC status for debugging purposes
-execute 'display-ifconfig-status' do
-  command "ifconfig"
-  action :nothing
 end
 
 execute "Set HWADDR in bridged nic file" do

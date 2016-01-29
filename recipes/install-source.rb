@@ -148,7 +148,9 @@ tools_dir = "#{eucalyptus_dir}/tools"
 end
 
 if node["eucalyptus"]["network"]["mode"] == "EDGE"
-  execute "ln -fs #{tools_dir}/eucanetd /etc/init.d/eucanetd"
+  execute "ln -sf #{tools_dir}/eucanetd /etc/init.d/eucanetd" do
+    creates "/etc/init.d/eucanetd"
+  end
   execute "chmod +x #{tools_dir}/eucanetd"
 end
 
