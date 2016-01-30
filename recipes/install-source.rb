@@ -68,7 +68,7 @@ end
   openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
   postgresql92 postgresql92-server pv python-boto python-devel python-setuptools
   rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2}.each do |dependency|
+  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
   yum_package dependency do
     options node['eucalyptus']['yum-options']
     action :upgrade
@@ -90,43 +90,39 @@ git source_directory do
   repository node['eucalyptus']['source-repo']
   revision node['eucalyptus']['source-branch']
   enable_submodules true
+  notifies :run, 'execute[Run configure]', :immediately
   action :sync
 end
 
-yum_repository "euca-vmware-libs" do
-  description "VDDK libs repo"
-  url node['eucalyptus']['vddk-libs-repo']
-  action :add
-  only_if "ls #{source_directory}/vmware-broker"
-  metadata_expire "1"
-end
-
-yum_package "vmware-vix-disklib" do
-  only_if "ls #{source_directory}/vmware-broker"
-  options node['eucalyptus']['yum-options']
-  action :upgrade
-end
-
 configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.2 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
-execute "Run configure with open source bits"  do
+execute "Run configure"  do
   command configure_command
+  action :nothing
+  notifies :run, 'execute[Run make]', :immediately
   cwd source_directory
-  not_if "ls #{source_directory}/vmware-broker"
-end
-### Run configure with enterprise bits
-execute "Run configure with enterprise bits" do
-  command configure_command + " --with-vddk=/opt/packages/vddk"
-  cwd source_directory
-  only_if "ls #{source_directory}/vmware-broker"
 end
 
 execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
 
-execute "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH=#{cloud_libs_branch} && make install" do
+execute 'Run make' do
+  command make_command
   cwd source_directory
+  action :nothing
   timeout node["eucalyptus"]["compile-timeout"]
+end
+
+%w{/etc/eucalyptus /var/lib/eucalyptus /var/log/eucalyptus /var/run/eucalyptus}.each do |runtime_dir|
+  execute "mkdir -p #{home_directory}/#{runtime_dir}"
+  execute "chown -R eucalyptus:eucalyptus #{home_directory}/#{runtime_dir}"
+end
+
+%w{/usr/lib/eucalyptus/euca_mountwrap /usr/lib/eucalyptus/euca_rootwrap}.each do |suid_exe|
+  file suid_exe do
+    mode '4755'
+    group 'eucalyptus'
+  end
 end
 
 eucalyptus_dir = source_directory
@@ -150,8 +146,6 @@ end
 execute "Copy Policy Kit file for NC" do
   command "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
 end
-
-execute "#{home_directory}/usr/sbin/euca_conf --setup -d #{home_directory}"
 
 ### Add udev rules
 directory '/etc/udev/rules.d'

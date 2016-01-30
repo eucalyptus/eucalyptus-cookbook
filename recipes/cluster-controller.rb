@@ -62,6 +62,11 @@ execute "Reload sysctl values" do
   command "sysctl -p"
 end
 
+network_mode = node["eucalyptus"]["network"]["mode"]
+if network_mode == "MANAGED" or network_mode == "MANAGED-NOVLAN"
+  include_recipe "eucalyptus::eucanetd"
+end
+
 service "eucalyptus-cc" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
@@ -71,6 +76,6 @@ nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split
 log "Registering the following nodes: #{nc_ips}"
 nc_ips.each do |nc_ip|
   execute 'Register Nodes' do
-    command "#{node['eucalyptus']['home-directory']}/usr/sbin/euca_conf --register-nodes #{nc_ip} --no-scp --no-rsync --no-sync"
+    command "#{node['eucalyptus']['home-directory']}/usr/sbin/clusteradmin-register-nodes #{nc_ip}"
   end
 end

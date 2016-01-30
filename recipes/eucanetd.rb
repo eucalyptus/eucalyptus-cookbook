@@ -12,6 +12,7 @@ end
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
+  notifies :restart, 'service[eucanetd]', :immediately
 end
 
 service "eucanetd" do
