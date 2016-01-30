@@ -15,9 +15,9 @@ Vagrant.configure("2") do |config|
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
                                       "install-type" => "source",
                                       ## Does not change package version, use "eucalyptus-repo" variable
-                                      "source-branch" => "maint-4.1",
-                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
-                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
+                                      "source-branch" => "maint-4.2",
+                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.2/centos/6/x86_64/",
+                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
                                       "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
                                       "install-load-balancer" => false,
