@@ -8,7 +8,7 @@ These tools allow one to deploy a Eucalyptus cloud—in a Vagrant-provisioned VM
 
 This method produces a dev/test environment in a single virtual machine, with all Eucalyptus components deployed in it. By default, components will be built from latest source, which can be modified and immediately tested on the VM.  The source will be located on a 'synced folder' (`eucalyptus-src`), which can be edited on the host system but built on the guest system. Alternatively, you can install from latest packages, saving time.
 
-1. Install [VirtualBox](https://www.virtualbox.org)
+1. Install [VirtualBox](https://www.virtualbox.org) (You may need to install kernel-headers and other packages to load the kernel module, look at this [blog post](http://www.if-not-true-then-false.com/2010/install-virtualbox-with-yum-on-fedora-centos-red-hat-rhel/) if you have problems.)
 
 2. Install [Vagrant](http://www.vagrantup.com/) >= 1.5.2
 
