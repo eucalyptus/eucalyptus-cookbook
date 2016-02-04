@@ -25,6 +25,7 @@ default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
 default['eucalyptus']['cloud-libs-branch'] = "master"
+default['eucalyptus']['install-console'] = "true"
 
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"
