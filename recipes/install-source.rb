@@ -87,7 +87,7 @@ el6runtime = %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
     python-boto python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity vtun wget which
-    xalan-j2-xsltc ipset ebtables librbd1 librados2}
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
 
 # concatenate the runtime and build deps, remove dups, and sort
 el7deps = el7runtime.concat(el7build).uniq().sort()
