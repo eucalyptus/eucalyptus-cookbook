@@ -144,17 +144,6 @@ execute 'yum install -y *epel*.rpm' do
   not_if "ls /etc/yum.repos.d/epel*"
 end
 
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  remote_file "/tmp/elrepo-release.rpm" do
-    source node["eucalyptus"]["elrepo-rpm"]
-    not_if "rpm -qa | grep 'elrepo-release'"
-  end
-  execute 'yum install -y *elrepo*.rpm' do
-    cwd '/tmp'
-    not_if "ls /etc/yum.repos.d/elrepo*"
-  end
-end
-
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
   not_if "ls /root/.ssh/id_rsa"
 end
