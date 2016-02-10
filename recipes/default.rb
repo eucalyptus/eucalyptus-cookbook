@@ -15,6 +15,10 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 directory node['eucalyptus']['home-directory'] do
   recursive true
 end
@@ -63,10 +67,21 @@ execute "Flush and save iptables" do
   not_if "service eucalyptus-cc status || service eucanetd status || service eucalyptus-cloud status || service eucalyptus-nc status"
 end
 
-## Setup NTP
-include_recipe "ntp"
-execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
-  cwd '/tmp'
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  ## Setup NTP
+  include_recipe "ntp"
+  execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
+    cwd '/tmp'
+  end
+else
+  yum_package "chrony" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+  end
+  service "chronyd" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+  end
 end
 
 ## Disable SELinux
@@ -127,6 +142,17 @@ end
 execute 'yum install -y *epel*.rpm' do
   cwd '/tmp'
   not_if "ls /etc/yum.repos.d/epel*"
+end
+
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  remote_file "/tmp/elrepo-release.rpm" do
+    source node["eucalyptus"]["elrepo-rpm"]
+    not_if "rpm -qa | grep 'elrepo-release'"
+  end
+  execute 'yum install -y *elrepo*.rpm' do
+    cwd '/tmp'
+    not_if "ls /etc/yum.repos.d/elrepo*"
+  end
 end
 
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do

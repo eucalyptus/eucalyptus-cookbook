@@ -16,6 +16,10 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -49,29 +53,61 @@ end
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
 
-%w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy axis2c-devel axis2
-  curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
-  libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
-  rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
-  yum_package dependency do
-    options node['eucalyptus']['yum-options']
-    action :upgrade
+el7build = %w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy
+    axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
+    libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
+    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc}
+
+el7runtime = %w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
+    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
+    perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
+    device-mapper dhcp dhcp-common drbd drbd84-utils kmod-drbd84 e2fsprogs
+    file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
+    PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2
+    m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
+    perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
+    python-devel python-setuptools rampartc rampartc-devel rsync
+    scsi-target-utils sudo swig util-linux vconfig velocity wget which
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
+
+el6build = %w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
+    axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
+    git jpackage-utils libvirt-devel libxml2-devel json-c libxslt-devel
+    m2crypto openssl-devel python-devel python-setuptools json-c-devel
+    rampartc-devel swig xalan-j2-xsltc}
+
+el6runtime = %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy
+    axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
+    coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt
+    perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common drbd
+    drbd83 drbd83-kmod drbd83-utils e2fsprogs euca2ools file gawk httpd
+    iptables iscsi-initiator-utils jpackage-utils kvm PyGreSQL libcurl
+    libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
+    openssl-devel parted patch perl-Crypt-OpenSSL-RSA
+    perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
+    python-boto python-devel python-setuptools rampartc rampartc-devel rsync
+    scsi-target-utils sudo swig util-linux vconfig velocity vtun wget which
+    xalan-j2-xsltc ipset ebtables librbd1 librados2}
+
+# concatenate the runtime and build deps, remove dups, and sort
+el7deps = el7runtime.concat(el7build).uniq().sort()
+el6deps = el6runtime.concat(el6build).uniq().sort()
+
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  el6deps.each do |dependency|
+    yum_package dependency do
+      options node['eucalyptus']['yum-options']
+      action :upgrade
+    end
   end
 end
 
-### Runtime deps
-%w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
-  axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt perl-XML-Simple
-  dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd84-utils kmod-drbd84
-  e2fsprogs file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-  PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
-  openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
-  postgresql postgresql-server pv python-boto python-devel python-setuptools
-  rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-  velocity wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
-  yum_package dependency do
-    options node['eucalyptus']['yum-options']
-    action :upgrade
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  el7deps.each do |dependency|
+    yum_package dependency do
+      options node['eucalyptus']['yum-options']
+      action :upgrade
+    end
   end
 end
 
@@ -103,7 +139,15 @@ git source_directory do
   action :sync
 end
 
-configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  db_home_path = "/usr/pgsql-9.2"
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  db_home_path = "/usr"
+end
+
+configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
 make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
 execute "Run configure"  do
