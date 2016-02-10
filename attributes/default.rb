@@ -1,10 +1,10 @@
 #### Install Info
 default["eucalyptus"]["install-type"] = "packages"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
-default["eucalyptus"]["source-branch"] = "maint-4.1"
+default["eucalyptus"]["source-branch"] = "master"
 default['eucalyptus']['rm-source-dir'] = false
-default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/"
-default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/"
+default["eucalyptus"]["eucalyptus-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
+default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/7/x86_64/"
 default["eucalyptus"]["enterprise-repo"] = ""
 default["eucalyptus"]["eucalyptus-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
 default["eucalyptus"]["euca2ools-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
@@ -15,10 +15,9 @@ default['eucalyptus']['install-service-image'] = true
 #default['eucalyptus']['imaging-vm-type'] = 'm1.small'
 #default['eucalyptus']['loadbalancing-vm-type'] = 'm1.small'
 default['eucalyptus']['service-image-repo'] = ""
-default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
+default["eucalyptus"]["build-deps-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
 default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/enterprise-devel/centos/$releasever/$basearch/"
-default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
-default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
+default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
 default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""

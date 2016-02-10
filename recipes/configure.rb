@@ -226,6 +226,8 @@ if node['eucalyptus']['install-service-image']
   execute "#{as_admin} esi-manage-stack --region localhost -a create imaging" do
     only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
   end
+else
+  Chef::Log.info("Not installing service image due to eucalyptus::install-service-image attribute set to false")
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
