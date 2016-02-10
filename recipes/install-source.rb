@@ -61,7 +61,7 @@ el7build = %w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy
 el7runtime = %w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
     perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
-    device-mapper dhcp dhcp-common drbd drbd84-utils kmod-drbd84 e2fsprogs
+    device-mapper dhcp dhcp-common e2fsprogs
     file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
     PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2
     m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
@@ -79,8 +79,8 @@ el6build = %w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
 el6runtime = %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
     coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt
-    perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common drbd
-    drbd83 drbd83-kmod drbd83-utils e2fsprogs euca2ools file gawk httpd
+    perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common
+    e2fsprogs euca2ools file gawk httpd
     iptables iscsi-initiator-utils jpackage-utils kvm PyGreSQL libcurl
     libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
     openssl-devel parted patch perl-Crypt-OpenSSL-RSA
