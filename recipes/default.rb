@@ -135,7 +135,7 @@ yum_repository "euca2ools-release" do
 end
 
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  node["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"
+  node.default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"
 end
 
 remote_file "/tmp/epel-release.rpm" do
