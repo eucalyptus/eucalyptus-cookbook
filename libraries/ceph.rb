@@ -16,44 +16,43 @@ module CephHelper
       end
     end
 
-    def self.make_ceph_config(node)
+    def self.make_ceph_config(node, ceph_user)
       if node['ceph'] != nil
-        mon_bootstrap = node['ceph']['topology']['mon_bootstrap']['ipaddr']
-        environment = node.chef_environment
-
-        mon_hostnames = []
-        mon_ipaddrs = []
         mons = node['ceph']['topology']['mons']
-        if mons != nil
-          mons.each do |value|
-            mon_hostnames << value['hostname']
-            mon_ipaddrs << "#{value['ipaddr']}:6789"
+        environment = node.chef_environment
+        data = nil
+        mons.each do |mon|
+          Chef::Log.debug "trying: #{mon}"
+          found = Chef::Search::Query.new.search(:node, "addresses:#{mon['ipaddr']}").first.first
+          if found.attributes['ceph']['config_data']
+            Chef::Log.debug "found: #{found}"
+            data = found.attributes['ceph']['config_data']
+            break
           end
         end
-        mon_hostnames << node['ceph']['topology']['mon_bootstrap']['hostname']
-        mon_ipaddrs << "#{node['ceph']['topology']['mon_bootstrap']['ipaddr']}:6789"
-
-
-        file_name = "/etc/ceph/ceph.conf"
-        Chef::Log.info "Getting all attributes from #{mon_bootstrap}"
-        bootstrap_node = Chef::Search::Query.new.search(:node, "addresses:#{mon_bootstrap}").first.first
-        config_data = bootstrap_node.attributes['ceph']['config']['conf_data']
-
-        mons_config_content = "[mon]\n"
-        mons_config_content = "#{mons_config_content}" + "mon host = " + mon_hostnames.join(",") + "\n"
-        mons_config_content = "#{mons_config_content}" + "mon addr = " + mon_ipaddrs.join(",") + "\n"
-        config_data = Base64.decode64(config_data) + "#{mons_config_content}"
-
-        File.open(file_name, 'w') do |file|
-          file.puts config_data
+        conf_file = "/etc/ceph/ceph.conf"
+        File.open(conf_file, 'w') do |file|
+          file.puts Base64.decode64(data)
         end
-        FileUtils.chmod 0744, file_name
+        FileUtils.chmod 0640, conf_file
+        FileUtils.chown "root", "eucalyptus", conf_file
 
-        file_name = "/etc/ceph/ceph.client.admin.keyring"
-        keyring_data = bootstrap_node.attributes['ceph']['config']['keyring_data']
-        File.open(file_name, 'w') do |file|
+        keyring_file = "/etc/ceph/ceph.client.#{ceph_user}.keyring"
+        keyring_data = nil
+        mons.each do |mon|
+          Chef::Log.debug "trying: #{mon}"
+          found = Chef::Search::Query.new.search(:node, "addresses:#{mon['ipaddr']}").first.first
+          if found != nil
+            Chef::Log.debug "found: #{found}"
+            keyring_data = found.attributes['ceph']['keyring_data'][ceph_user]
+            break
+          end
+        end
+        File.open(keyring_file, 'w') do |file|
           file.puts Base64.decode64(keyring_data)
         end
+        FileUtils.chmod 0640, keyring_file
+        FileUtils.chown "root", "eucalyptus", keyring_file
       else
         clusters = node['eucalyptus']['topology']['clusters']
         clusters.each do |name, info|
@@ -96,14 +95,14 @@ module CephHelper
       end
     end
 
-    def self.set_ceph_credentials(node)
-      self.make_ceph_config(node)
+    def self.set_ceph_credentials(node, ceph_user)
+      self.make_ceph_config(node, ceph_user)
       if node['ceph'] != nil
         if ::File.exists?('/etc/eucalyptus/eucalyptus.conf')
           Chef::Log.info "Writing new ceph creds to /etc/eucalyptus/eucalyptus.conf file"
           file = Chef::Util::FileEdit.new("/etc/eucalyptus/eucalyptus.conf")
-          file.insert_line_if_no_match("/CEPH_USER_NAME=\"admin\"/", "CEPH_USER_NAME=\"admin\"")
-          file.insert_line_if_no_match("/CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.admin.keyring\"/", "CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.admin.keyring\"")
+          file.insert_line_if_no_match("/CEPH_USER_NAME=\"#{ceph_user}\"/", "CEPH_USER_NAME=\"#{ceph_user}\"")
+          file.insert_line_if_no_match("/CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.#{ceph_user}.keyring\"/", "CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.#{ceph_user}.keyring\"")
           file.insert_line_if_no_match("/CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"/", "CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"")
           file.write_file
         end

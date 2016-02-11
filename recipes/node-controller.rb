@@ -181,7 +181,11 @@ end
 
 ruby_block "Set Ceph Credentials" do
   block do
-    CephHelper::SetCephRbd.set_ceph_credentials(node)
+    if node['ceph']
+      CephHelper::SetCephRbd.set_ceph_credentials(node, node['ceph']['users'][0]['name'])
+    else
+      CephHelper::SetCephRbd.set_ceph_credentials(node, "")
+    end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
 end
