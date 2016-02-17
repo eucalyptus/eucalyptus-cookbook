@@ -19,8 +19,7 @@ service "eucanetd" do
   case node['platform']
   when 'centos','redhat'
     provider Chef::Provider::Service::Init
-    # FIXME - mbacchi remember to add :enable to actions below when fully functioning with systemd
-    action [ :start ]
+    action [ :enable, :start ]
     supports :status => true, :start => true, :stop => true, :restart => true
   end
 end

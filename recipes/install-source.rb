@@ -141,13 +141,15 @@ end
 
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   db_home_path = "/usr/pgsql-9.2"
+  init_style = "--enable-sysvinit"
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   db_home_path = "/usr"
+  init_style = "--enable-systemd"
 end
 
-configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
+configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
 make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
 execute "Run configure"  do
