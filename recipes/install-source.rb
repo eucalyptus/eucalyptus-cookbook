@@ -61,7 +61,7 @@ el7build = %w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy
 el7runtime = %w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
     perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
-    device-mapper dhcp dhcp-common e2fsprogs
+    device-mapper dhcp dhcp-common e2fsprogs qemu-kvm
     file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
     PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2
     m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
