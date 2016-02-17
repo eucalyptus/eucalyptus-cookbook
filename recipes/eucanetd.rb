@@ -16,10 +16,6 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
 end
 
 service "eucanetd" do
-  case node['platform']
-  when 'centos','redhat'
-    provider Chef::Provider::Service::Init
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
 end
