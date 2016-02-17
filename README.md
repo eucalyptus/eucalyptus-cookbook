@@ -156,6 +156,34 @@ For cloud-in-a-box installs look at...
 For distributed topologies...
 [Deployment with motherbrain](http://testingclouds.wordpress.com/2014/03/24/install-eucalyptus-4-0-using-motherbrain-and-chef/)
 
+Faststart
+-------------------
+### Methodology
+Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for hphelion.com/eucalyptus-install that points to that script in the faststart branch so that users can use the following to invoke it:
+
+    bash <(curl -Ls hphelion.com/eucalyptus-install)
+
+Once invoked the script does the following:
+1. Checks for necessary resources on the machine that it is installing on (ie disk, memory, virtualization extensions)
+2. Asks the user for the minimum necessary configuration parameters.
+3. Installs the Chef client
+4. Runs the Chef client in order to install Eucalyptus using the cookbook tarball and the inputs from the user.
+
+Inputs from the user are searched and replaced into the templates in `faststart/ciab-template.json` and `fastart/node-template.json` and then used as follows to run the cookbook:
+
+    chef-solo -r cookbooks.tgz -j ciab.json
+
+### Releasing
+In order to release a new version of Faststart, you must first package up the current cookbook versions with Berkshelf.
+
+1. Ensure Berkshelf is installed via the [ChefDK](https://downloads.chef.io/chef-dk/)
+2. Change directories to where your eucalyptus-cookbook repo lives.
+3. Run `berks package` to bundle all cookbook deps into a tarball, replacing VERSION with the desired release number, for example 4.2.0: `berks package eucalyptus-cookbooks-$VERSION.tgz`
+4. Upload the tarball to S3 in the euca-chef bucket, then make the object publicly readable. To test this, simply try to download the file via its URL, by using your browser. An example URL is http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-$VERSION.tgz
+5. Change the $cookbooks_url variable in faststart/cloud-in-a-box.sh to point to your new publicly available tarball.
+6. Commit and push that change to the branch for this release, for example euca-4.2.
+7. In order to push the change live, merge the branch into faststart.
+
 Contributing
 ------------
 

@@ -15,18 +15,34 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 directory node['eucalyptus']['home-directory'] do
   recursive true
 end
+
+## used for displaying NIC status for debugging purposes
+execute 'display-ifconfig-status' do
+  command "ifconfig"
+  action :nothing
+end
+
 ## Init script
 if node['eucalyptus']['init-script-url'] != ""
   remote_file "#{node['eucalyptus']['home-directory']}/init.sh" do
     retries 10
     source node['eucalyptus']['init-script-url']
     mode "777"
+    not_if { ::File.exist? "#{node['eucalyptus']['home-directory']}/init.sh" }
   end
   execute 'Running init script' do
-    command "bash #{node['eucalyptus']['home-directory']}/init.sh"
+    command "bash #{node['eucalyptus']['home-directory']}/init.sh && /usr/bin/sha256sum #{node['eucalyptus']['home-directory']}/init.sh | /bin/awk '{print $1}' > /tmp/finished-initscript.txt"
+    # tried to actually verify the sha256 hash of the file, but can't get it to work, just checking for file presence for now
+    #not_if { `/usr/bin/sha256sum #{node['eucalyptus']['home-directory']}/init.sh | /bin/awk '{print $1}'" == "echo /tmp/finished-initscript.txt" }
+    not_if { ::File.exist? "/tmp/finished-initscript.txt" }
+    notifies :run, 'execute[display-ifconfig-status]', :immediately
   end
 end
 
@@ -51,15 +67,26 @@ execute "Flush and save iptables" do
   not_if "service eucalyptus-cc status || service eucanetd status || service eucalyptus-cloud status || service eucalyptus-nc status"
 end
 
-## Setup NTP
-include_recipe "ntp"
-execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
-  cwd '/tmp'
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  ## Setup NTP
+  include_recipe "ntp"
+  execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
+    cwd '/tmp'
+  end
+else
+  yum_package "chrony" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+  end
+  service "chronyd" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+  end
 end
 
 ## Disable SELinux
 selinux_state "SELinux Disabled" do
-  action :disabled
+  action :permissive
 end
 
 ## Install repo rpms
@@ -107,24 +134,18 @@ yum_repository "euca2ools-release" do
   metadata_expire "1"
 end
 
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  node.default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"
+end
+
 remote_file "/tmp/epel-release.rpm" do
   source node["eucalyptus"]["epel-rpm"]
   not_if "rpm -qa | grep 'epel-release'"
 end
 
-remote_file "/tmp/elrepo-release.rpm" do
-  source node["eucalyptus"]["elrepo-rpm"]
-  not_if "rpm -qa | grep 'elrepo-release'"
-end
-
 execute 'yum install -y *epel*.rpm' do
   cwd '/tmp'
   not_if "ls /etc/yum.repos.d/epel*"
-end
-
-execute 'yum install -y *elrepo*.rpm' do
-  cwd '/tmp'
-  not_if "ls /etc/yum.repos.d/elrepo*"
 end
 
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do

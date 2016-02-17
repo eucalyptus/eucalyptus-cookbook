@@ -15,9 +15,9 @@ Vagrant.configure("2") do |config|
       chef.json = { "eucalyptus" => { ## Choose whether to compile binaries from "source" or "packages"
                                       "install-type" => "source",
                                       ## Does not change package version, use "eucalyptus-repo" variable
-                                      "source-branch" => "maint-4.1",
-                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
-                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
+                                      "source-branch" => "maint-4.2",
+                                      "eucalyptus-repo" => "http://downloads.eucalyptus.com/software/eucalyptus/4.2/centos/6/x86_64/",
+                                      "euca2ools-repo" =>  "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/6/x86_64/",
                                       "yum-options" => "--nogpg",
                                       "default-img-url" => "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img",
                                       "install-load-balancer" => false,
@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
     config.vm.provision "shell", path: "eucadev/post.sh"
     config.vm.define "eucadev-all" do |u|
       u.vm.hostname = "eucadev-all"
-      u.vm.box = "chef/centos-6.5"
+      u.vm.box = "chef/centos-6.7"
       u.vm.box_url = "http://euca-vagrant.s3.amazonaws.com/euca-deps-virtualbox.box"
       u.vm.network :forwarded_port, guest: 8888, host: 8888
       u.vm.network :forwarded_port, guest: 8773, host: 8773

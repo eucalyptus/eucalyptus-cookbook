@@ -12,9 +12,15 @@ end
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
+  notifies :restart, 'service[eucanetd]', :immediately
 end
 
 service "eucanetd" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
+  case node['platform']
+  when 'centos','redhat'
+    provider Chef::Provider::Service::Init
+    # FIXME - mbacchi remember to add :enable to actions below when fully functioning with systemd
+    action [ :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end
