@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: cloud-service
 #
-#Copyright [2014] [Eucalyptus Systems]
+# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.

@@ -2,7 +2,7 @@
 ## Cookbook Name:: eucalyptus
 ## Recipe:: install-source
 ##
-##Copyright [2014] [Eucalyptus Systems]
+## © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -186,12 +186,6 @@ if node['eucalyptus']['source-repo'].end_with?("internal")
 end
 
 tools_dir = "#{eucalyptus_dir}/tools"
-%w{eucalyptus-cloud eucalyptus-cc eucalyptus-nc}.each do |init_script|
-  execute "ln -sf #{tools_dir}/eucalyptus-cloud /etc/init.d/#{init_script}" do
-    creates "/etc/init.d/#{init_script}"
-  end
-  execute "chmod +x #{tools_dir}/eucalyptus-cloud"
-end
 
 if node["eucalyptus"]["network"]["mode"] == "EDGE"
   execute "ln -sf #{tools_dir}/eucanetd /etc/init.d/eucanetd" do

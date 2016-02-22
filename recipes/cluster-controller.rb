@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: default
 #
-#Copyright [2014] [Eucalyptus Systems]
+# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
 ##    limitations under the License.
 ##
 #
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
+
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
@@ -67,9 +72,21 @@ if network_mode == "MANAGED" or network_mode == "MANAGED-NOVLAN"
   include_recipe "eucalyptus::eucanetd"
 end
 
-service "eucalyptus-cc" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
+# on el6 the init scripts are named differently than on el7
+# systemctl does not like unit files which are symlinks
+# so we will use the actual unit file names here
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  service "eucalyptus-cc" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  service "eucalyptus-cluster" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end
 
 nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()

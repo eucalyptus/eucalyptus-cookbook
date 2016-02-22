@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: default
 #
-#Copyright [2014] [Eucalyptus Systems]
+# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
 ##    limitations under the License.
 ##
 
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
+
+source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
@@ -190,7 +195,19 @@ ruby_block "Set Ceph Credentials" do
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
 end
 
-service "eucalyptus-nc" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
+# on el6 the init scripts are named differently than on el7
+# systemctl does not like unit files which are symlinks
+# so we will use the actual unit file names here
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  service "eucalyptus-nc" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  service "eucalyptus-node" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end
