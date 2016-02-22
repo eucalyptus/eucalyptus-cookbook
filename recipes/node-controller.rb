@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: default
 #
-#© Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -66,41 +66,6 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
-  eucalyptus_dir = source_directory
-  if node['eucalyptus']['source-repo'].end_with?("internal")
-    eucalyptus_dir = "#{source_directory}/eucalyptus"
-  end
-  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-    tools_dir = "#{eucalyptus_dir}/tools"
-    execute "ln -sf #{tools_dir}/eucalyptus-cloud /etc/init.d/eucalyptus-nc" do
-      creates "/etc/init.d/eucalyptus-nc"
-    end
-    execute "chmod +x #{tools_dir}/eucalyptus-cloud"
-  end
-  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-    file '/usr/lib/modules-load.d/70-eucalyptus-node.conf' do
-      lazy { content IO.read("#{eucalyptus_dir}/systemd/modules-load.d/70-eucalyptus-node.conf") }
-      mode '0644'
-      action :create
-      not_if do ::File.exists?('/usr/lib/modules-load.d/70-eucalyptus-node.conf') end
-    end
-    file '/usr/lib/systemd/system/eucalyptus-node.service' do
-      lazy { content IO.read("#{eucalyptus_dir}/systemd/units/eucalyptus-node.service") }
-      mode '0644'
-      action :create
-      not_if do ::File.exists?('/usr/lib/systemd/system/eucalyptus-node.service') end
-    end
-    file '/usr/lib/systemd/system/eucalyptus-node-keygen.service' do
-      lazy { content IO.read("#{eucalyptus_dir}/systemd/units/eucalyptus-node-keygen.service") }
-      mode '0644'
-      action :create
-      not_if do ::File.exists?('/usr/lib/systemd/system/eucalyptus-node-keygen.service') end
-    end
-    execute "ln -sf /usr/lib/systemd/system/eucalyptus-node.service /usr/lib/systemd/system/eucalyptus-nc.service" do
-      creates "/usr/lib/systemd/system/eucalyptus-nc.service"
-      not_if do ::File.exists?('/usr/lib/systemd/system/eucalyptus-nc.service') end
-    end
-  end
 end
 
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
