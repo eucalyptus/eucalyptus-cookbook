@@ -23,13 +23,20 @@ require 'chef/version_constraint'
 
 include_recipe "eucalyptus::default"
 
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  cloudcontrollerservice = "service[eucalyptus-cc]"
+end
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  cloudcontrollerservice = "service[eucalyptus-cluster]"
+end
+
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :start, "service[eucalyptus-cc]", :immediately
+    notifies :start, "#{cloudcontrollerservice}", :immediately
   end
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
