@@ -72,25 +72,21 @@ module CephHelper
           end
           FileUtils.chmod 0744, file_name
 
-          config_content = "[global]\n"
-          ceph_cluster_global = node['eucalyptus']['topology']['clusters'][name]['ceph_cluster']['global']
-          ceph_cluster_global.each do |ceph_key, ceph_value|
-            Chef::Log.info "shaon - cluster_detail: name: #{ceph_key} and info: #{ceph_value}"
-            config_content = "#{config_content}" + "#{ceph_key} = #{ceph_value}\n"
+          config_content = ""
+          config_data = clusters[name]['ceph_cluster']['ceph_config']
+
+          config_data.each do |section, config_value|
+            config_content = "#{config_content}" + "[#{section}]\n"
+            config_value.each do |key, value|
+              config_content = "#{config_content}" + "  #{key} = #{value}\n"
+            end
+            file_name = "/etc/ceph/ceph.conf"
+            Chef::Log.info "Writing config file: #{file_name}"
+            File.open(file_name, 'w') do |file|
+              file.puts config_content
+            end
           end
 
-          config_content = "#{config_content}" + "[mon]\n"
-          ceph_cluster_mon = node['eucalyptus']['topology']['clusters'][name]['ceph_cluster']['mon']
-          ceph_cluster_mon.each do |ceph_key, ceph_value|
-            Chef::Log.info "shaon - cluster_detail: name: #{ceph_key} and info: #{ceph_value}"
-            config_content = "#{config_content}" + "#{ceph_key} = #{ceph_value}\n"
-          end
-
-          file_name = "/etc/ceph/ceph.conf"
-          Chef::Log.info "Writing config file: #{file_name}"
-          File.open(file_name, 'w') do |file|
-            file.puts config_content
-          end
         end
       end
     end
