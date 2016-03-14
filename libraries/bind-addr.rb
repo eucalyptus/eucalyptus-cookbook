@@ -53,7 +53,7 @@ module Eucalyptus
                     end
                     if !bindaddrs.empty?
                         if bindaddrs.length > 1
-                            if bind_interace.nil
+                            if (!bind_interace.nil? && !bind_interface.empty?)
                                 bindaddrs.each do |iface, addr|
                                     if iface == bind_interface
                                         bind_addr = addr
@@ -61,12 +61,13 @@ module Eucalyptus
                                     end
                                 end
                             end
-                        else
+		                    end
+                        if bindaddr.nil? && bindaddrs.length > 0
                             bindaddrs.each do |iface, addr|
                                 bind_addr = addr
                                 break
                             end
-                        end
+                        end 
                     end
                     if !bind_addr.nil?
                         break
