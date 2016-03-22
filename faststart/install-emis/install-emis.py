@@ -151,7 +151,6 @@ class EmiManager:
                 print_error("\t\tchecking %s" % "qemu-img... failed")
                 time.sleep(1)
                 install_qemu = "Install 'qemu-img' package? (Y/n): ".strip()
-                print_debug(install_qemu)
                 if check_response(install_qemu):
                     self.install_qemu_img()
                 else:
