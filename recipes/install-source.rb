@@ -56,7 +56,8 @@ end
 el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
     axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
     libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
-    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc}
+    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc
+    gengetopt}
 
 el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
@@ -74,7 +75,7 @@ el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
     axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
     git jpackage-utils libvirt-devel libxml2-devel json-c libxslt-devel
     m2crypto openssl-devel python-devel python-setuptools json-c-devel
-    rampartc-devel swig xalan-j2-xsltc}
+    rampartc-devel swig xalan-j2-xsltc gengetopt}
 
 el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
@@ -149,8 +150,8 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   init_style = "--enable-systemd"
 end
 
-configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
+configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
 execute "Run configure"  do
   command configure_command
