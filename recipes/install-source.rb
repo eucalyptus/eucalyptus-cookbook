@@ -150,8 +150,8 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   init_style = "--enable-systemd"
 end
 
-configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
+configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh 2>&1 | tee -a #{source_directory}/configure.out"
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install 2>&1 | tee -a #{source_directory}/make.out"
 ### Run configure for open source
 execute "Run configure"  do
   command configure_command
