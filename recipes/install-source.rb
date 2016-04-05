@@ -112,20 +112,6 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   end
 end
 
-### Get WSDL2C
-#execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-#  cwd home_directory
-#end
-
-# MBACCHI FIXME don't do this get it from eucalyptus/devel in source tree
-cookbook_file '/euca-WSDL2C.sh' do
-  source 'euca-WSDL2C.sh'
-  owner 'root'
-  group 'root'
-  mode '0755'
-  action :create
-end
-
 execute "Remove source" do
   command "rm -rf #{source_directory}"
   only_if "#{node['eucalyptus']['rm-source-dir']}"
@@ -150,7 +136,13 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   init_style = "--enable-systemd"
 end
 
-configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh 2>&1 | tee -a #{source_directory}/configure.out"
+if node['eucalyptus']['source-repo'].include? "internal"
+  euca_wsdl_path = "#{source_directory}/eucalyptus/devel/euca-WSDL2C.sh"
+else
+  euca_wsdl_path = "#{source_directory}/devel/euca-WSDL2C.sh"
+end
+
+configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{euca_wsdl_path} 2>&1 | tee -a #{source_directory}/configure.out"
 make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' 2>&1 | tee -a #{source_directory}/make.out && make install 2>&1 | tee -a #{source_directory}/make.out"
 ### Run configure for open source
 execute "Run configure"  do
