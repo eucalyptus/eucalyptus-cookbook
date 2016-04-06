@@ -68,19 +68,23 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+
+# make sure libvirt is started
+# when we want to delete its networks
+service 'libvirtd' do
+  action [ :enable, :start ]
+end
+
+# Remove default virsh network which runs its own dhcp server
+execute 'virsh net-destroy default' do
+  ignore_failure true
+end
+execute 'virsh net-autostart default --disable' do
+  ignore_failure true
+end
+
+# only install eucanetd on NC for non vpc modes
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
-  # make sure libvirt is started
-  # when we want to delete its networks
-  service 'libvirtd' do
-    action [ :enable, :start ]
-  end
-  # Remove default virsh network which runs its own dhcp server
-  execute 'virsh net-destroy default' do
-    ignore_failure true
-  end
-  execute 'virsh net-autostart default --disable' do
-    ignore_failure true
-  end
   include_recipe "eucalyptus::eucanetd"
 end
 
