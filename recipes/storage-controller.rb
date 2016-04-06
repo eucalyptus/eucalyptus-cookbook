@@ -32,17 +32,6 @@ if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].
   node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
 end
 
-node['eucalyptus']['topology']['clusters'].each do |cluster, info|
-  Chef::Log.warn("Checking SC at: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
-  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
-    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
-    service 'tgtd' do
-      action [ :enable, :start ]
-      supports :status => true, :start => true, :stop => true, :restart => true
-    end
-  end
-end
-
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-sc" do
     action :upgrade
@@ -125,6 +114,17 @@ ruby_block "Get Ceph Credentials" do
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
+node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+  Chef::Log.warn("Checking SC at: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
+  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
+    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
+    service 'tgtd' do
+      action [ :enable, :start ]
+      supports :status => true, :start => true, :stop => true, :restart => true
+    end 
+  end 
 end
 
 service "eucalyptus-cloud" do
