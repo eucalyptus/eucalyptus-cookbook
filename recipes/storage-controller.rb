@@ -127,14 +127,6 @@ ruby_block "Get Ceph Credentials" do
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
 end
 
-if node['eucalyptus']['topology']['clusters']['storage-backend'] == "das" ||
- node['eucalyptus']['topology']['clusters']['storage-backend'] == "overlay"
-  service 'tgtd' do
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
-end
-
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
