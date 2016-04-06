@@ -116,12 +116,15 @@ ruby_block "Get Ceph Credentials" do
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
 end
 
-if node['eucalyptus']['topology']['clusters']['storage-backend'] == "das" ||
- node['eucalyptus']['topology']['clusters']['storage-backend'] == "overlay"
-  service 'tgtd' do
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
+node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+  Chef::Log.warn("Checking SC at: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
+  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
+    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
+    service 'tgtd' do
+      action [ :enable, :start ]
+      supports :status => true, :start => true, :stop => true, :restart => true
+    end 
+  end 
 end
 
 service "eucalyptus-cloud" do
