@@ -1,0 +1,12 @@
+<% if @keyring['name'] -%>
+[<%= @keyring['name'] %>]
+  <% if @keyring['key'] -%>
+  key = <%= @keyring['key'] %>
+  <% end %>
+  <% if @keyring['caps mon'] -%>
+  caps mon = <%= @keyring['caps mon'] %>
+  <% end %>
+  <% if @keyring['caps osd'] -%>
+  caps osd = <%= @keyring['caps osd'] %>
+  <% end %>
+<% end %>
