@@ -5,7 +5,7 @@ directory '/root/.euca' do
   action :create
 end
 
-bash 'extract_module' do
+bash 'create_admin_creds' do
   cwd ::File.dirname('/root')
   code <<-EOH
     eval `clcadmin-assume-system-credentials`
