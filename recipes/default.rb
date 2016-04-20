@@ -136,7 +136,7 @@ end
 
 execute 'yum install -y *elrepo*.rpm' do
   cwd '/tmp'
-  not_if "ls /etc/yum.repos.d/elrepo*"
+  not_if "yum repolist | grep epel"
 end
 
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
