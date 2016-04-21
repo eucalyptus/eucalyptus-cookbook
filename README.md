@@ -164,6 +164,7 @@ Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Euca
     bash <(curl -Ls hphelion.com/eucalyptus-install)
 
 Once invoked the script does the following:
+
 1. Checks for necessary resources on the machine that it is installing on (ie disk, memory, virtualization extensions)
 2. Asks the user for the minimum necessary configuration parameters.
 3. Installs the Chef client
