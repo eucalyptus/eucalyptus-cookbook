@@ -40,7 +40,7 @@ if node['eucalyptus']['dns']['domain']
   end
 end
 
-if node['riak_cs']
+if node['riakcs_cluster']
   admin_key, admin_secret = RiakCSHelper::CreateUser.download_riak_credentials(node)
   Chef::Log.info "Existing RiakCS admin_key: #{admin_key}"
   Chef::Log.info "Existing RiakCS admin_secret: #{admin_secret}"
@@ -103,6 +103,19 @@ elsif node['eucalyptus']['topology']['riakcs']
   end
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
   execute "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
+elsif node['eucalyptus']['topology']['ceph-radosgw']
+  execute "Set OSG providerclient to ceph-rgw" do
+    command "#{euctl} objectstorage.providerclient=ceph-rgw"
+    retries 15
+    retry_delay 20
+  end
+  execute "Set S3 endpoint for ceph-rgw" do
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['ceph-radosgw']['endpoint']}"
+    retries 15
+    retry_delay 20
+  end
+  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['ceph-radosgw']['access-key']}"
+  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['ceph-radosgw']['secret-key']}"
 else
   execute "Set OSG providerclient" do
     command "#{euctl} objectstorage.providerclient=walrus"

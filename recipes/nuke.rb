@@ -57,6 +57,20 @@ execute 'remove euca packages' do
   command "yum -y remove 'euca*'"
 end
 
+## remove ceph packages and credentials
+service "ceph-radosgw" do
+  action :stop
+  ignore_failure true
+end
+%w{ceph-radosgw ceph-common python-cephfs libcephfs1}.each do |ceph_pkg|
+  yum_package ceph_pkg do
+    action :purge
+  end
+end
+execute 'Remove ceph creds' do
+  command 'rm -rf /etc/ceph'
+end
+
 bash "Remove devmapper and losetup entries" do
   code <<-EOH
     for export in `tgtadm --lld iscsi -m target -o show | grep Target | grep eucalyptus | awk 'BEGIN{FS="Target";}{print $2}'| awk 'BEGIN{FS=":";}{print $1}'`;do

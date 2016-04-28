@@ -76,7 +76,7 @@ end
 end
 
 ### Get WSDL2C
-execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
+execute 'wget https://raw.githubusercontent.com/eucalyptus/eucalyptus-rpmspec/maint-4.2/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
   cwd home_directory
 end
 
