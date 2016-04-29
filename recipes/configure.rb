@@ -116,6 +116,7 @@ elsif node['eucalyptus']['topology']['ceph-radosgw']
   end
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['ceph-radosgw']['access-key']}"
   execute "#{euctl} objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['ceph-radosgw']['secret-key']}"
+  execute "#{euctl} objectstorage.s3provider.s3endpointheadresponse=200"
 else
   execute "Set OSG providerclient" do
     # for the short term due to errors in CI, run with --debug
