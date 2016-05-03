@@ -74,7 +74,6 @@ A Berksfile is included to allow users to easily download the required cookbook 
 #### Cookbooks
 - `ntp` - sets up NTP for all Eucalyptus servers
 - `yum` - used for managing repositories
-- `selinux` - disables selinux on Eucalyptus servers
 
 #### Chef server config 
 Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
