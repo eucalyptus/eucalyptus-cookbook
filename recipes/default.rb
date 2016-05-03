@@ -84,11 +84,6 @@ else
   end
 end
 
-## Disable SELinux
-selinux_state "SELinux Disabled" do
-  action :permissive
-end
-
 ## Install repo rpms
 yum_repository "eucalyptus-release" do
   description "Eucalyptus Package Repo"
