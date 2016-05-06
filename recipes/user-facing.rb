@@ -17,16 +17,28 @@
 ##    limitations under the License.
 ##
 
+require 'chef/version_constraint'
+
 return if node.recipe?("eucalyptus::cloud-controller")
 
 include_recipe "eucalyptus::cloud-service"
 
 if node['eucalyptus']['topology']['ceph-radosgw']
   # TODO: write individual recipe for osg and move this section
-  yum_repository "ceph-hammer" do
-    description "Ceph Hammer Package Repo"
-    url "http://download.ceph.com/rpm-hammer/el6/x86_64/"
-    gpgcheck false
+  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+    yum_repository "ceph-hammer" do
+      description "Ceph Hammer Package Repo"
+      url "http://download.ceph.com/rpm-hammer/el6/x86_64/"
+      gpgcheck false
+    end
+  end
+
+  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+    yum_repository "ceph-hammer" do
+      description "Ceph Hammer Package Repo"
+      url "http://download.ceph.com/rpm-hammer/el7/x86_64/"
+      gpgcheck false
+    end
   end
 
   yum_package "ceph-radosgw" do
