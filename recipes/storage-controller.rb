@@ -131,7 +131,9 @@ node['eucalyptus']['topology']['clusters'].each do |cluster, info|
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  /usr/sbin/setsebool -P eucalyptus_storage_controller 1
+  execute "setsebool eucalyptus_storage_controller true" do
+    command "/usr/sbin/setsebool -P eucalyptus_storage_controller 1"
+  end
 end
 
 service "eucalyptus-cloud" do
