@@ -17,6 +17,10 @@
 ##    limitations under the License.
 ##
 ## Install packages for the user-console
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
 
 if node['eucalyptus']['user-console']['install-type'] == 'source'
@@ -78,6 +82,10 @@ else
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
   end
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  /usr/sbin/setsebool -P httpd_can_network_connect 1
 end
 
 service "eucaconsole" do
