@@ -16,6 +16,9 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
 
 ### Need to know cluster name before setting bind-addr
@@ -125,6 +128,10 @@ node['eucalyptus']['topology']['clusters'].each do |cluster, info|
       supports :status => true, :start => true, :stop => true, :restart => true
     end 
   end 
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  /usr/sbin/setsebool -P eucalyptus_storage_controller 1
 end
 
 service "eucalyptus-cloud" do
