@@ -85,7 +85,9 @@ else
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  /usr/sbin/setsebool -P httpd_can_network_connect 1
+  execute "setsebool httpd_can_network_connect true" do
+    command "/usr/sbin/setsebool -P httpd_can_network_connect 1"
+  end
 end
 
 service "eucaconsole" do
