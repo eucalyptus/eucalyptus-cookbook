@@ -21,13 +21,13 @@
 # If the CLC doesn't run user-api services it should redirect to a
 # system that does, so we simplify the command line by simply using
 # the "localhost" region.
-as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+as_admin = "eval `clcadmin-assume-system-credentials` && "
 faststart_ini = "/root/.euca/faststart.ini"
 
 directory '/root/.euca'
 
 execute "Create admin credentials" do
-  command "#{as_admin} euare-useraddkey admin -wld #{node["eucalyptus"]["dns"]["domain"]} -w > #{faststart_ini}"
+  command "#{as_admin} euare-useraddkey admin -wld #{node["eucalyptus"]["dns"]["domain"]} -w > #{faststart_ini} --region localhost"
   creates faststart_ini
 end
 

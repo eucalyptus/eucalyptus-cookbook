@@ -17,7 +17,7 @@
 ##    limitations under the License.
 ##
 disable_proxy = 'http_proxy=""'
-as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+as_admin = "eval `clcadmin-assume-system-credentials` && "
 command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
 describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 euctl = "#{command_prefix}/usr/bin/euctl"
@@ -254,8 +254,8 @@ end
 
 if node['eucalyptus']['network']['mode'] == 'VPCMIDO'
   execute 'Create default VPC for eucalyptus account' do
-    command "#{as_admin} euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'`"
-    not_if "#{as_admin} euca-describe-vpcs | grep 'VPC.*default.*true'"
+    command "#{as_admin} euca-create-vpc `euare-accountlist | grep '^eucalyptus' | awk '{print $2}'` --region localhost"
+    not_if "#{as_admin} euca-describe-vpcs --region localhost | grep 'VPC.*default.*true'"
   end
 end
 

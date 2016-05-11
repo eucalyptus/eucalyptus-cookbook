@@ -784,7 +784,6 @@ if [ "$nc_install_only" == "0" ]; then
 
     echo ""
     echo "[Config] Generating credentials"
-    export AWS_DEFAULT_REGION=localhost
 
     echo ""
     echo "[Config] Enabling web console"

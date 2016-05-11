@@ -34,7 +34,7 @@ end
 
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
-as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+as_admin = "eval `clcadmin-assume-system-credentials` && "
 command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
 register_service = "#{command_prefix}/usr/bin/euserv-register-service"
 describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
