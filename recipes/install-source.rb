@@ -57,7 +57,7 @@ el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
     axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
     libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
     python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc
-    gengetopt}
+    gengetopt selinux-policy-devel}
 
 el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
@@ -69,7 +69,8 @@ el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
     python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity wget which
-    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python
+    libselinux-utils policycoreutils selinux-policy-base}
 
 el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
     axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
@@ -145,9 +146,21 @@ if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   init_style = "--enable-sysvinit"
 end
 
+build_selinux_command = "make all && make reload"
+execute "Build and install eucalyptus-selinux" do
+  command build_selinux_command
+  cwd "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux"
+  action :nothing
+end
+
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   db_home_path = "/usr"
   init_style = "--enable-systemd"
+  git "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux" do
+    repository "https://github.com/eucalyptus/eucalyptus-selinux"
+    action :sync
+    notifies :run, 'execute[Build and install eucalyptus-selinux]', :immediately
+  end
 end
 
 configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
