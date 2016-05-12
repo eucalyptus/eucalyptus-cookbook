@@ -32,9 +32,11 @@ module EucalyptusHelper
       Chef::Log.info("`#{euctl_cmd}` returned: \n\n #{cmd.stdout.strip}")
       cmd.stdout.each_line.select do |l|
         if l.strip.include? "blockdev"
+            Chef::Log.info("l.strip.include blockdev is true")
             return true
         end
       end
+      return false
    end
 
 end
