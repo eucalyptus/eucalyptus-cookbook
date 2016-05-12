@@ -16,6 +16,8 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+require 'mixlib/shellout'
+
 disable_proxy = 'http_proxy=""'
 as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
 command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
@@ -186,19 +188,37 @@ clusters.each do |cluster, info|
   else
 
   end
-  execute "Set storage backend" do
-     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
-     ### Patch for EUCA-9963
+  execute "Set blockstoragemanager" do
+     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}"
      not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
+     action :nothing
+  end
+  ruby_block "Watch for blockstoragemanager ready" do
+    block do
+        Chef::Log.info "Waiting for #{cluster}.storage.blockstoragemanager to be set to /dev/blockdev..."
+        until EucalyptusHelper.serviceready?("#{cluster}.storage.blockstoragemanager")
+            Chef::Log.info "#{cluster}.storage.blockstoragemanager value empty, sleeping 5 seconds."
+            sleep 5
+        end
+        cmd = Mixlib::ShellOut.new("#{euctl} #{cluster}.storage.blockstoragemanager")
+        cmd.run_command
+        if cmd.error?
+            puts "Error running #{euctl} -n #{cluster}.storage.blockstoragemanager: cmd.stderr.strip"
+        else
+            puts "#{cluster}.storage.blockstoragemanager is currently: \"#{cmd.stdout.strip}\""
+        end
+    end
+    # if we reach this point we have gotten a successful result from the until loop above
+    notifies :run, 'execute[Set blockstoragemanager]', :immediately
   end
   ### Configure backend
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
       # for the short term due to errors in CI, run with --debug
-      command "#{euctl} --debug #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
+      command "#{euctl} -n --debug #{cluster}.storage.dasdevice=#{info["das-device"]}"
       retries 15
       retry_delay 20
     end
