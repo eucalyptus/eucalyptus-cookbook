@@ -197,20 +197,13 @@ clusters.each do |cluster, info|
   end
   ruby_block "Watch for blockstoragemanager ready" do
     block do
-        Chef::Log.info "Waiting for #{cluster}.storage.blockstoragemanager to be set to /dev/blockdev..."
-        while not EucalyptusHelper.serviceready?("#{cluster}.storage.blockstoragemanager") do
-            Chef::Log.info "#{cluster}.storage.blockstoragemanager value empty, sleeping 5 seconds."
+        Chef::Log.info "Waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
+        while not EucalyptusHelper.propertyready?("#{cluster}.storage.blockstoragemanager") do
+            Chef::Log.info "#{cluster}.storage.blockstoragemanager not ready, sleeping 5 seconds."
             sleep 5
         end
-        cmd = Mixlib::ShellOut.new("#{euctl} #{cluster}.storage.blockstoragemanager")
-        cmd.run_command
-        if cmd.error?
-            puts "Error running #{euctl} -n #{cluster}.storage.blockstoragemanager: cmd.stderr.strip"
-        else
-            puts "#{cluster}.storage.blockstoragemanager is currently: \"#{cmd.stdout.strip}\""
-        end
     end
-    # if we reach this point we have gotten a successful result from the until loop above
+    # if we reach this point we received a successful result from the loop above
     notifies :run, 'execute[Set blockstoragemanager]', :immediately
   end
   ### Configure backend
