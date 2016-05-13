@@ -24,7 +24,6 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     notifies :create, "template[eucalyptus.conf]", :immediately
-    notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
 else

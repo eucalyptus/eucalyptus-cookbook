@@ -150,7 +150,6 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         yum_package san_package do
           action :upgrade
           options node['eucalyptus']['yum-options']
-          notifies :restart, "service[eucalyptus-cloud]", :immediately
           flush_cache [:before]
         end
       end
