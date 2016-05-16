@@ -64,7 +64,7 @@ el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
     device-mapper dhcp dhcp-common e2fsprogs euca2ools qemu-kvm
     file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-    PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2
+    PyGreSQL libcurl libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2
     m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
     python-devel python-setuptools rampartc rampartc-devel rsync
@@ -84,7 +84,7 @@ el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common
     e2fsprogs euca2ools file gawk httpd
     iptables iscsi-initiator-utils jpackage-utils kvm PyGreSQL libcurl
-    libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
+    libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2 m2crypto
     openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
     python-boto python-devel python-setuptools rampartc rampartc-devel rsync
