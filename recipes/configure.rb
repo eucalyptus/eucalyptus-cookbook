@@ -198,7 +198,7 @@ clusters.each do |cluster, info|
   ruby_block "Watch for blockstoragemanager ready" do
     block do
         Chef::Log.info "Waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
-        while not EucalyptusHelper.propertyready?("#{cluster}.storage.blockstoragemanager") do
+        while not EucalyptusHelper.bsmanagerready?("#{cluster}.storage.blockstoragemanager")
             Chef::Log.info "#{cluster}.storage.blockstoragemanager not ready, sleeping 5 seconds."
             sleep 5
         end

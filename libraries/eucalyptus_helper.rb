@@ -24,23 +24,19 @@ require 'chef/mixin/shell_out'
 module EucalyptusHelper
    extend Chef::Mixin::ShellOut
 
-   # we allow both "/dev/blockdev" and "" returns from the euctl command
-   def self.propertyready?(ourproperty)
+   # euserv-describe-services will display 'broken' when the SC is ready to
+   # have the blockstoragemanager configured
+   def self.bsmanagerready?(ourproperty)
       as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
-      euctl_cmd = "#{as_admin} euctl -n #{ourproperty}"
-      # shell_out! raises an error if the command fails, so I don't do further
-      # error detection here
-      cmd = shell_out!(euctl_cmd)
+      #euctl_cmd = "#{as_admin} euctl -n #{ourproperty}"
+      euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=storage"
+      cmd = shell_out(euserv_cmd)
       # change this to debug when tested well
-      Chef::Log.info("`#{euctl_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
+      Chef::Log.info("`#{euserv_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
       cmd.stdout.each_line.select do |l|
-          if l.strip.include? "blockdev"
-              Chef::Log.info("euctl output contains blockdev")
-              return true
-          end
-          if l.strip.empty?
-              Chef::Log.info("euctl output is empty")
-              return true
+          if l.strip.include? "broken"
+            Chef::Log.info("euserv-describe-services --expert --filter service-type=storage indicates the SC blockstoragemanager is \"broken\".")
+            return true
           end
       end
       return false
