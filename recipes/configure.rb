@@ -127,6 +127,18 @@ else
     retries 15
     retry_delay 20
     subscribes :start, "service[ufs-eucalyptus-cloud]", :immediately
+    action :nothing
+  end
+  ruby_block "Watch for OSG providerclient ready" do
+    block do
+        Chef::Log.info "Waiting for objectstorage.providerclient to be ready for configuration..."
+        while not EucalyptusHelper.getservicestate?("objectstorage", "broken")
+            Chef::Log.info "objectstorage service state not ready, sleeping 5 seconds."
+            sleep 5
+        end
+    end
+    # if we reach this point we received a successful result from the loop above
+    notifies :run, 'execute[Set OSG providerclient]', :immediately
   end
 end
 
