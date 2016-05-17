@@ -24,18 +24,16 @@ require 'chef/mixin/shell_out'
 module EucalyptusHelper
    extend Chef::Mixin::ShellOut
 
-   # euserv-describe-services will display 'broken' when the SC is ready to
-   # have the blockstoragemanager configured
-   def self.bsmanagerready?(ourproperty)
+   # get service state
+   def self.getservicestate?(name, state)
       as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
-      #euctl_cmd = "#{as_admin} euctl -n #{ourproperty}"
-      euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=storage"
+      euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name}"
       cmd = shell_out(euserv_cmd)
       # change this to debug when tested well
       Chef::Log.info("`#{euserv_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
       cmd.stdout.each_line.select do |l|
-          if l.strip.include? "broken"
-            Chef::Log.info("euserv-describe-services --expert --filter service-type=storage indicates the SC blockstoragemanager is \"broken\".")
+          if l.strip.include? "#{state}"
+            Chef::Log.info("euserv-describe-services --expert --filter service-type=#{name} indicates the state is: \"#{state}\".")
             return true
           end
       end
