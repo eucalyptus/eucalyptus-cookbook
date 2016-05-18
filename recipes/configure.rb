@@ -129,17 +129,32 @@ else
     subscribes :start, "service[ufs-eucalyptus-cloud]", :immediately
     action :nothing
   end
-  ruby_block "Watch for OSG providerclient ready" do
+
+  ruby_block "Block until objectstorage.providerclient ready" do
     block do
-        Chef::Log.info "Waiting for objectstorage.providerclient to be ready for configuration..."
-        while not EucalyptusHelper.getservicestate?("objectstorage", "broken")
-            Chef::Log.info "objectstorage service state not ready, sleeping 5 seconds."
-            sleep 5
-        end
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # hope timeout takes seconds...
+            Timeout.timeout(180) do
+                Chef::Log.info "Setting a 180 second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
+                loop do
+                    if EucalyptusHelper.getservicestate?("objectstorage", "broken")
+                        Chef::Log.info "objectstorage service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "objectstorage service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for objectstorage.providerclient to be ready after 180 seconds"
+            end
     end
-    # if we reach this point we received a successful result from the loop above
     notifies :run, 'execute[Set OSG providerclient]', :immediately
   end
+
 end
 
 if Eucalyptus::Enterprise.is_enterprise?(node)
@@ -207,17 +222,33 @@ clusters.each do |cluster, info|
      retry_delay 20
      action :nothing
   end
-  ruby_block "Watch for blockstoragemanager ready" do
+
+  ruby_block "Block until #{cluster}.storage.blockstoragemanager ready" do
     block do
-        Chef::Log.info "Waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
-        while not EucalyptusHelper.getservicestate?("storage", "broken")
-            Chef::Log.info "Storage service state not ready, sleeping 5 seconds."
-            sleep 5
-        end
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # hope timeout takes seconds...
+            Timeout.timeout(180) do
+                Chef::Log.info "Setting a 180 second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
+                loop do
+                    if EucalyptusHelper.getservicestate?("storage", "broken")
+                        Chef::Log.info "Storage service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "Storage service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after 180 seconds"
+            end
     end
     # if we reach this point we received a successful result from the loop above
     notifies :run, 'execute[Set blockstoragemanager]', :immediately
   end
+
   ### Configure backend
   case info["storage-backend"]
   when "das"
