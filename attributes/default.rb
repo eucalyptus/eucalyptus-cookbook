@@ -24,6 +24,7 @@ default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
 default['eucalyptus']['cloud-libs-branch'] = "master"
+default['eucalyptus']['configure-service-timeout'] = 180
 
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"

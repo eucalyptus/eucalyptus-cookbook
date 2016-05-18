@@ -135,9 +135,11 @@ else
         # stole loop from:
         # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
         begin
-            # hope timeout takes seconds...
-            Timeout.timeout(180) do
-                Chef::Log.info "Setting a 180 second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
                 loop do
                     if EucalyptusHelper.getservicestate?("objectstorage", "broken")
                         Chef::Log.info "objectstorage service ready, continuing..."
@@ -149,7 +151,7 @@ else
                 end
             end
             rescue Timeout::Error
-                raise "Timed out waiting for objectstorage.providerclient to be ready after 180 seconds"
+                raise "Timed out waiting for objectstorage.providerclient to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
             end
     end
     notifies :run, 'execute[Set OSG providerclient]', :immediately
@@ -228,9 +230,11 @@ clusters.each do |cluster, info|
         # stole loop from:
         # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
         begin
-            # hope timeout takes seconds...
-            Timeout.timeout(180) do
-                Chef::Log.info "Setting a 180 second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
                 loop do
                     if EucalyptusHelper.getservicestate?("storage", "broken")
                         Chef::Log.info "Storage service ready, continuing..."
@@ -242,7 +246,7 @@ clusters.each do |cluster, info|
                 end
             end
             rescue Timeout::Error
-                raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after 180 seconds"
+                raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
             end
     end
     # if we reach this point we received a successful result from the loop above
