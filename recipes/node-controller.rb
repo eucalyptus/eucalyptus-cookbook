@@ -88,6 +88,24 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   include_recipe "eucalyptus::eucanetd"
 end
 
+# setup subscriber to restart midolman when bridge is created in VPC mode
+if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+        service 'midolman-restart' do
+            command "service midolman restart"
+            action :nothing
+            subscribes :run, "execute[network-restart]", :immediately
+        end
+  end
+  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+        service 'midolman-restart' do
+            command "systemctl restart midolman"
+            action :nothing
+            subscribes :run, "execute[network-restart]", :immediately
+        end
+  end
+end
+
 ## Setup Bridge
 execute "network-restart" do
   command "service network restart"
