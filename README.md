@@ -74,7 +74,6 @@ A Berksfile is included to allow users to easily download the required cookbook 
 #### Cookbooks
 - `ntp` - sets up NTP for all Eucalyptus servers
 - `yum` - used for managing repositories
-- `selinux` - disables selinux on Eucalyptus servers
 
 #### Chef server config 
 Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
@@ -164,6 +163,7 @@ Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Euca
     bash <(curl -Ls hphelion.com/eucalyptus-install)
 
 Once invoked the script does the following:
+
 1. Checks for necessary resources on the machine that it is installing on (ie disk, memory, virtualization extensions)
 2. Asks the user for the minimum necessary configuration parameters.
 3. Installs the Chef client

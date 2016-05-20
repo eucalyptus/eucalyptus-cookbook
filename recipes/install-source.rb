@@ -53,36 +53,38 @@ end
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
 
-el7build = %w{java-1.7.0-openjdk-devel ant ant-junit apache-ivy
+el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
     axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
     libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
-    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc}
+    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc
+    gengetopt selinux-policy-devel}
 
-el7runtime = %w{java-1.7.0-openjdk gcc bc make ant apache-ivy axis2c axis2
+el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
     perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
     device-mapper dhcp dhcp-common e2fsprogs euca2ools qemu-kvm
     file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-    PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2
+    PyGreSQL libcurl libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2
     m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
     python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity wget which
-    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python
+    libselinux-utils policycoreutils selinux-policy-base}
 
-el6build = %w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
+el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
     axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
     git jpackage-utils libvirt-devel libxml2-devel json-c libxslt-devel
     m2crypto openssl-devel python-devel python-setuptools json-c-devel
-    rampartc-devel swig xalan-j2-xsltc}
+    rampartc-devel swig xalan-j2-xsltc gengetopt}
 
-el6runtime = %w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy
+el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
     coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt
     perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common
     e2fsprogs euca2ools file gawk httpd
     iptables iscsi-initiator-utils jpackage-utils kvm PyGreSQL libcurl
-    libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
+    libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2 m2crypto
     openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
     python-boto python-devel python-setuptools rampartc rampartc-devel rsync
@@ -111,20 +113,6 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   end
 end
 
-### Get WSDL2C
-#execute 'wget https://raw.github.com/eucalyptus/eucalyptus-rpmspec/master/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-#  cwd home_directory
-#end
-
-# MBACCHI FIXME don't do this get it from eucalyptus/devel in source tree
-cookbook_file '/euca-WSDL2C.sh' do
-  source 'euca-WSDL2C.sh'
-  owner 'root'
-  group 'root'
-  mode '0755'
-  action :create
-end
-
 execute "Remove source" do
   command "rm -rf #{source_directory}"
   only_if "#{node['eucalyptus']['rm-source-dir']}"
@@ -144,13 +132,31 @@ if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   init_style = "--enable-sysvinit"
 end
 
+build_selinux_command = "make all && make reload"
+execute "Build and install eucalyptus-selinux" do
+  command build_selinux_command
+  cwd "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux"
+  action :nothing
+end
+
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   db_home_path = "/usr"
   init_style = "--enable-systemd"
+  git "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux" do
+    repository "https://github.com/eucalyptus/eucalyptus-selinux"
+    action :sync
+    notifies :run, 'execute[Build and install eucalyptus-selinux]', :immediately
+  end
 end
 
-configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
+if node['eucalyptus']['source-repo'].include? "internal"
+  euca_wsdl_path = "#{source_directory}/eucalyptus/devel/euca-WSDL2C.sh"
+else
+  euca_wsdl_path = "#{source_directory}/devel/euca-WSDL2C.sh"
+end
+
+configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{euca_wsdl_path}"
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
 execute "Run configure"  do
   command configure_command

@@ -16,6 +16,9 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
 
 ### Need to know cluster name before setting bind-addr
@@ -115,6 +118,23 @@ ruby_block "Get Ceph Credentials" do
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
+node['eucalyptus']['topology']['clusters'].each do |cluster, info|
+  Chef::Log.warn("Checking SC bindaddr: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
+  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
+    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
+    service 'tgtd' do
+      action [ :enable, :start ]
+      supports :status => true, :start => true, :stop => true, :restart => true
+    end 
+  end 
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  execute "setsebool eucalyptus_storage_controller true" do
+    command "/usr/sbin/setsebool -P eucalyptus_storage_controller 1"
+  end
 end
 
 service "eucalyptus-cloud" do

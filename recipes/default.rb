@@ -84,11 +84,6 @@ else
   end
 end
 
-## Disable SELinux
-selinux_state "SELinux Disabled" do
-  action :permissive
-end
-
 ## Install repo rpms
 yum_repository "eucalyptus-release" do
   description "Eucalyptus Package Repo"
@@ -145,7 +140,7 @@ end
 
 execute 'yum install -y *epel*.rpm' do
   cwd '/tmp'
-  not_if "ls /etc/yum.repos.d/epel*"
+  not_if "yum repolist | grep epel"
 end
 
 execute "ssh-keygen -f /root/.ssh/id_rsa -P ''" do
