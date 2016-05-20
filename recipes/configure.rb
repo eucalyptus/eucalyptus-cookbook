@@ -16,6 +16,8 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+require 'mixlib/shellout'
+
 disable_proxy = 'http_proxy=""'
 as_admin = "eval `clcadmin-assume-system-credentials` && "
 command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
@@ -125,7 +127,36 @@ else
     retries 15
     retry_delay 20
     subscribes :start, "service[ufs-eucalyptus-cloud]", :immediately
+    action :nothing
   end
+
+  ruby_block "Block until objectstorage.providerclient ready" do
+    block do
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
+                loop do
+                    if EucalyptusHelper.getservicestate?("objectstorage", "broken")
+                        Chef::Log.info "objectstorage service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "objectstorage service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for objectstorage.providerclient to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
+            end
+    end
+    notifies :run, 'execute[Set OSG providerclient]', :immediately
+  end
+
 end
 
 if Eucalyptus::Enterprise.is_enterprise?(node)
@@ -186,19 +217,48 @@ clusters.each do |cluster, info|
   else
 
   end
-  execute "Set storage backend" do
-     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend} | grep #{storage_backend}"
-     ### Patch for EUCA-9963
+  execute "Set blockstoragemanager" do
+     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}"
      not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
+     action :nothing
   end
+
+  ruby_block "Block until #{cluster}.storage.blockstoragemanager ready" do
+    block do
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
+                loop do
+                    if EucalyptusHelper.getservicestate?("storage", "broken")
+                        Chef::Log.info "Storage service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "Storage service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
+            end
+    end
+    # if we reach this point we received a successful result from the loop above
+    notifies :run, 'execute[Set blockstoragemanager]', :immediately
+  end
+
   ### Configure backend
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
       # for the short term due to errors in CI, run with --debug
-      command "#{euctl} --debug #{cluster}.storage.dasdevice=#{info["das-device"]} | grep #{info["das-device"]}"
+      command "#{euctl} -n --debug #{cluster}.storage.dasdevice=#{info["das-device"]}"
       retries 15
       retry_delay 20
     end
