@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: cloud-service
 #
-#Copyright [2014] [Eucalyptus Systems]
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -45,11 +45,6 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-service "eucalyptus-cloud" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
-end
-
 yum_package "euca2ools" do
   action :upgrade
   options node['eucalyptus']['yum-options']
@@ -59,5 +54,4 @@ template "eucalyptus.conf" do
   path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
   action :create
-  notifies :restart, "service[eucalyptus-cloud]", :immediately
 end
