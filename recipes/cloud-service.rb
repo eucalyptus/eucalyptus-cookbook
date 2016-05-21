@@ -45,6 +45,11 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+service "eucalyptus-cloud" do
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
+end
+
 yum_package "euca2ools" do
   action :upgrade
   options node['eucalyptus']['yum-options']
