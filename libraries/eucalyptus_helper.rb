@@ -22,22 +22,25 @@
 require 'chef/mixin/shell_out'
 
 module EucalyptusHelper
-   extend Chef::Mixin::ShellOut
+  extend Chef::Mixin::ShellOut
 
-   # get service state
-   def self.getservicestate?(name, state)
-      as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
-      euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name}"
-      cmd = shell_out(euserv_cmd)
-      # change this to debug when tested well
-      Chef::Log.info("`#{euserv_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
-      cmd.stdout.each_line.select do |l|
-          if l.strip.include? "#{state}"
-            Chef::Log.info("euserv-describe-services --expert --filter service-type=#{name} indicates the state is: \"#{state}\".")
-            return true
-          end
+  # get service state
+  def self.getservicestates?(name, states)
+    as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+    euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name}"
+    cmd = shell_out(euserv_cmd)
+    # change this to debug when tested well
+    Chef::Log.info("`#{euserv_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
+    cmd.stdout.each_line.select do |l|
+      states.each do |state|
+        Chef::Log.info("Checking for state:#{state} in line:\n\"#{l}\"")
+        if l.include? "#{state}"
+          Chef::Log.info("euserv-describe-services --expert --filter service-type=#{name} indicates the state is: \"#{state}\".")
+          return true
+        end
       end
-      return false
-   end
+    end
+    return false
+  end
 
 end

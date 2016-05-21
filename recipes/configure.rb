@@ -141,7 +141,7 @@ else
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
                 loop do
-                    if EucalyptusHelper.getservicestate?("objectstorage", "broken")
+                    if EucalyptusHelper.getservicestates?("objectstorage",["enabled", "broken"])
                         Chef::Log.info "objectstorage service ready, continuing..."
                         break
                     else
@@ -236,7 +236,7 @@ clusters.each do |cluster, info|
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
                 loop do
-                    if EucalyptusHelper.getservicestate?("storage", "broken")
+                    if EucalyptusHelper.getservicestates?("storage", ["enabled", "broken"])
                         Chef::Log.info "Storage service ready, continuing..."
                         break
                     else
