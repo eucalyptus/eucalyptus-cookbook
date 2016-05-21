@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: cloud-service
 #
-# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
+# Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -20,6 +20,19 @@
 
 include_recipe "eucalyptus::default"
 
+
+if node["eucalyptus"]["set-bind-addr"] 
+  if node["eucalyptus"]["bind-interface"] or  node["eucalyptus"]["bind-network"]
+    # Auto detect IP from interface name or network membership 
+    bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
+  else
+    # Use default gw interface IP
+    bind_addr = node["ipaddress"]
+  end
+  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+end
+
+
 ## Install packages for the User Facing Services
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cloud" do
@@ -35,17 +48,6 @@ end
 yum_package "euca2ools" do
   action :upgrade
   options node['eucalyptus']['yum-options']
-end
-
-if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  if node["eucalyptus"]["bind-interface"]
-    # Auto detect IP from interface name
-    bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
-  else
-    # Use default gw interface IP
-    bind_addr = node["ipaddress"]
-  end
-  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
 end
 
 template "eucalyptus.conf" do

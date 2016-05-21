@@ -37,7 +37,11 @@ default['eucalyptus']['user-console']['packaging-branch'] = "develop"
 default['eucalyptus']['admin-cred-dir'] = "/root"
 default['eucalyptus']['admin-ssh-pub-key'] = ""
 default["eucalyptus"]["home-directory"] = "/"
+# Allow the cookbooks discover the Eucalyptus service address to bind to. Requires bind-interface or bind-network to be set
 default["eucalyptus"]["set-bind-addr"] = false
+# If using 'set-bind-addr', 'bind-network' is used to locate the host address to bind to
+default["eucalyptus"]["bind-network"] = ""
+# If using 'set-bind-addr', 'bind-interface' is used to locate the host address to bind to
 # default["eucalyptus"]["bind-interface"] = 'eth0'
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"

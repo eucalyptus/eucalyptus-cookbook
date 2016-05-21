@@ -141,7 +141,7 @@ else
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for objectstorage.providerclient to be ready for configuration..."
                 loop do
-                    if EucalyptusHelper.getservicestate?("objectstorage", "broken")
+                    if EucalyptusHelper.getservicestates?("objectstorage",["enabled", "broken"])
                         Chef::Log.info "objectstorage service ready, continuing..."
                         break
                     else
@@ -236,7 +236,7 @@ clusters.each do |cluster, info|
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
                 loop do
-                    if EucalyptusHelper.getservicestate?("storage", "broken")
+                    if EucalyptusHelper.getservicestates?("storage", ["enabled", "broken"])
                         Chef::Log.info "Storage service ready, continuing..."
                         break
                     else
@@ -292,10 +292,25 @@ if node['eucalyptus']['install-service-image']
       retry_delay 20
     end
   end
-  execute "#{as_admin} S3_URL=http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/ esi-install-image --region localhost --install-default" do
-    retries 5
-    retry_delay 20
-    only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
+  #Attempt to use DNS for services but do fall back to internal URIs if it fails
+  # This will allow the deployment to proceed despite external dependencies
+  osg_urls = []
+  # Add the service url for each OSG to try next
+  node["eucalyptus"]["topology"]["user-facing"].each do |ufs|
+    osg_urls.push("http://#{ufs}:8773/services/objectstorage/")
+  end
+  # Add the DNS service url
+  if node['eucalyptus']['dns']['domain']
+    osg_urls.push("http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/")
+  end
+  osg_urls.each do |osg_url|
+    esi_cmd = "#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
+    Chef::Log.info "Attempting to install service image using s3 url: #{osg_url}"
+    execute esi_cmd do
+      retries 2
+      retry_delay 20
+      only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
+    end
   end
   execute "#{as_admin} esi-manage-stack --region localhost -a create imaging" do
     only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
