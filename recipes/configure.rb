@@ -210,6 +210,9 @@ end
 
 clusters = node["eucalyptus"]["topology"]["clusters"]
 clusters.each do |cluster, info|
+  Chef::Log.info "Setting storage backend on cluster: #{cluster}"
+  Chef::Log.info "Cluster info: #{info}"
+
   ### Set backend
   storage_backend = "overlay"
   if info["storage-backend"]
@@ -218,8 +221,8 @@ clusters.each do |cluster, info|
 
   end
   execute "Set blockstoragemanager" do
-     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}"
-     not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+     command "#{euctl} %{cluster}.storage.blockstoragemanager=#{storage_backend}"
+     not_if "#{euctl} %{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
      retries 15
      retry_delay 20
      action :nothing
@@ -257,6 +260,7 @@ clusters.each do |cluster, info|
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
+      Chef::Log.info "Setting #{cluster}.storage.dasdevice to #{info["das-device"]}"
       # for the short term due to errors in CI, run with --debug
       command "#{euctl} -n --debug #{cluster}.storage.dasdevice=#{info["das-device"]}"
       retries 15
