@@ -110,32 +110,34 @@ template bridge_file do
   group "root"
 end
 
-execute "Copy existing interface config to bridge config" do
-  command "cp #{bridged_nic_file} #{bridge_file}"
-  not_if "ls #{bridge_file}"
-end
+# Do not attach bridge to physical NIC in VPCMIDO mode (Issue #314)
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
+  execute "Copy existing interface config to bridge config" do
+    command "cp #{bridged_nic_file} #{bridge_file}"
+    not_if "ls #{bridge_file}"
+  end
 
-execute "Add BRIDGE type to bridge file" do
-  command "echo 'TYPE=Bridge' >> #{bridge_file}"
-  not_if "grep 'TYPE=Bridge' #{bridge_file}"
-end
+  execute "Add BRIDGE type to bridge file" do
+    command "echo 'TYPE=Bridge' >> #{bridge_file}"
+    not_if "grep 'TYPE=Bridge' #{bridge_file}"
+  end
 
-execute "Set device name in bridge file" do
-  command "sed -i 's/DEVICE.*/DEVICE=#{bridge_interface}/g' #{bridge_file}"
-  not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
-end
+  execute "Set device name in bridge file" do
+    command "sed -i 's/DEVICE.*/DEVICE=#{bridge_interface}/g' #{bridge_file}"
+    not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
+  end
 
-template bridged_nic_file do
-  source "ifcfg-eth.erb"
-  mode 0644
-  owner "root"
-  group "root"
-  notifies :run, "execute[network-restart]", :immediately
-end
+  template bridged_nic_file do
+    source "ifcfg-eth.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
 
-execute "Set HWADDR in bridged nic file" do
-  command "echo #{bridged_nic_hwaddr} >> #{bridged_nic_file}"
-  not_if "grep '#{bridged_nic_hwaddr}' #{bridged_nic_file}"
+  execute "Set HWADDR in bridged nic file" do
+    command "echo #{bridged_nic_hwaddr} >> #{bridged_nic_file}"
+    not_if "grep '#{bridged_nic_hwaddr}' #{bridged_nic_file}"
+  end
 end
 
 execute "Set ip_forward sysctl values on NC" do
@@ -157,6 +159,7 @@ end
 service "messagebus" do
   supports :status => true, :restart => true, :reload => true
   action [ :enable, :start ]
+  notifies :run, "execute[network-restart]", :immediately
 end
 
 ## Setup bridge to allow instances to dhcp properly and early on
