@@ -210,19 +210,15 @@ end
 
 clusters = node["eucalyptus"]["topology"]["clusters"]
 clusters.each do |cluster, info|
+  Chef::Log.info "Setting storage backend on cluster: #{cluster}"
+  Chef::Log.info "Cluster info: #{info}"
+
   ### Set backend
   storage_backend = "overlay"
   if info["storage-backend"]
     storage_backend = info["storage-backend"]
   else
 
-  end
-  execute "Set blockstoragemanager" do
-     command "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}"
-     not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
-     retries 15
-     retry_delay 20
-     action :nothing
   end
 
   ruby_block "Block until #{cluster}.storage.blockstoragemanager ready" do
@@ -236,7 +232,7 @@ clusters.each do |cluster, info|
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{cluster}.storage.blockstoragemanager to be ready for configuration..."
                 loop do
-                    if EucalyptusHelper.getservicestates?("storage", ["enabled", "broken"])
+                    if EucalyptusHelper.getservicestates?("storage", ["enabled", "broken"], cluster)
                         Chef::Log.info "Storage service ready, continuing..."
                         break
                     else
@@ -249,14 +245,21 @@ clusters.each do |cluster, info|
                 raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
             end
     end
-    # if we reach this point we received a successful result from the loop above
-    notifies :run, 'execute[Set blockstoragemanager]', :immediately
+  end
+
+  # if we reach this point we received a successful result from the ruby_block above
+  execute "Set blockstoragemanager" do
+    command lazy { "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}" }
+    not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+    retries 15
+    retry_delay 20
   end
 
   ### Configure backend
   case info["storage-backend"]
   when "das"
     execute "Set das device" do
+      Chef::Log.info "Setting #{cluster}.storage.dasdevice to #{info["das-device"]}"
       # for the short term due to errors in CI, run with --debug
       command "#{euctl} -n --debug #{cluster}.storage.dasdevice=#{info["das-device"]}"
       retries 15

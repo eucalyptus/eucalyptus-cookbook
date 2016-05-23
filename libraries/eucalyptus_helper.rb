@@ -25,9 +25,13 @@ module EucalyptusHelper
   extend Chef::Mixin::ShellOut
 
   # get service state
-  def self.getservicestates?(name, states)
+  def self.getservicestates?(name, states, cluster=nil)
     as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
-    euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name}"
+    if cluster.nil?
+        euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name}"
+    else
+        euserv_cmd = "#{as_admin} euserv-describe-services --expert --filter service-type=#{name} --filter availability-zone=#{cluster}"
+    end
     cmd = shell_out(euserv_cmd)
     # change this to debug when tested well
     Chef::Log.info("`#{euserv_cmd}` returned: \n \"#{cmd.stdout.strip}\"")
