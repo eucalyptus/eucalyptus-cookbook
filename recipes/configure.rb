@@ -221,8 +221,8 @@ clusters.each do |cluster, info|
 
   end
   execute "Set blockstoragemanager" do
-     command "#{euctl} %{cluster}.storage.blockstoragemanager=#{storage_backend}"
-     not_if "#{euctl} %{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+     command lazy { "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}" }
+     not_if lazy { "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}" }
      retries 15
      retry_delay 20
      action :nothing
