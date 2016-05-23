@@ -220,13 +220,6 @@ clusters.each do |cluster, info|
   else
 
   end
-  execute "Set blockstoragemanager" do
-     command lazy { "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}" }
-     not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
-     retries 15
-     retry_delay 20
-     action :nothing
-  end
 
   ruby_block "Block until #{cluster}.storage.blockstoragemanager ready" do
     block do
@@ -252,8 +245,14 @@ clusters.each do |cluster, info|
                 raise "Timed out waiting for #{cluster}.storage.blockstoragemanager to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
             end
     end
-    # if we reach this point we received a successful result from the loop above
-    notifies :run, 'execute[Set blockstoragemanager]', :immediately
+  end
+
+  # if we reach this point we received a successful result from the ruby_block above
+  execute "Set blockstoragemanager" do
+    command lazy { "#{euctl} #{cluster}.storage.blockstoragemanager=#{storage_backend}" }
+    not_if "#{euctl} #{cluster}.storage.blockstoragemanager | grep #{storage_backend}"
+    retries 15
+    retry_delay 20
   end
 
   ### Configure backend
