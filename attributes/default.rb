@@ -24,6 +24,7 @@ default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
 default['eucalyptus']['cloud-libs-branch'] = "master"
+default['eucalyptus']['configure-service-timeout'] = 180
 
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"
@@ -36,11 +37,16 @@ default['eucalyptus']['user-console']['packaging-branch'] = "develop"
 default['eucalyptus']['admin-cred-dir'] = "/root"
 default['eucalyptus']['admin-ssh-pub-key'] = ""
 default["eucalyptus"]["home-directory"] = "/"
+# Allow the cookbooks discover the Eucalyptus service address to bind to. Requires bind-interface or bind-network to be set
 default["eucalyptus"]["set-bind-addr"] = false
+# If using 'set-bind-addr', 'bind-network' is used to locate the host address to bind to
+default["eucalyptus"]["bind-network"] = ""
+# If using 'set-bind-addr', 'bind-interface' is used to locate the host address to bind to
 # default["eucalyptus"]["bind-interface"] = 'eth0'
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
+default['eucalyptus']['dns']['domain'] = ""
 ### Topology must be set for key sync to work
 default['eucalyptus']['sync-keys'] = true
 default["eucalyptus"]["local-cluster-name"] = "default"

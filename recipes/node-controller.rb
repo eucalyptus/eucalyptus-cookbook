@@ -37,11 +37,13 @@ if node["eucalyptus"]["network"]["mode"] == "EDGE"
     command 'rmmod ip_set_hash_net'
     ignore_failure true
     action :nothing
+    only_if 'lsmod | grep ip_set_hash_net'
   end
   execute 'unload-ipset' do
     command 'rmmod ip_set'
     ignore_failure true
     action :nothing
+    only_if 'lsmod | grep ip_set'
   end
   execute 'load-ipset' do
     command 'modprobe ip_set'
