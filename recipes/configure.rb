@@ -116,8 +116,18 @@ elsif node['eucalyptus']['topology']['ceph-radosgw']
     retries 15
     retry_delay 20
   end
-  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['ceph-radosgw']['access-key']}"
-  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['ceph-radosgw']['secret-key']}"
+
+  ceph_access_key = node['eucalyptus']['topology']['ceph-radosgw']['access-key']
+  ceph_secret_key = node['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+
+  if ceph_access_key == nil || ceph_secret_key == nil
+    found = CephHelper::SetCephRbd.get_radosgw_user_creds(node)
+    ceph_access_key = found['eucalyptus']['topology']['ceph-radosgw']['access-key']
+    ceph_secret_key = found['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+  end
+
+  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{ceph_access_key}"
+  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{ceph_secret_key}"
   execute "#{euctl} objectstorage.s3provider.s3endpointheadresponse=200"
 else
   execute "Set OSG providerclient" do
@@ -269,57 +279,78 @@ clusters.each do |cluster, info|
 end
 
 ### Register Service Image
-if node['eucalyptus']['install-service-image']
-  if node['eucalyptus']['service-image-repo'] != ""
-    yum_repository "eucalyptus-service-image" do
-      description "Eucalyptus Service Image Repo"
-      url node["eucalyptus"]["service-image-repo"]
-      gpgcheck false
+yum_repository "eucalyptus-service-image" do
+  description "Eucalyptus Service Image Repo"
+  url node["eucalyptus"]["service-image-repo"]
+  gpgcheck false
+  only_if { node['eucalyptus']['service-image-repo'] != "" }
+end
+
+yum_package "eucalyptus-service-image" do
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+  only_if { node['eucalyptus']['install-service-image'] }
+end
+
+execute "Set imaging VM instance type" do
+  command "#{euctl} services.imaging.worker.instance_type=#{node['eucalyptus']['imaging-vm-type']}"
+  retries 15
+  retry_delay 20
+  only_if { node['eucalyptus']['imaging-vm-type'] }
+end
+
+execute "Set loadbalancing VM instance type" do
+  command "#{euctl} services.loadbalancing.worker.instance_type=#{node['eucalyptus']['loadbalancing-vm-type']}"
+  retries 15
+  retry_delay 20
+  only_if { node['eucalyptus']['loadbalancing-vm-type'] }
+end
+
+ruby_block "Install Service Image" do
+  block do
+
+    osg_urls = []
+    # Add the service url for each OSG to try next
+    node["eucalyptus"]["topology"]["user-facing"].each do |ufs|
+      osg_urls.push("http://#{ufs}:8773/services/objectstorage/")
     end
-  end
-  yum_package "eucalyptus-service-image" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-  end
-  if node['eucalyptus']['imaging-vm-type']
-    execute "Set imaging VM instance type" do
-      command "#{euctl} services.imaging.worker.instance_type=#{node['eucalyptus']['imaging-vm-type']}"
-      retries 15
-      retry_delay 20
+
+    if node['eucalyptus']['dns']['domain']
+      osg_urls.push("http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/")
     end
-  end
-  if node['eucalyptus']['loadbalancing-vm-type']
-    execute "Set loadbalancing VM instance type" do
-      command "#{euctl} services.loadbalancing.worker.instance_type=#{node['eucalyptus']['loadbalancing-vm-type']}"
-      retries 15
-      retry_delay 20
+    osg_urls.each do |osg_url|
+      Chef::Log.info "Attempting to install service image using s3 url: #{osg_url}"
+      cmd = Mixlib::ShellOut::new("#{euctl} services.imaging.worker.image")
+      cmd.run_command
+      service_image = {
+        :result => cmd.stdout,
+        :is_configured => cmd.stdout !~ /NULL/,
+        :error => cmd.stderr
+      }
+      Chef::Log.info "#{service_image}"
+      if !service_image[:error].empty?
+        raise Exception.new("Failed to fetch property because of: #{service_image[:error]}")
+      end
+
+      if service_image[:is_configured]
+        break
+      else
+        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default")
+        cmd.run_command
+        Chef::Log.info "cmd.stdout: #{cmd.stdout}"
+        if !cmd.stderr.empty?
+          raise Exception.new("Failed to install Service Image")
+        end
+      end
     end
+
   end
-  #Attempt to use DNS for services but do fall back to internal URIs if it fails
-  # This will allow the deployment to proceed despite external dependencies
-  osg_urls = []
-  # Add the service url for each OSG to try next
-  node["eucalyptus"]["topology"]["user-facing"].each do |ufs|
-    osg_urls.push("http://#{ufs}:8773/services/objectstorage/")
-  end
-  # Add the DNS service url
-  if node['eucalyptus']['dns']['domain']
-    osg_urls.push("http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/")
-  end
-  osg_urls.each do |osg_url|
-    esi_cmd = "#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
-    Chef::Log.info "Attempting to install service image using s3 url: #{osg_url}"
-    execute esi_cmd do
-      retries 2
-      retry_delay 20
-      only_if "#{euctl} services.imaging.worker.image | grep 'NULL'"
-    end
-  end
-  execute "#{as_admin} esi-manage-stack --region localhost -a create imaging" do
-    only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
-  end
-else
-  Chef::Log.info("Not installing service image due to eucalyptus::install-service-image attribute set to false")
+  only_if { node['eucalyptus']['install-service-image'] }
+end
+
+execute "create_imaging_worker" do
+  command "#{as_admin} esi-manage-stack --region localhost -a create imaging"
+  only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|
