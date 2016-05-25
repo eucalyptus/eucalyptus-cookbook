@@ -328,7 +328,6 @@ ruby_block "Install Service Image" do
         :error => cmd.stderr
       }
       Chef::Log.info "#{service_image}"
-      Chef::Log.info "service_image[:error].empty?: #{service_image[:error].empty?}"
       if !service_image[:error].empty?
         raise Exception.new("Failed to fetch property because of: #{service_image[:error]}")
       end

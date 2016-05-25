@@ -61,7 +61,7 @@ template "#{radosgw['keyring']}" do
     :keyring => radosgw
   )
   action :create
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  only_if { node['eucalyptus']['topology']['ceph-keyrings']['radosgw'] }
 end
 
 template "#{adminkeyring['keyring']}" do
@@ -70,7 +70,7 @@ template "#{adminkeyring['keyring']}" do
     :keyring => adminkeyring
   )
   action :create
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  only_if { node['eucalyptus']['topology']['ceph-keyrings']['ceph-admin'] }
 end
 
 ruby_block "Create New Ceph User" do
@@ -88,7 +88,6 @@ ruby_block "Create New Ceph User" do
     node.save
   end
   only_if { node['eucalyptus']['topology']['ceph-radosgw']['access-key'] == nil || node['eucalyptus']['topology']['ceph-radosgw']['secret-key'] == nil }
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
 end
 
 ruby_block "Sync keys for User Facing Services" do
