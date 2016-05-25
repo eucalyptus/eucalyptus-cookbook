@@ -84,7 +84,7 @@ ruby_block "Create New Ceph User" do
         raise Exception.new("'username' not found in node['eucalyptus']['topology']['ceph-radosgw']")
       end
       Chef::Log.info "ACCESS_KEY and/or SECRET_KEY not found. Creating new user: #{new_username}"
-      new_user = JSON.parse(%x[radosgw-admin user create --uid=#{new_username} --display-name="#{new_username}"])
+      new_user = JSON.parse(%x[radosgw-admin user create --uid=#{new_username} --display-name=#{new_username}])
       node.set['eucalyptus']['topology']['ceph-radosgw']['access-key'] = new_user['keys'][0]['access_key']
       node.set['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = new_user['keys'][0]['secret_key']
       node.save
