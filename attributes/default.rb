@@ -124,3 +124,4 @@ default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
 # ceph-rgw
 default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
 default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw'] = nil
