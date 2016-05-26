@@ -18,6 +18,7 @@
 ##
 
 require 'chef/version_constraint'
+require "json"
 
 return if node.recipe?("eucalyptus::cloud-controller")
 
