@@ -94,6 +94,11 @@ elsif node['eucalyptus']['topology']['riakcs']
          node["eucalyptus"]["topology"]["riakcs"]["endpoint"],
          node["eucalyptus"]["topology"]["riakcs"]["port"],
     )
+
+    node.set['eucalyptus']['topology']['riakcs']['access-key'] = admin_key
+    node.set['eucalyptus']['topology']['riakcs']['secret-key'] = admin_secret
+    node.save
+
     Chef::Log.info "RiakCS admin_key: #{admin_key}"
     Chef::Log.info "RiakCS admin_secret: #{admin_secret}"
   end

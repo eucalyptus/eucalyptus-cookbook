@@ -89,7 +89,7 @@ ruby_block "Create New Ceph User" do
       shell = Mixlib::ShellOut.new(cmd)
       shell.run_command
       if !shell.exitstatus
-        raise "#{command} failed: " + shell.stdout + ", " + shell.stderr
+        raise "#{cmd} failed: " + shell.stdout + ", " + shell.stderr
       end
       new_user = JSON.parse(shell.stdout)
       node.set['eucalyptus']['topology']['ceph-radosgw']['access-key'] = new_user['keys'][0]['access_key']
