@@ -42,6 +42,7 @@ end
 
 yum_package "ceph-radosgw" do
   action :upgrade
+  options node['eucalyptus']['yum-options']
   flush_cache [:before]
   only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
 end
