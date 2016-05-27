@@ -37,10 +37,15 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   end
 end
 
-if node['eucalyptus']['network']['mode'] == 'EDGE'
+if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['network']['mode'] == 'VPCMIDO'
   service "eucanetd" do
     action [ :stop ]
   end
+end
+
+execute "Clear all-networking for VPC cloud" do
+  command "eucanetd -Z"
+  ignore_failure true
 end
 
 # on el6 the init scripts are named differently than on el7
