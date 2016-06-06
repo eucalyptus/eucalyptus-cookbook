@@ -63,15 +63,18 @@ el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
 el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
     perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
-    device-mapper dhcp dhcp-common e2fsprogs euca2ools qemu-kvm
-    file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-    PyGreSQL libcurl libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2
+    device-mapper dhcp dhcp-common e2fsprogs euca2ools
+    file gawk httpd iptables iscsi-initiator-utils jpackage-utils
+    PyGreSQL libcurl libxml2-devel libxslt-devel lvm2
     m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
     python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity wget which
     xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python
     libselinux-utils policycoreutils selinux-policy-base}
+
+# node controller specific deps
+el7ncdeps = %w{libvirt libvirt-python kvm qemu-kvm}
 
 el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
     axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
@@ -84,13 +87,16 @@ el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt
     perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common
     e2fsprogs euca2ools file gawk httpd
-    iptables iscsi-initiator-utils jpackage-utils kvm PyGreSQL libcurl
-    libvirt libvirt-devel libvirt-python libxml2-devel libxslt-devel lvm2 m2crypto
+    iptables iscsi-initiator-utils jpackage-utils PyGreSQL libcurl
+    libxml2-devel libxslt-devel lvm2 m2crypto
     openssl-devel parted patch perl-Crypt-OpenSSL-RSA
     perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
     python-boto python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity vtun wget which
     xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
+
+# node controller specific deps
+el6ncdeps = %w{libvirt libvirt-python kvm}
 
 # concatenate the runtime and build deps, remove dups, and sort
 el7deps = el7runtime.concat(el7build).uniq().sort()
@@ -103,6 +109,18 @@ if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
       action :upgrade
     end
   end
+  exp_run_list = node['expanded_run_list']
+  exp_run_list.each do |listitem|
+    if listitem.include? "node-controller"
+      Chef::Log.info "Installing node-controller specific packages (these packages should not be installed on all service machines)"
+      el6ncdeps.each do |dependency|
+        yum_package dependency do
+          options node['eucalyptus']['yum-options']
+          action :upgrade
+        end
+      end
+    end
+  end
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
@@ -110,6 +128,18 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
     yum_package dependency do
       options node['eucalyptus']['yum-options']
       action :upgrade
+    end
+  end
+  exp_run_list = node['expanded_run_list']
+  exp_run_list.each do |listitem|
+    if listitem.include? "node-controller"
+      Chef::Log.info "Installing node-controller specific packages (these packages should not be installed on all service machines)"
+      el7ncdeps.each do |dependency|
+        yum_package dependency do
+          options node['eucalyptus']['yum-options']
+          action :upgrade
+        end
+      end
     end
   end
 end
