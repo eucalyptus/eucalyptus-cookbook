@@ -163,7 +163,7 @@ if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   init_style = "--enable-sysvinit"
 end
 
-build_selinux_command = "make all && make reload"
+build_selinux_command = "make all && make reload && make relabel"
 execute "Build and install eucalyptus-selinux" do
   command build_selinux_command
   cwd "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux"
