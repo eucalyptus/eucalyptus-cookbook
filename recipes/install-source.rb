@@ -48,6 +48,7 @@ yum_repository "euca-build-deps" do
   url node['eucalyptus']['build-deps-repo']
   action :add
   metadata_expire "1"
+  gpgcheck false
 end
 
 ### This is a source install so we need the build time deps and runtime deps
