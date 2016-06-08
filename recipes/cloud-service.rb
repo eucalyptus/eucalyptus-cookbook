@@ -41,6 +41,10 @@ if node["eucalyptus"]["install-type"] == "packages"
     notifies :create, "template[eucalyptus.conf]", :immediately
     flush_cache [:before]
   end
+  yum_package "eucalyptus-admin-tools" do
+    action :upgrade
+    options node['eucalyptus']['yum-options']
+  end
 else
   include_recipe "eucalyptus::install-source"
 end
