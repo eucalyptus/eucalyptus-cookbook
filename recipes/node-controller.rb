@@ -90,9 +90,33 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   include_recipe "eucalyptus::eucanetd"
 end
 
-## Setup Bridge
+# setup subscriber to restart midolman when bridge is created in VPC mode
+if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+        execute 'midolman-restart' do
+            command "service midolman restart"
+            action :nothing
+            subscribes :run, "execute[ifup-br0]", :immediately
+        end
+  end
+  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+        execute 'midolman-restart' do
+            command "systemctl restart midolman"
+            action :nothing
+            subscribes :run, "execute[ifup-br0]", :immediately
+        end
+  end
+end
+
+## Setup Bridge EDGE mode only
 execute "network-restart" do
   command "service network restart"
+  action :nothing
+end
+
+## Create bridge in VPCMIDO mode
+execute "ifup-br0" do
+  command "ifup br0"
   action :nothing
 end
 
@@ -103,39 +127,50 @@ bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
 bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
 bridged_nic_hwaddr = `cat #{bridged_nic_file} | grep HWADDR`.strip
 
-template bridge_file do
-  source "ifcfg-br-dhcp.erb"
-  mode 0644
-  owner "root"
-  group "root"
+if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+  template bridge_file do
+    source "ifcfg-br-dhcp-vpcmido.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
+else
+  template bridge_file do
+    source "ifcfg-br-dhcp.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
 end
 
-execute "Copy existing interface config to bridge config" do
-  command "cp #{bridged_nic_file} #{bridge_file}"
-  not_if "ls #{bridge_file}"
-end
+# Do not attach bridge to physical NIC in VPCMIDO mode (Issue #314)
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
+  execute "Copy existing interface config to bridge config" do
+    command "cp #{bridged_nic_file} #{bridge_file}"
+    not_if "ls #{bridge_file}"
+  end
 
-execute "Add BRIDGE type to bridge file" do
-  command "echo 'TYPE=Bridge' >> #{bridge_file}"
-  not_if "grep 'TYPE=Bridge' #{bridge_file}"
-end
+  execute "Add BRIDGE type to bridge file" do
+    command "echo 'TYPE=Bridge' >> #{bridge_file}"
+    not_if "grep 'TYPE=Bridge' #{bridge_file}"
+  end
 
-execute "Set device name in bridge file" do
-  command "sed -i 's/DEVICE.*/DEVICE=#{bridge_interface}/g' #{bridge_file}"
-  not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
-end
+  execute "Set device name in bridge file" do
+    command "sed -i 's/DEVICE.*/DEVICE=#{bridge_interface}/g' #{bridge_file}"
+    not_if "grep 'DEVICE=#{bridge_interface}' #{bridge_file}"
+  end
 
-template bridged_nic_file do
-  source "ifcfg-eth.erb"
-  mode 0644
-  owner "root"
-  group "root"
-  notifies :run, "execute[network-restart]", :immediately
-end
+  template bridged_nic_file do
+    source "ifcfg-eth.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
 
-execute "Set HWADDR in bridged nic file" do
-  command "echo #{bridged_nic_hwaddr} >> #{bridged_nic_file}"
-  not_if "grep '#{bridged_nic_hwaddr}' #{bridged_nic_file}"
+  execute "Set HWADDR in bridged nic file" do
+    command "echo #{bridged_nic_hwaddr} >> #{bridged_nic_file}"
+    not_if "grep '#{bridged_nic_hwaddr}' #{bridged_nic_file}"
+  end
 end
 
 execute "Set ip_forward sysctl values on NC" do
@@ -154,9 +189,19 @@ execute "Reload sysctl values" do
   command "sysctl -p"
 end
 
-service "messagebus" do
-  supports :status => true, :restart => true, :reload => true
-  action [ :enable, :start ]
+## use a different notifier in VPCMIDO mode
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
+  service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+    notifies :run, "execute[network-restart]", :immediately
+  end
+else
+  service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+    notifies :run, "execute[ifup-br0]", :immediately
+  end
 end
 
 ## Setup bridge to allow instances to dhcp properly and early on
