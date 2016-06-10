@@ -18,7 +18,7 @@ bash 'create_admin_creds' do
       sed -i "/\\[region/auser = $ACCOUNTID:admin" /root/.euca/euca-admin.ini
       echo "[global]" >> /root/.euca/euca-admin.ini; echo "default-region = $DNSDOMAIN" >> /root/.euca/euca-admin.ini
     fi
-    #euare-useraddloginprofile admin -p foobar --region admin@
+    euare-useraddloginprofile admin -p Passw0rd --region admin@
 
     cat > /etc/motd << EOF
 
@@ -35,7 +35,7 @@ bash 'create_admin_creds' do
     ** Login Profile: (requires eucaconsole)
         account: eucalyptus
         username: admin
-        password: foobar
+        password: Passw0rd
 
 ------------------------------------------------------------
 

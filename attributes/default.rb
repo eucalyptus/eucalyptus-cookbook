@@ -104,6 +104,7 @@ default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 ## CC Specific
 default["eucalyptus"]["cc"]["port"] = "8774"
 default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
+default["eucalyptus"]["cc"]["max-instances-per-cc"] = "128"
 
 ## Storage
 default["eucalyptus"]["storage"]["emc"]["navicli-url"] = "http://mirror.eucalyptus-systems.com/mirrors/emc/NaviCLI-Linux-64-latest.rpm"
@@ -120,3 +121,8 @@ default["eucalyptus"]["nc"]["hypervisor"] = "kvm"
 default["eucalyptus"]["nc"]["max-cores"] = "0"
 default["eucalyptus"]["nc"]["instance-path"] = "/var/lib/eucalyptus/instances"
 default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
+
+# ceph-rgw
+default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw'] = nil

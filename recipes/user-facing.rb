@@ -18,39 +18,42 @@
 ##
 
 require 'chef/version_constraint'
+require "json"
 
 return if node.recipe?("eucalyptus::cloud-controller")
 
 include_recipe "eucalyptus::cloud-service"
 
-if node['eucalyptus']['topology']['ceph-radosgw']
-  # TODO: write individual recipe for osg and move this section
-  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-    yum_repository "ceph-hammer" do
-      description "Ceph Hammer Package Repo"
-      url "http://download.ceph.com/rpm-hammer/el6/x86_64/"
-      gpgcheck false
-    end
-  end
 
-  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-    yum_repository "ceph-hammer" do
-      description "Ceph Hammer Package Repo"
-      url "http://download.ceph.com/rpm-hammer/el7/x86_64/"
-      gpgcheck false
-    end
-  end
+# TODO: write individual recipe for osg and move this section
+yum_repository "ceph-hammer" do
+  description "Ceph Hammer Package Repo"
+  url "http://download.ceph.com/rpm-hammer/el6/x86_64/"
+  gpgcheck false
+  only_if { Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version']) }
+end
 
-  yum_package "ceph-radosgw" do
-    action :upgrade
-    flush_cache [:before]
-  end
+yum_repository "ceph-hammer" do
+  description "Ceph Hammer Package Repo"
+  url "http://download.ceph.com/rpm-hammer/el7/x86_64/"
+  gpgcheck false
+  only_if { Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version']) }
+end
 
-  template "/etc/ceph/ceph.conf" do
-    source "ceph.conf.erb"
-    action :create
-  end
+yum_package "ceph-radosgw" do
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+  flush_cache [:before]
+  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+end
 
+template "/etc/ceph/ceph.conf" do
+  source "ceph.conf.erb"
+  action :create
+  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+end
+
+if node['eucalyptus']['topology']['ceph-keyrings']
   if node['eucalyptus']['topology']['ceph-keyrings']['radosgw']
     radosgw = node['eucalyptus']['topology']['ceph-keyrings']['radosgw']
     template "#{radosgw['keyring']}" do
@@ -62,11 +65,40 @@ if node['eucalyptus']['topology']['ceph-radosgw']
     end
   end
 
-  service "ceph-radosgw" do
-    service_name "ceph-radosgw"
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
+  if node['eucalyptus']['topology']['ceph-keyrings']['ceph-admin']
+    adminkeyring = node['eucalyptus']['topology']['ceph-keyrings']['ceph-admin']
+    template "#{adminkeyring['keyring']}" do
+      source "client-keyring.erb"
+      variables(
+        :keyring => adminkeyring
+      )
+      action :create
+    end
   end
+end
+
+ruby_block "Create New Ceph User" do
+  block do
+    if node['eucalyptus']['topology']['ceph-radosgw']['access-key'] == nil || node['eucalyptus']['topology']['ceph-radosgw']['secret-key'] == nil
+      if node['eucalyptus']['topology']['ceph-radosgw']['username']
+        new_username = node['eucalyptus']['topology']['ceph-radosgw']['username']
+      else
+        raise Exception.new("'username' not found in node['eucalyptus']['topology']['ceph-radosgw']")
+      end
+      Chef::Log.info "ACCESS_KEY and/or SECRET_KEY not found. Creating new user: #{new_username}"
+      cmd = "radosgw-admin user create --uid=#{new_username} --display-name=#{new_username}"
+      shell = Mixlib::ShellOut.new(cmd)
+      shell.run_command
+      if !shell.exitstatus
+        raise "#{cmd} failed: " + shell.stdout + ", " + shell.stderr
+      end
+      new_user = JSON.parse(shell.stdout)
+      node.set['eucalyptus']['topology']['ceph-radosgw']['access-key'] = new_user['keys'][0]['access_key']
+      node.set['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = new_user['keys'][0]['secret_key']
+      node.save
+    end
+  end
+  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
 end
 
 ruby_block "Sync keys for User Facing Services" do
@@ -80,4 +112,12 @@ service "ufs-eucalyptus-cloud" do
   service_name "eucalyptus-cloud"
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
+end
+
+service "ceph-radosgw" do
+  action [:enable, :start]
+  supports :status => true, :start => true, :stop => true, :restart => true
+  retries 3
+  retry_delay 10
+  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
 end

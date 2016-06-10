@@ -1,3 +1,5 @@
+require "json"
+
 module CephHelper
   module SetCephRbd
 
@@ -113,6 +115,19 @@ module CephHelper
           file.insert_line_if_no_match("/CEPH_KEYRING_PATH=\"/etc/ceph/#{file_name}\"/", "CEPH_KEYRING_PATH=\"/etc/ceph/#{file_name}\"")
           file.insert_line_if_no_match("/CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"/", "CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"")
           file.write_file
+        end
+      end
+    end
+
+    def self.get_radosgw_user_creds(node)
+      ufses = node['eucalyptus']['topology']['user-facing']
+      ufses.each do |ufs|
+        Chef::Log.debug "trying: #{ufs}"
+        found = Chef::Search::Query.new.search(:node, "addresses:#{ufs}").first.first
+        if found.attributes['eucalyptus']['topology']['ceph-radosgw']['access-key']
+          Chef::Log.debug "found: #{found}"
+          return found
+          break
         end
       end
     end
