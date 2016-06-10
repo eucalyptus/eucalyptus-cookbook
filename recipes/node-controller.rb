@@ -96,25 +96,25 @@ if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
         execute 'midolman-restart' do
             command "service midolman restart"
             action :nothing
-            subscribes :run, "execute[network-restart]", :immediately
+            subscribes :run, "execute[ifup-br0]", :immediately
         end
   end
   if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
         execute 'midolman-restart' do
             command "systemctl restart midolman"
             action :nothing
-            subscribes :run, "execute[network-restart]", :immediately
+            subscribes :run, "execute[ifup-br0]", :immediately
         end
   end
 end
 
-## Setup Bridge
+## Setup Bridge EDGE mode only
 execute "network-restart" do
   command "service network restart"
   action :nothing
 end
 
-## Create bridge in vpcmido
+## Create bridge in VPCMIDO mode
 execute "ifup-br0" do
   command "ifup br0"
   action :nothing
