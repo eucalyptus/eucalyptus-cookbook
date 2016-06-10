@@ -96,6 +96,12 @@ execute "network-restart" do
   action :nothing
 end
 
+## Create bridge in vpcmido
+execute "ifup-br0" do
+  command "ifup br0"
+  action :nothing
+end
+
 network_script_directory = '/etc/sysconfig/network-scripts'
 bridged_nic = node["eucalyptus"]["network"]["bridged-nic"]
 bridge_interface = node["eucalyptus"]["network"]["bridge-interface"]
@@ -103,11 +109,20 @@ bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
 bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
 bridged_nic_hwaddr = `cat #{bridged_nic_file} | grep HWADDR`.strip
 
-template bridge_file do
-  source "ifcfg-br-dhcp.erb"
-  mode 0644
-  owner "root"
-  group "root"
+if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+  template bridge_file do
+    source "ifcfg-br-dhcp-vpcmido.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
+else
+  template bridge_file do
+    source "ifcfg-br-dhcp.erb"
+    mode 0644
+    owner "root"
+    group "root"
+  end
 end
 
 # Do not attach bridge to physical NIC in VPCMIDO mode (Issue #314)
@@ -156,10 +171,19 @@ execute "Reload sysctl values" do
   command "sysctl -p"
 end
 
-service "messagebus" do
-  supports :status => true, :restart => true, :reload => true
-  action [ :enable, :start ]
-  notifies :run, "execute[network-restart]", :immediately
+## use a different notifier in VPCMIDO mode
+if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
+  service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+    notifies :run, "execute[network-restart]", :immediately
+  end
+else
+  service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+    notifies :run, "execute[ifup-br0]", :immediately
+  end
 end
 
 ## Setup bridge to allow instances to dhcp properly and early on
