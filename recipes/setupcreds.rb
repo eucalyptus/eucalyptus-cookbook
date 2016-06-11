@@ -24,7 +24,7 @@ bash 'create_admin_creds' do
 
 ------------------------------------------------------------
 
-    * Defauls region is set to $DNSDOMAIN
+    * Default region is set to $DNSDOMAIN
     * Default user credentials:
       * account: eucalyptus ($ACCOUNTID)
       * user: arn:aws:iam::$ACCOUNTID:user/admin
