@@ -185,27 +185,29 @@ execute "Ensure bridge modules loaded into the kernel on NC" do
   command "modprobe bridge"
 end
 
-execute "Reload sysctl values" do
-  command "sysctl -p"
-end
-
-## use a different notifier in VPCMIDO mode
+## use a different notifier to setup bridge in VPCMIDO mode
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
-  service "messagebus" do
-    supports :status => true, :restart => true, :reload => true
-    action [ :enable, :start ]
+  execute "Reload sysctl values" do
+    command "sysctl -p"
     notifies :run, "execute[network-restart]", :immediately
+    notifies :run, "execute[brctl setfd]", :immediately
   end
 else
-  service "messagebus" do
-    supports :status => true, :restart => true, :reload => true
-    action [ :enable, :start ]
+  execute "Reload sysctl values" do
+    command "sysctl -p"
     notifies :run, "execute[ifup-br0]", :immediately
   end
 end
 
+service "messagebus" do
+    supports :status => true, :restart => true, :reload => true
+    action [ :enable, :start ]
+end
+
 ## Setup bridge to allow instances to dhcp properly and early on
-execute "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+execute "brctl setfd" do
+  command "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+end
 execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
 execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
 
