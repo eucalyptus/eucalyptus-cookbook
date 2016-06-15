@@ -190,7 +190,9 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   execute "Reload sysctl values" do
     command "sysctl -p"
     notifies :run, "execute[network-restart]", :immediately
-    notifies :run, "execute[brctl setfd]", :immediately
+    notifies :run, "execute[brctl setfd]", :delayed
+    notifies :run, "execute[brctl sethello]", :delayed
+    notifies :run, "execute[brctl stp]", :delayed
   end
 else
   execute "Reload sysctl values" do
@@ -207,9 +209,16 @@ end
 ## Setup bridge to allow instances to dhcp properly and early on
 execute "brctl setfd" do
   command "brctl setfd #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+  action :nothing
 end
-execute "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
-execute "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
+execute "brctl sethello" do
+  command "brctl sethello #{node["eucalyptus"]["network"]["bridge-interface"]} 2"
+  action :nothing
+end
+execute "brctl stp" do
+  command "brctl stp #{node["eucalyptus"]["network"]["bridge-interface"]} off"
+  action :nothing
+end
 
 ### Ensure hostname resolves
 execute "echo \"#{node[:ipaddress]} \`hostname --fqdn\` \`hostname\`\" >> /etc/hosts" do
