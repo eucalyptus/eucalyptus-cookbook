@@ -40,7 +40,6 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     notifies :create, "template[eucalyptus.conf]"
-    notifies :restart, "service[eucalyptus-cloud]", :immediately
     flush_cache [:before]
   end
 else
@@ -51,7 +50,6 @@ template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   path "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
-  notifies :restart, "service[eucalyptus-cloud]", :immediately
 end
 
 
@@ -107,6 +105,7 @@ ruby_block "Sync keys for SC" do
     Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
   end
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  notifies :restart, "service[eucalyptus-cloud]", :before
 end
 
 ruby_block "Get Ceph Credentials" do
