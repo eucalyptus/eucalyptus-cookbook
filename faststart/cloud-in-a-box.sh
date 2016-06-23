@@ -321,7 +321,7 @@ if [ "$?" != "0" ]; then
     echo ""
     echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.7."
     echo "To try Faststart on another platform, consider trying Eucadev:"
-    echo "https://github.com/eucalyptus/eucadev"
+    echo "https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=OS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
@@ -402,7 +402,7 @@ if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
     echo "If you want to run a virtual version of Eucalyptus on a laptop,"
     echo "consider trying eucadev instead:"
     echo ""
-    echo "  https://github.com/eucalyptus/eucadev"
+    echo "  https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=WIRELESS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 23
