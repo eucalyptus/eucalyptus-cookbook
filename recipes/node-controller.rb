@@ -68,6 +68,13 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
+  ## source install would install CC and GL as well
+  directory '/usr/lib64/axis2c/services/EucalyptusCC' do
+    action :delete
+  end
+  directory '/usr/lib64/axis2c/services/EucalyptusGL' do
+    action :delete
+  end
 end
 
 
