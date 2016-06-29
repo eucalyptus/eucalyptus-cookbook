@@ -42,13 +42,6 @@ if node["eucalyptus"]["install-type"] == "packages"
   yum_package "dhcp"
 else
   include_recipe "eucalyptus::install-source"
-  ## source install would install NC and GL as well
-  directory '/usr/lib64/axis2c/services/EucalyptusNC' do
-    action :delete
-  end
-  directory '/usr/lib64/axis2c/services/EucalyptusGL' do
-    action :delete
-  end
 end
 
 cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
