@@ -71,9 +71,11 @@ else
   ## source install would install CC and GL as well
   directory '/usr/lib64/axis2c/services/EucalyptusCC' do
     action :delete
+    recursive true
   end
   directory '/usr/lib64/axis2c/services/EucalyptusGL' do
     action :delete
+    recursive true
   end
 end
 

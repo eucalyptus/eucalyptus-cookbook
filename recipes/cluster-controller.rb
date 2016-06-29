@@ -45,9 +45,11 @@ else
   ## source install would install NC and GL as well
   directory '/usr/lib64/axis2c/services/EucalyptusNC' do
     action :delete
+    recursive true
   end
   directory '/usr/lib64/axis2c/services/EucalyptusGL' do
     action :delete
+    recursive true
   end
 end
 
