@@ -58,20 +58,8 @@ template "eucalyptus.conf" do
   action :create
 end
 
-execute "Set ip_forward sysctl values on CC" do
-  command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
-end
-
-execute "Set bridge-nf-call-iptables sysctl values on NC" do
-  command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
-end
-
 execute "Ensure bridge modules loaded into the kernel on NC" do
   command "modprobe bridge"
-end
-
-execute "Reload sysctl values" do
-  command "sysctl -p"
 end
 
 network_mode = node["eucalyptus"]["network"]["mode"]

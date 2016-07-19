@@ -173,30 +173,18 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   end
 end
 
-execute "Set ip_forward sysctl values on NC" do
-  command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
-end
-
-execute "Set bridge-nf-call-iptables sysctl values on NC" do
-  command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
-end
-
-execute "Ensure bridge modules loaded into the kernel on NC" do
-  command "modprobe bridge"
-end
-
 ## use a different notifier to setup bridge in VPCMIDO mode
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
-  execute "Reload sysctl values" do
-    command "sysctl -p"
+  execute "Ensure bridge modules loaded into the kernel on NC" do
+    command "modprobe bridge"
     notifies :run, "execute[network-restart]", :immediately
     notifies :run, "execute[brctl setfd]", :delayed
     notifies :run, "execute[brctl sethello]", :delayed
     notifies :run, "execute[brctl stp]", :delayed
   end
 else
-  execute "Reload sysctl values" do
-    command "sysctl -p"
+  execute "Ensure bridge modules loaded into the kernel on NC" do
+    command "modprobe bridge"
     notifies :run, "execute[ifup-br0]", :immediately
   end
 end
