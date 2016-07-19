@@ -244,3 +244,8 @@ udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/
 udev_mapping.each do |src, dst|
   execute "cp #{eucalyptus_dir}/#{src} #{dst}"
 end
+
+execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
+  command 'modprobe kvm_intel'
+  only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
+end
