@@ -42,6 +42,10 @@ if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
   end
 end
 
+execute "Configure kernel parameters from 70-eucalyptus-cloud.conf" do
+  command "/usr/lib/systemd/systemd-sysctl 70-eucalyptus-cloud.conf"
+end
+
 service "eucalyptus-cloud" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true

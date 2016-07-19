@@ -9,6 +9,10 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
+execute "Configure kernel parameters from 70-eucanetd.conf" do
+  command "/usr/lib/systemd/systemd-sysctl 70-eucanetd.conf"
+end
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
