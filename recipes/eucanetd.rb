@@ -1,3 +1,6 @@
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 include_recipe "eucalyptus::default"
 
 if node["eucalyptus"]["install-type"] == "packages"
@@ -9,8 +12,21 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-execute "Configure kernel parameters from 70-eucanetd.conf" do
-  command "/usr/lib/systemd/systemd-sysctl 70-eucanetd.conf"
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  execute "Set ip_forward sysctl values in sysctl.conf" do
+    command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+  end
+  execute "Set bridge-nf-call-iptables sysctl values in sysctl.conf" do
+    command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+  end
+  execute "Reload sysctl values" do
+    command "sysctl -p"
+  end
+end
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  execute "Configure kernel parameters from 70-eucanetd.conf" do
+    command "/usr/lib/systemd/systemd-sysctl 70-eucanetd.conf"
+  end
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

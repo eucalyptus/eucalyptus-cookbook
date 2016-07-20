@@ -90,6 +90,20 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   include_recipe "eucalyptus::eucanetd"
 end
 
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
+    execute "Set ip_forward sysctl values in sysctl.conf" do
+      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
+    end
+    execute "Set bridge-nf-call-iptables sysctl values in sysctl.conf" do
+      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
+    end
+    execute "Reload sysctl values" do
+        command "sysctl -p"
+    end
+  end
+end
+
 # setup subscriber to restart midolman when bridge is created in VPC mode
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
   if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
