@@ -24,10 +24,17 @@ include_recipe "eucalyptus::default"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  nodecontrollerservice = "service[eucalyptus-nc]"
+end
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  nodecontrollerservice = "service[eucalyptus-node]"
+end
+
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
-  notifies :restart, "service[eucalyptus-cloud]", :delayed
+  notifies :restart, "#{nodecontrollerservice}", :delayed
 end
 
 # this runs only during installation of eucanetd,
@@ -71,6 +78,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
+    notifies :start, "#{nodecontrollerservice}", :immediately
   end
 else
   include_recipe "eucalyptus::install-source"
