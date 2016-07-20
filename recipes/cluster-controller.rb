@@ -23,12 +23,19 @@ require 'chef/version_constraint'
 
 include_recipe "eucalyptus::default"
 
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
+  source "eucalyptus.conf.erb"
+  action :create
+end
+
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   cloudcontrollerservice = "service[eucalyptus-cc]"
 end
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   cloudcontrollerservice = "service[eucalyptus-cluster]"
 end
+
 
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
@@ -52,13 +59,7 @@ ruby_block "Sync keys for CC" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
-template "eucalyptus.conf" do
-  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
-  source "eucalyptus.conf.erb"
-  action :create
-end
-
-execute "Ensure bridge modules loaded into the kernel on NC" do
+execute "Ensure bridge modules loaded into the kernel on CC" do
   command "modprobe bridge"
 end
 

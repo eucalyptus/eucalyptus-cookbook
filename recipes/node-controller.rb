@@ -24,6 +24,11 @@ include_recipe "eucalyptus::default"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  action :create
+end
+
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
 # during an update here
@@ -220,10 +225,6 @@ ruby_block "Sync keys for NC" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
-  action :create
-end
 
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
