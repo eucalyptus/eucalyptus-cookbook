@@ -31,25 +31,25 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   clustercontrollerservice = "service[eucalyptus-cluster]"
 end
 
-template "eucalyptus.conf" do
-  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
-  source "eucalyptus.conf.erb"
-  notifies :start, "#{clustercontrollerservice}", :delayed
-  action :create
-end
-
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-cc" do
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :start, "#{clustercontrollerservice}", :immediately
+    notifies :start, "#{clustercontrollerservice}", :delayed
   end
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
 else
   include_recipe "eucalyptus::install-source"
+end
+
+template "eucalyptus.conf" do
+  path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
+  source "eucalyptus.conf.erb"
+  notifies :start, "#{clustercontrollerservice}", :delayed
+  action :create
 end
 
 cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)

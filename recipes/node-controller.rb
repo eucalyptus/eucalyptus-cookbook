@@ -31,12 +31,6 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   nodecontrollerservice = "service[eucalyptus-node]"
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
-  action :create
-  notifies :restart, "#{nodecontrollerservice}", :delayed
-end
-
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
 # during an update here
@@ -78,12 +72,17 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :start, "#{nodecontrollerservice}", :immediately
+    notifies :start, "#{nodecontrollerservice}", :delayed
   end
 else
   include_recipe "eucalyptus::install-source"
 end
 
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  action :create
+  notifies :restart, "#{nodecontrollerservice}", :delayed
+end
 
 # make sure libvirt is started
 # when we want to delete its networks
