@@ -27,6 +27,7 @@ source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucal
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
+  notifies :restart, "service[eucalyptus-cloud]", :delayed
 end
 
 # this runs only during installation of eucanetd,
