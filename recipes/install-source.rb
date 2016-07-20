@@ -20,6 +20,16 @@
 # used for platform_version comparison
 require 'chef/version_constraint'
 
+execute 'remove kvm_intel module if loaded' do
+  command 'modprobe -r kvm_intel'
+  only_if { 'lsmod kvm_intel' }
+end
+
+execute 'remove kvm module if loaded' do
+  command 'modprobe -r kvm'
+  only_if { 'lsmod kvm' }
+end
+
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
