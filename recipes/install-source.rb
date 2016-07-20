@@ -20,6 +20,16 @@
 # used for platform_version comparison
 require 'chef/version_constraint'
 
+execute 'remove kvm_intel module if loaded' do
+  command 'modprobe -r kvm_intel'
+  only_if { 'lsmod kvm_intel' }
+end
+
+execute 'remove kvm module if loaded' do
+  command 'modprobe -r kvm'
+  only_if { 'lsmod kvm' }
+end
+
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -243,4 +253,9 @@ udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/
                 'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
 udev_mapping.each do |src, dst|
   execute "cp #{eucalyptus_dir}/#{src} #{dst}"
+end
+
+execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
+  command 'modprobe kvm_intel'
+  only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
 end
