@@ -42,8 +42,10 @@ if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
   end
 end
 
-execute "Configure kernel parameters from 70-eucalyptus-cloud.conf" do
-  command "/usr/lib/systemd/systemd-sysctl 70-eucalyptus-cloud.conf"
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  execute "Configure kernel parameters from 70-eucalyptus-cloud.conf" do
+    command "/usr/lib/systemd/systemd-sysctl 70-eucalyptus-cloud.conf"
+  end
 end
 
 service "eucalyptus-cloud" do
