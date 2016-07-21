@@ -22,12 +22,12 @@ require 'chef/version_constraint'
 
 execute 'remove kvm_intel module if loaded' do
   command 'modprobe -r kvm_intel'
-  only_if { 'lsmod kvm_intel' }
+  only_if { '/sbin/lsmod | grep kvm_intel' }
 end
 
 execute 'remove kvm module if loaded' do
   command 'modprobe -r kvm'
-  only_if { 'lsmod kvm' }
+  only_if { '/sbin/lsmod | grep kvm' }
 end
 
 ### Create eucalyptus user
