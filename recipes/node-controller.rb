@@ -72,7 +72,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :start, "#{nodecontrollerservice}", :delayed
+    notifies :restart, "#{nodecontrollerservice}", :delayed
   end
 else
   include_recipe "eucalyptus::install-source"

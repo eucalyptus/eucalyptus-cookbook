@@ -37,7 +37,7 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
-    notifies :start, "#{clustercontrollerservice}", :delayed
+    notifies :restart, "#{clustercontrollerservice}", :delayed
   end
   ### Compat for 3.4.2 and 4.0.0
   yum_package "dhcp"
@@ -48,7 +48,7 @@ end
 template "eucalyptus.conf" do
   path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   source "eucalyptus.conf.erb"
-  notifies :start, "#{clustercontrollerservice}", :delayed
+  notifies :restart, "#{clustercontrollerservice}", :delayed
   action :create
 end
 
