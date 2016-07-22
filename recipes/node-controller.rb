@@ -24,6 +24,13 @@ include_recipe "eucalyptus::default"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  nodecontrollerservice = "service[eucalyptus-nc]"
+end
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  nodecontrollerservice = "service[eucalyptus-node]"
+end
+
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
 # during an update here
@@ -65,11 +72,17 @@ if node["eucalyptus"]["install-type"] == "packages"
     action :upgrade
     options node['eucalyptus']['yum-options']
     flush_cache [:before]
+    notifies :restart, "#{nodecontrollerservice}", :delayed
   end
 else
   include_recipe "eucalyptus::install-source"
 end
 
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  action :create
+  notifies :restart, "#{nodecontrollerservice}", :delayed
+end
 
 # make sure libvirt is started
 # when we want to delete its networks
@@ -234,10 +247,6 @@ ruby_block "Sync keys for NC" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
-  action :create
-end
 
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
