@@ -50,7 +50,7 @@ clusters.each do |cluster, info|
   execute "Register CC" do
     command "#{register_service} -t cluster -z #{cluster} -h #{cc_ip} #{cluster}-cc-1"
     not_if "#{describe_services} | grep #{cluster}-cc-1"
-    retries 10
+    retries 15
     retry_delay 10
   end
   if info["sc-1"] == ""

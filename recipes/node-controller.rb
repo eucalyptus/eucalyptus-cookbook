@@ -31,6 +31,12 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   nodecontrollerservice = "service[eucalyptus-node]"
 end
 
+# make sure libvirt is started now in case
+# we want to delete its networks for dhcp conflicts later
+service 'libvirtd' do
+  action [ :enable, :start ]
+end
+
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
 # during an update here
@@ -76,26 +82,6 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
-end
-
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
-  action :create
-  notifies :restart, "#{nodecontrollerservice}", :delayed
-end
-
-# make sure libvirt is started
-# when we want to delete its networks
-service 'libvirtd' do
-  action [ :enable, :start ]
-end
-
-# Remove default virsh network which runs its own dhcp server
-execute 'virsh net-destroy default' do
-  ignore_failure true
-end
-execute 'virsh net-autostart default --disable' do
-  ignore_failure true
 end
 
 # only install eucanetd on NC for non vpc modes
@@ -266,6 +252,12 @@ ruby_block "Set Ceph Credentials" do
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  action :create
+  notifies :restart, "#{nodecontrollerservice}", :delayed
 end
 
 # on el6 the init scripts are named differently than on el7
