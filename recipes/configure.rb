@@ -348,14 +348,12 @@ ruby_block "Install Service Image" do
         end
       end
     end
-
+    execute "create_imaging_worker" do
+      command "#{as_admin} esi-manage-stack --region localhost -a create imaging"
+      only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
+    end
   end
   only_if { node['eucalyptus']['install-service-image'] }
-end
-
-execute "create_imaging_worker" do
-  command "#{as_admin} esi-manage-stack --region localhost -a create imaging"
-  only_if "#{euctl} services.imaging.worker.configured | grep 'false'"
 end
 
 node['eucalyptus']['system-properties'].each do |key, value|

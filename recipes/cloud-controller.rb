@@ -27,6 +27,7 @@ include_recipe "eucalyptus::cloud-service"
 execute "Initialize Eucalyptus DB" do
  command "#{node["eucalyptus"]["home-directory"]}/usr/sbin/clcadmin-initialize-cloud"
  creates "#{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/db/data/server.crt"
+ Chef::Log.info "This is a log message..."
 end
 
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"

@@ -11,6 +11,9 @@
           "authentication.credential_download_generate_certificate": "Limited"
       },
       "dns": {"domain": "IPADDR.xip.io"},
+      "set-bind-addr": true,
+      "bind-interface": "BINDINTERFACE",
+      "bind-network": null,
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
@@ -49,14 +52,3 @@
       }
     },
   "run_list": [
-    "recipe[eucalyptus::cloud-controller]",
-    "recipe[eucalyptus::user-console]",
-    "recipe[eucalyptus::register-components]",
-    "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::cluster-controller]",
-    "recipe[eucalyptus::storage-controller]",
-    "recipe[eucalyptus::node-controller]",
-    "recipe[eucalyptus::configure]",
-    "recipe[eucalyptus::create-first-resources]"
-  ]
-}
