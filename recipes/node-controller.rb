@@ -31,11 +31,6 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   nodecontrollerservice = "service[eucalyptus-node]"
 end
 
-# make sure libvirt is started now in case
-# we want to delete its networks for dhcp conflicts later
-service 'libvirtd' do
-  action [ :enable, :start ]
-end
 
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
@@ -82,6 +77,12 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
+end
+
+# make sure libvirt is started now in case
+# we want to delete its networks for dhcp conflicts later
+service 'libvirtd' do
+  action [ :enable, :start ]
 end
 
 # only install eucanetd on NC for non vpc modes
