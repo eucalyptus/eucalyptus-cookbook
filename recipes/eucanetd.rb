@@ -3,6 +3,14 @@ require 'chef/version_constraint'
 
 include_recipe "eucalyptus::default"
 
+# Remove default virsh network which runs its own dhcp server
+execute 'virsh net-destroy default' do
+  ignore_failure true
+end
+execute 'virsh net-autostart default --disable' do
+  ignore_failure true
+end
+
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucanetd" do
     action :upgrade
@@ -32,10 +40,11 @@ end
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   action :create
-  notifies :restart, 'service[eucanetd]', :immediately
+  notifies :restart, 'service[eucanetd]', :delayed
 end
 
 service "eucanetd" do
   action [ :enable, :start ]
   supports :status => true, :start => true, :stop => true, :restart => true
+  notifies :restart, 'service[eucanetd]', :delayed
 end
