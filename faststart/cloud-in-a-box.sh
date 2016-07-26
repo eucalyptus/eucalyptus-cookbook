@@ -378,6 +378,7 @@ echo "[Precheck] Identifying primary network interface"
 
 ciab_nic_guess=""
 active_nic=""
+ciab_bridge_primary="0"
 
 if [ "$(ip addr show wlan0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
     echo "====="
@@ -412,9 +413,11 @@ elif [ "$(ip addr show br0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
     if [ "$(ip link show em1 2>/dev/null)" ]; then
         echo "Physical interface em1 found"
         ciab_nic_guess="em1"
+        ciab_bridge_primary="1"
     elif [ "$(ip link show eth0 2>/dev/null)" ]; then
         echo "Physical interface eth0 found"
         ciab_nic_guess="eth0"
+        ciab_bridge_primary="1"
     else
         echo "====="
         echo "[WARN] No physical ethernet interface found"
@@ -481,7 +484,27 @@ if [ $(ip addr show $active_nic | grep "inet" | grep -v 'inet6' | wc -l) -gt 1 ]
 fi
 ciab_ipaddr_guess=`ip addr show $active_nic | grep "inet" | grep -v 'inet6' | awk '{print $2}' | cut -d':' -f2 | cut -d'/' -f1`
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
-ciab_netmask_guess=`ip addr show $active_nic | grep 'inet' | grep -v 'inet6' | awk '{print $4}'`
+ciab_netmask_cidr=`ip addr show $active_nic | grep 'inet' | grep -v 'inet6' | awk '{print $2}' | cut -d':' -f2 | cut -d'/' -f2`
+
+if [ "$ciab_netmask_cidr" -eq 16 ]; then
+  ciab_netmask_guess="255.255.0.0"
+elif [ "$ciab_netmask_cidr" -eq 24 ]; then
+  ciab_netmask_guess="255.255.255.0"
+elif [ "$ciab_netmask_cidr" -eq 25 ]; then
+  ciab_netmask_guess="255.255.255.128"
+elif [ "$ciab_netmask_cidr" -eq 30 ]; then
+  ciab_netmask_guess="255.255.255.252"
+elif [ "$ciab_netmask_cidr" -eq 32 ]; then
+  ciab_netmask_guess="255.255.255.255"
+fi
+
+if [ "$ciab_netmask_guess" == "" ]; then
+    echo ""
+    echo "We cannot determine the NETMASK from the device $active_nic..."
+    echo ""
+    exit 19
+fi
+
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
 ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/chrony.conf | head -1`
 
@@ -671,7 +694,7 @@ if [ "$?" != "0" ]; then
         exit 25
 fi
 rm -rf cookbooks
-curl $cookbooks_url > cookbooks.tgz
+#curl $cookbooks_url > cookbooks.tgz
 tar zxfv cookbooks.tgz
 
 # Copy the templates to the local directory
@@ -687,12 +710,6 @@ else
     chef_template="node.json"
 fi
 
-# figure out network for set-bind-addr
-#set -o vi
-#bind_network=$(echo `expr match $ciab_ipaddr '\([0-9]*\.[0-9]*\.[0-9]*\)'`)
-#bind_network="$bind_network.0"
-#set +o vi
-
 # Perform variable interpolation in the proper template.
 sed -i "s/IPADDR/$ciab_ipaddr/g" $chef_template
 sed -i "s/NETMASK/$ciab_netmask/g" $chef_template
@@ -704,11 +721,21 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
-sed -i "s/BINDINTERFACE/$ciab_nic/g" $chef_template
 sed -i "s/NTP/$ciab_ntp/g" $chef_template
 
+if [ "$ciab_bridge_primary" -eq 1 ]; then
+    echo ""
+    echo "Binding Eucalyptus to device br0"
+    echo ""
+    sed -i "s/BINDINTERFACE/br0/g" $chef_template
+else
+    echo ""
+    echo "Binding Eucalyptus to device $ciab_nic"
+    echo ""
+    sed -i "s/BINDINTERFACE/$ciab_nic/g" $chef_template
+fi
 
-if [ "$nc_install_only" == "0" ]; then
+if [ "$nc_install_only" -eq 0 ]; then
   chef_template="ciab.json"
   cat ciab-template-phase0.json ciab-template-phase1.json > $chef_template
 fi
@@ -792,7 +819,7 @@ if [[ ! -f faststart-successful.log ]]; then
     offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
-    echo "Phase 1 (cloud-controller) installed successfully...moving on to phase 2."
+    echo "Phase 1 (CLC) installed successfully...moving on to phase 2 (all other cloud components)."
 fi
 
 # Add all other recipes to the run_list and execute phase 2

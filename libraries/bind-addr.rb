@@ -26,14 +26,14 @@ module Eucalyptus
         def self.get_bind_interface_ip(node)
             bind_interface = node["eucalyptus"]["bind-interface"]
             bind_network_attr = node["eucalyptus"]["bind-network"]
-		        Chef::Log.info "In BindAddr bind_interface is #{bind_interface}"
-            Chef::Log.info "In BindAddr bind_network_attr is #{bind_network_attr}"
+            Chef::Log.info "In BindAddr bind_interface is #{bind_interface}"
+            Chef::Log.info "In BindAddr bind_network_attr is \"#{bind_network_attr}\""
             if bind_network_attr.nil? && bind_interface.nil?
                 raise "set-bind-addr is True, this requires at least one of bind-interface or bind-network params to be set"
 	          end
             # First try finding the interface(s) in the bind network if provided.
             bind_addr = nil
-            if bind_network_attr
+            if bind_network_attr.to_s != ''
                 bindaddrs = {}
                 bind_network = IPAddr.new(bind_network_attr)
                 if bind_network.to_range().count <= 1

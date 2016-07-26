@@ -13,7 +13,6 @@
       "dns": {"domain": "IPADDR.xip.io"},
       "set-bind-addr": true,
       "bind-interface": "BINDINTERFACE",
-      "bind-network": null,
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
