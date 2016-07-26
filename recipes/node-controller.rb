@@ -266,14 +266,14 @@ end
 # so we will use the actual unit file names here
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   service "eucalyptus-nc" do
-    action [ :enable, :start ]
+    action [ :enable ]
     supports :status => true, :start => true, :stop => true, :restart => true
   end
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   service "eucalyptus-node" do
-    action [ :enable, :start ]
+    action [ :enable ]
     supports :status => true, :start => true, :stop => true, :restart => true
   end
 end
