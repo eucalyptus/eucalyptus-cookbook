@@ -96,26 +96,16 @@ module CephHelper
     def self.set_ceph_credentials(node, ceph_user)
       self.make_ceph_config(node, ceph_user)
       if node['ceph'] != nil
-        if ::File.exists?('/etc/eucalyptus/eucalyptus.conf')
-          Chef::Log.info "Writing new ceph creds to /etc/eucalyptus/eucalyptus.conf file"
-          file = Chef::Util::FileEdit.new("/etc/eucalyptus/eucalyptus.conf")
-          file.insert_line_if_no_match("/CEPH_USER_NAME=\"#{ceph_user}\"/", "CEPH_USER_NAME=\"#{ceph_user}\"")
-          file.insert_line_if_no_match("/CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.#{ceph_user}.keyring\"/", "CEPH_KEYRING_PATH=\"/etc/ceph/ceph.client.#{ceph_user}.keyring\"")
-          file.insert_line_if_no_match("/CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"/", "CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"")
-          file.write_file
-        end
+        node.set[:ceph_user_name] = "#{ceph_user}"
+        node.set[:ceph_keyring_path] = "/etc/ceph/ceph.client.#{ceph_user}.keyring"
+        node.save
       else
         cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
         ceph_cluster_user = node['eucalyptus']['topology']['clusters'][cluster_name]['ceph_cluster']['ceph_user']
         file_name = "ceph.client." + ceph_cluster_user + ".keyring"
-        if ::File.exists?('/etc/eucalyptus/eucalyptus.conf')
-          Chef::Log.info "Writing to /etc/eucalyptus/eucalyptus.conf file"
-          file = Chef::Util::FileEdit.new("/etc/eucalyptus/eucalyptus.conf")
-          file.insert_line_if_no_match("/CEPH_USER_NAME=\"#{ceph_cluster_user}\"/", "CEPH_USER_NAME=\"#{ceph_cluster_user}\"")
-          file.insert_line_if_no_match("/CEPH_KEYRING_PATH=\"/etc/ceph/#{file_name}\"/", "CEPH_KEYRING_PATH=\"/etc/ceph/#{file_name}\"")
-          file.insert_line_if_no_match("/CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"/", "CEPH_CONFIG_PATH=\"/etc/ceph/ceph.conf\"")
-          file.write_file
-        end
+        node.set[:ceph_user_name] = node['eucalyptus']['topology']['clusters'][cluster_name]['ceph_cluster']['ceph_user']
+        node.set[:ceph_keyring_path] = "/etc/ceph/#{file_name}"
+        node.save
       end
     end
 
