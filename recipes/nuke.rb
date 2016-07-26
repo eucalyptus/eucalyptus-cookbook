@@ -129,6 +129,27 @@ if node['eucalyptus']['home-directory'] != '/'
 end
 
 ## Remove repo rpms
+yum_repository 'eucalyptus' do
+  description 'Eucalyptus Package Repo'
+  url node['eucalyptus']['eucalyptus-repo']
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
+  action :remove
+end
+
+yum_repository 'eucalyptus-enterprise' do
+  description 'Eucalyptus Enterprise Package Repo'
+  url node['eucalyptus']['enterprise-repo']
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
+  action :remove
+end
+
+yum_repository 'euca2ools' do
+  description 'Euca2ools Package Repo'
+  url node['eucalyptus']['euca2ools-repo']
+  gpgkey node['eucalyptus']['euca2ools-gpg-key']
+  action :remove
+end
+
 yum_repository 'eucalyptus-release' do
   description 'Eucalyptus Package Repo'
   url node['eucalyptus']['eucalyptus-repo']
