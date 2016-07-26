@@ -244,6 +244,10 @@ if CephHelper::SetCephRbd.is_ceph?(node)
   end
 end
 
+# Writes necessary ceph credentils in the /etc/ceph directory.
+# Sets ceph specific node attributes for further use e.g in ERB templates.
+# This ruby_block needs to be executed anytime before eucalyptus.conf
+# is created by chef `template` and after /etc/ceph directory is created.
 ruby_block "Set Ceph Credentials" do
   block do
     if node['ceph']

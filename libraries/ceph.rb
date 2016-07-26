@@ -95,6 +95,7 @@ module CephHelper
 
     def self.set_ceph_credentials(node, ceph_user)
       self.make_ceph_config(node, ceph_user)
+      node.set[:ceph_config_path] = "/etc/ceph/ceph.conf"
       if node['ceph'] != nil
         node.set[:ceph_user_name] = "#{ceph_user}"
         node.set[:ceph_keyring_path] = "/etc/ceph/ceph.client.#{ceph_user}.keyring"
