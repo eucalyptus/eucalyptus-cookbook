@@ -665,7 +665,6 @@ if [ "$?" != "0" ]; then
     echo ""
     echo ""
     curl --insecure -L https://omnitruck.chef.io/install.sh | bash -s -- -v $CHEF_VERSION 1>>$LOGFILE
-    #curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Chef install failed!"
@@ -698,14 +697,12 @@ rm -rf cookbooks
 tar zxfv cookbooks.tgz
 
 # Copy the templates to the local directory
-# FIXME cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json
-cp -f cookbooks/eucalyptus/faststart/ciab-template-phase* .
+cp -f cookbooks/eucalyptus/faststart/ciab-template.json ciab.json
 cp -f cookbooks/eucalyptus/faststart/node-template.json node.json
 
 # Decide which template we're using.
 if [ "$nc_install_only" == "0" ]; then
-    # lazy way to not have to change all references in sed comands below
-    chef_template="ciab-template-phase0.json"
+    chef_template="ciab.json"
 else
     chef_template="node.json"
 fi
@@ -733,11 +730,6 @@ else
     echo "Binding Eucalyptus to device $ciab_nic"
     echo ""
     sed -i "s/BINDINTERFACE/$ciab_nic/g" $chef_template
-fi
-
-if [ "$nc_install_only" -eq 0 ]; then
-  chef_template="ciab.json"
-  cat ciab-template-phase0.json ciab-template-phase1.json > $chef_template
 fi
 
 ###############################################################################
@@ -776,9 +768,10 @@ fi
 # failure to a file, and then succeed or fail based on whether the file
 # exists or not.
 
-rm -f faststart-successful.log
+rm -f faststart-successful*.log
 
 echo "[Yum Update] OK, running a full update of the OS. This could take a bit; please wait."
+echo ""
 echo "To see the update in progress, run the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
@@ -797,13 +790,18 @@ fi
 
 #
 # OK, THIS IS THE BIG STEP!  Install whichever chef template we're going with here.
-# On successful exit, write "success" to faststart-successful.log.
+# On successful exit, write "success" to faststart-successful*.log.
+
+if [ "$nc_install_only" -eq 0 ]; then
+  # add only the cloud-controller recipe to the run_list
+  runlistitems="recipe[eucalyptus::cloud-controller]"
+fi
 
 # Execute phase 1 which adds only the cloud-controller recipe to the run_list
-(chef-solo -r cookbooks.tgz -j $chef_template 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful.log) &
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
 coffee $!
 
-if [[ ! -f faststart-successful.log ]]; then
+if [[ ! -f faststart-successful-phase1.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
@@ -823,15 +821,22 @@ if [[ ! -f faststart-successful.log ]]; then
 fi
 
 # Add all other recipes to the run_list and execute phase 2
-if [ "$nc_install_only" == "0" ]; then
-  chef_template="ciab.json"
-  cat ciab-template-phase0.json ciab-template-phase2.json > $chef_template
+if [ "$nc_install_only" -eq 0 ]; then
+  runlistitems=""
+  runlistitems="recipe[eucalyptus::user-console]"
+  runlistitems="$runlistitems,recipe[eucalyptus::register-components]"
+  runlistitems="$runlistitems,recipe[eucalyptus::walrus]"
+  runlistitems="$runlistitems,recipe[eucalyptus::cluster-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::storage-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::node-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::configure]"
+  runlistitems="$runlistitems,recipe[eucalyptus::create-first-resources]"
 fi
 
-(chef-solo -r cookbooks.tgz -j $chef_template 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful.log) &
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
 coffee $!
 
-if [[ ! -f faststart-successful.log ]]; then
+if [[ ! -f faststart-successful-phase2.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."

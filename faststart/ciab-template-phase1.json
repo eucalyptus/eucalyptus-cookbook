@@ -1,3 +1,0 @@
-    "recipe[eucalyptus::cloud-controller]"
-  ]
-}
