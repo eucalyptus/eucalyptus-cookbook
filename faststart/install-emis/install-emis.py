@@ -36,7 +36,7 @@
 #
 # TODO: add check for env variables for user credentials
 #
-
+import argparse
 import json
 import os
 import re
@@ -50,7 +50,8 @@ from subprocess import Popen, PIPE, call
 
 
 class EmiManager:
-    def __init__(self, user, region, catalog_url="http://shaon.me/catalog-web"):
+    def __init__(self, user, region,
+                 catalog_url="http://shaon.me/catalog-web"):
         self.user = user
         self.region = region
         self.catalog_url = catalog_url
@@ -62,7 +63,8 @@ class EmiManager:
         print
         sys.stdout.write("\t\t%s\r" % "checking euca2ools...")
         try:
-            cmd = call("type " + "euca-describe-instances", shell=True, stdout=PIPE, stderr=PIPE)
+            cmd = call("type " + "euca-describe-instances", shell=True,
+                       stdout=PIPE, stderr=PIPE)
             if cmd:
                 raise RuntimeError
         except (ImportError, RuntimeError):
@@ -72,7 +74,8 @@ class EmiManager:
             time.sleep(0.5)
             print_error("Euca2ools not found.\n")
             print_info("Install instructions can be found here:\n"
-                       "https://www.eucalyptus.com/docs/eucalyptus/4.2/index.html#shared/installing_euca2ools.html")
+                       "https://www.eucalyptus.com/docs/eucalyptus/4.2/"
+                       "index.html#shared/installing_euca2ools.html")
             sys.exit("Bye")
         sys.stdout.flush()
         time.sleep(0.5)
@@ -115,12 +118,16 @@ class EmiManager:
         print
         catalog = self.get_catalog()
         format_spec = '{0:3} {1:20} {2:20} {3:20} {4:10}'
-        print_bold(format_spec.format("id", "version", "image-format", "created-date", "description"))
+        print_bold(
+            format_spec.format("id", "version", "image-format", "created-date",
+                               "description"))
         image_number = 1
         for image in catalog:
             if not image["image-format"]:
                 image["image-format"] = "None"
-            print format_spec.format(str(image_number),image["version"], image["image-format"], image["created-date"],
+            print format_spec.format(str(image_number), image["version"],
+                                     image["image-format"],
+                                     image["created-date"],
                                      image["description"])
             image_number += 1
         print
@@ -129,11 +136,14 @@ class EmiManager:
         self.print_catalog()
         while retry > 0:
             try:
-                number = int(raw_input("Enter the image ID you would like to install: "))
-                if (number-1 < 0) or (number-1 > len(self.get_catalog())):
-                    print_error("Invalid image Id. Please select an Id from the table.")
+                number = int(raw_input(
+                    "Enter the image ID you would like to install: "))
+                if (number - 1 < 0) or (number - 1 > len(self.get_catalog())):
+                    print_error(
+                        "Invalid image Id. "
+                        "Please select an Id from the table.")
                     raise ValueError
-                image = self.get_catalog()[number-1]
+                image = self.get_catalog()[number - 1]
                 return image
             except (ValueError, KeyError, IndexError):
                 retry -= 1
@@ -141,8 +151,10 @@ class EmiManager:
 
     def install_image(self, image):
         if image["image-format"] == "qcow2":
-            print_info("This image is available in 'qcow2' format and requires qemu-img "
-                       "package for 'raw' conversion.\n")
+            print_info(
+                "This image is available in 'qcow2' "
+                "format and requires qemu-img "
+                "package for 'raw' conversion.\n")
             # Check that qemu-img is installed
             sys.stdout.write("\t\t%s\r" % "checking qemu-img...")
             if call(["which", "qemu-img"], stdout=PIPE, stderr=PIPE):
@@ -163,33 +175,43 @@ class EmiManager:
 
         image_name = image["os"] + "-" + image["created-date"]
 
-        describe_images = "euca-describe-images --filter name={0} --region {1}@{2}".format(image_name, self.user, self.region)
+        describe_images = "euca-describe-images --filter name={0} " \
+                          "--region {1}@{2}".format(image_name,
+                                                    self.user, self.region)
         (stdout, stderr) = self.check_output(describe_images)
         if re.search(image_name, stdout):
-            print_warning("Warning: An image with name '" + image_name + "' is already install.")
+            print_warning(
+                "Warning: An image with name '" + image_name +
+                "' is already install.")
             print_warning(stdout)
             install_image = "Continue? (Y/n) : ".strip()
             if check_response(install_image):
                 image_name = image['os'] + "-" + str(time.time())
             else:
                 sys.exit("Bye")
-        directory_format = '{0}-{1}.XXXXXXXX'.format(self.temp_dir_prefix, image["os"])
+        directory_format = '{0}-{1}.XXXXXXXX'.format(self.temp_dir_prefix,
+                                                     image["os"])
 
         # Make temp directory
         (tmpdir, stderr) = self.check_output('mktemp -d ' + directory_format)
 
         # Download image
         download_path = tmpdir.strip() + "/" + image["url"].rsplit("/", 1)[-1]
-        print_info("Downloading " + image['url'] + " image to: " + download_path)
+        print_info(
+            "Downloading " + image['url'] + " image to: " + download_path)
         if call(["wget", image["url"], "-O", download_path]):
-            print_error("Image download failed attempting to download:\n" + image["url"])
+            print_error(
+                "Image download failed attempting to download:\n" + image[
+                    "url"])
             sys.exit("Bye")
 
         # Decompress image, if necessary
         if image["url"].endswith(".xz"):
             print_info("Decompressing image...")
             if call(["xz", "-d", download_path]):
-                print_error("Unable to decompress image downloaded to: " + download_path)
+                print_error(
+                    "Unable to decompress image downloaded to: " +
+                    download_path)
                 sys.exit("Bye")
             image_path = download_path.strip(".xz")
             print_info("Decompressed image can be found at: " + image_path)
@@ -200,20 +222,23 @@ class EmiManager:
         if image["image-format"] == "qcow2":
             print_info("Converting image...")
             image_basename = image_path[0:image_path.rindex(".")]
-            if call(["qemu-img", "convert", "-O", "raw", image_path, image_basename + ".raw"]):
+            if call(["qemu-img", "convert", "-O", "raw", image_path,
+                     image_basename + ".raw"]):
                 print_error("Unable to convert image")
                 sys.exit("Bye")
             image_path = image_path[0:image_path.rindex(".")] + ".raw"
             print_info("Converted image can be found at: " + image_path)
 
         print_info("Installing image to bucket: " + image_name + "\n")
-        install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm -b {1} -n {1} --region {2}@{3}".\
+        install_cmd = "euca-install-image -r x86_64 -i {0} --virt hvm " \
+                      "-b {1} -n {1} --region {2}@{3}". \
             format(image_path, image_name, self.user, self.region)
 
         print_info("Running installation command: ")
         print_info(install_cmd)
         if call(install_cmd.split()):
-            print_error("Unable to install image that was downloaded to: \n" + download_path)
+            print_error("Unable to install image that was downloaded to: \n" +
+                        download_path)
             sys.exit("Bye")
 
     def check_output(self, command):
@@ -233,7 +258,8 @@ class EucaCredentials(object):
 
     def select_user(self, sections):
         users = self.get_sections('user', sections)
-        print_success("Found " + str(len(users)) + " available user/s in " + os.path.join(self.home_dir, self.conf_dir))
+        print_success("Found " + str(len(users)) + " available user/s in " +
+                      os.path.join(self.home_dir, self.conf_dir))
         self.print_info(users)
         try:
             number = int(raw_input("\nSelect User ID: "))
@@ -245,7 +271,9 @@ class EucaCredentials(object):
 
     def select_region(self, sections):
         regions = self.get_sections('region', sections)
-        print_success("Found " + str(len(regions)) + " available region/s in " + os.path.join(self.home_dir, self.conf_dir))
+        print_success("Found " + str(len(regions)) +
+                      " available region/s in " +
+                      os.path.join(self.home_dir, self.conf_dir))
         self.print_info(regions)
         try:
             number = int(raw_input("\nSelect Region ID: "))
@@ -269,9 +297,13 @@ class EucaCredentials(object):
             return config
         except Exception, e:
             print e
-            print_error("Error: Cannot find directory or .ini file " + os.path.join(self.home_dir, self.conf_dir))
-            print_error("Create admin config file: eval `clcadmin-assume-system-credentials`; "
-                        "euare-useraddkey admin -wd <dns domain name> > .euca/admin.ini\n")
+            print_error("Error: Cannot find directory or .ini file " +
+                        os.path.join(self.home_dir, self.conf_dir))
+            print_error("Create admin config file: "
+                        "eval `clcadmin-assume-system-credentials`; "
+                        "euare-useraddkey admin -wd <dns domain name> > "
+                        ".euca/admin.ini\n")
+            exit(1)
 
     def get_sections(self, name, section_list):
         return filter(lambda x: x.startswith(name), section_list)
@@ -291,8 +323,8 @@ class EucaCredentials(object):
 
 
 class bcolors:
-    """Answer from:
-    http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+    """
+    Courtesy: http://stackoverflow.com/questions/287871
     """
     HEADER = '\033[37m'
     OKBLUE = '\033[94m'
@@ -362,14 +394,22 @@ def exit_message():
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Process Arguments.')
+    parser.add_argument('-c', '--catalog',
+                        default="http://shaon.me/catalog-web",
+                        help='Image catalog json file')
+    args = parser.parse_args()
+
     print_title()
     euca_creds = EucaCredentials()
-    emi_manager = EmiManager(euca_creds.user, euca_creds.region)
+    emi_manager = EmiManager(euca_creds.user, euca_creds.region,
+                             catalog_url=args.catalog)
     emi_manager.check_dependencies()
     image = emi_manager.get_image()
     emi_manager.install_image(image)
 
     exit_message()
+
 
 if __name__ == "__main__":
     main()
