@@ -380,7 +380,12 @@ ciab_nic_guess=""
 active_nic=""
 ciab_bridge_primary="0"
 
-if [ "$(ip addr show wlan0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
+primary_from_route=$(ip route | grep default | awk '{print $5}')
+if [ "$primary_from_route" != "" ]; then
+  echo ""
+  echo "Found network device: $primary_from_route"
+  echo ""
+  if [ "$primary_from_route" == "wlan0" ]; then
     echo "====="
     echo "[FATAL] Wireless install not supported!"
     echo ""
@@ -395,15 +400,7 @@ if [ "$(ip addr show wlan0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=WIRELESS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 23
-elif [ "$(ip addr show em1 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
-    echo "Active network interface em1 found"
-    ciab_nic_guess="em1"
-    active_nic="em1"
-elif [ "$(ip addr show eth0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
-    echo "Active network interface eth0 found"
-    ciab_nic_guess="eth0"
-    active_nic="eth0"
-elif [ "$(ip addr show br0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
+  elif [ "$primary_from_route" == "br0" ]; then
     # This is a corner case: if br0 is the primary interface,
     # it likely means that Eucalyptus has already been 
     # installed and a bridge established. We still need to determine
@@ -418,30 +415,40 @@ elif [ "$(ip addr show br0 2>/dev/null | grep 'inet' | grep -v 'inet6')" ]; then
         echo "Physical interface eth0 found"
         ciab_nic_guess="eth0"
         ciab_bridge_primary="1"
+    elif [ "$(ip link show eno1 2>/dev/null)" ]; then
+        echo "Physical interface en01 found"
+        ciab_nic_guess="en01"
+        ciab_bridge_primary="1"
     else
         echo "====="
-        echo "[WARN] No physical ethernet interface found"
+        echo "[WARN] Could not determine physical ethernet interface to use for bridging br0"
         echo ""
         echo "No active ethernet interface was found. Please check your network configuration"
         echo "and make sure that an ethernet interface is set up as your primary network"
         echo "interface, and that it is connected to the internet."
         echo ""
         echo "It's possible that you're using a non-standard network interface (we expect"
-        echo "eth0 or em1)."
+        echo "eth0, em1, or en01)."
         echo ""
     fi
+  else
+    echo "Active network interface $primary_from_route found"
+    ciab_nic_guess="$primary_from_route"
+    active_nic="$primary_from_route"
+  fi
 else
-    echo "====="
-    echo "[WARN] No active network interface found"
-    echo ""
-    echo "No active ethernet interface was found. Please check your network configuration"
-    echo "and make sure that an ethernet interface is set up as your primary network"
-    echo "interface, and that it's connected to the internet."
-    echo ""
-    echo "It's possible that you're using a non-standard network interface (we expect"
-    echo "eth0 or em1)."
-    echo ""
+  echo "====="
+  echo "[WARN] No active network interface found"
+  echo ""
+  echo "No active ethernet interface was found. Please check your network configuration"
+  echo "and make sure that an ethernet interface is set up as your primary network"
+  echo "interface, and that it's connected to the internet."
+  echo ""
+  echo "It's possible that you're using a non-standard network interface (we expect"
+  echo "eth0, em1, or en01)."
+  echo ""
 fi
+
 echo "[Precheck] OK, network interfaces checked."
 echo ""
 
