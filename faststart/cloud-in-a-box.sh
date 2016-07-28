@@ -689,6 +689,7 @@ echo "[Chef] Removing old Chef templates"
 rm -rf /var/chef/* 1>>$LOGFILE
 
 echo "[Chef] Downloading necessary cookbooks"
+echo "[Chef] Downloading necessary cookbooks from URL: $cookbooks_url" >> $LOGFILE
 # Grab cookbooks from git
 yum install -y git 1>>$LOGFILE
 if [ "$?" != "0" ]; then
