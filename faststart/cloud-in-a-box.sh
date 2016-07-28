@@ -940,7 +940,10 @@ else
     echo "Now, to register your node controller with your cloud, ssh to your"
     echo "cloud-in-a-box server and run the following command:"
     echo ""
-    echo "  /usr/sbin/euca_conf --register-nodes ${ciab_ipaddr}"
+    echo "  clusteradmin-register-nodes ${ciab_ipaddr}"
+    echo ""
+    echo "Finally copy keys to the node controller from the cloud-in-a-box server:"
+    echo "  clusteradmin-copy-keys ${ciab_ipaddr}"
     echo ""
     echo "Thanks for installing Eucalyptus!"
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log

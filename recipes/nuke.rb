@@ -257,3 +257,9 @@ end
 execute "Clear yum cache" do
   command "yum clean all"
 end
+
+execute "Remove admin credentials" do
+  command "rm -rf /root/.euca/faststart.ini"
+  ignore_failure true
+  only_if { ::File.exist? "/root/.euca/faststart.ini" }
+end
