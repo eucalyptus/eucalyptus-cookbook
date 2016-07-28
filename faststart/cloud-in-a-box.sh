@@ -700,7 +700,7 @@ if [ "$?" != "0" ]; then
         exit 25
 fi
 rm -rf cookbooks
-#curl $cookbooks_url > cookbooks.tgz
+curl $cookbooks_url > cookbooks.tgz
 tar zxfv cookbooks.tgz
 
 # Copy the templates to the local directory
