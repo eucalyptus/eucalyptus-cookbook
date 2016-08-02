@@ -114,8 +114,18 @@ elsif node['eucalyptus']['topology']['ceph-radosgw']
     retries 15
     retry_delay 20
   end
-  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{node['eucalyptus']['topology']['ceph-radosgw']['access-key']}"
-  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{node['eucalyptus']['topology']['ceph-radosgw']['secret-key']}"
+
+  ceph_access_key = node['eucalyptus']['topology']['ceph-radosgw']['access-key']
+  ceph_secret_key = node['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+
+  if ceph_access_key == nil || ceph_secret_key == nil
+    found = CephHelper::SetCephRbd.get_radosgw_user_creds(node)
+    ceph_access_key = found['eucalyptus']['topology']['ceph-radosgw']['access-key']
+    ceph_secret_key = found['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+  end
+
+  execute "#{euctl} objectstorage.s3provider.s3accesskey=#{ceph_access_key}"
+  execute "#{euctl} objectstorage.s3provider.s3secretkey=#{ceph_secret_key}"
 else
   execute "Set OSG providerclient" do
     command "#{euctl} objectstorage.providerclient=walrus"
