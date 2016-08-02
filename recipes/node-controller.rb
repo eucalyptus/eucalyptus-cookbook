@@ -137,11 +137,6 @@ ruby_block "Sync keys for NC" do
   only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
 end
 
-template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
-  source "eucalyptus.conf.erb"
-  action :create
-end
-
 if CephHelper::SetCephRbd.is_ceph?(node)
   directory "/etc/ceph" do
     owner 'root'
@@ -160,6 +155,11 @@ ruby_block "Set Ceph Credentials" do
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+end
+
+template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do
+  source "eucalyptus.conf.erb"
+  action :create
 end
 
 service "eucalyptus-nc" do
