@@ -1,8 +1,8 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.2/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.3/centos/6/x86_64/",
+      "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/",
+      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/7/x86_64/",
       "install-service-image": EXTRASERVICES,
       "ntp-server": "NTP",
       "system-properties": {
@@ -11,6 +11,8 @@
           "authentication.credential_download_generate_certificate": "Limited"
       },
       "dns": {"domain": "IPADDR.xip.io"},
+      "set-bind-addr": true,
+      "bind-interface": "BINDINTERFACE",
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
@@ -19,7 +21,8 @@
           "default": {
             "cc-1": "IPADDR",
             "sc-1": "IPADDR",
-            "nodes": "IPADDR"
+            "nodes": "IPADDR",
+            "storage-backend": "overlay"
           }
         }
       },
@@ -47,16 +50,5 @@
           ]
         }
       }
-    },
-  "run_list": [
-    "recipe[eucalyptus::cloud-controller]",
-    "recipe[eucalyptus::user-console]",
-    "recipe[eucalyptus::register-components]",
-    "recipe[eucalyptus::walrus]",
-    "recipe[eucalyptus::cluster-controller]",
-    "recipe[eucalyptus::storage-controller]",
-    "recipe[eucalyptus::node-controller]",
-    "recipe[eucalyptus::configure]",
-    "recipe[eucalyptus::create-first-resources]"
-  ]
+    }
 }

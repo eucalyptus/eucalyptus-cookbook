@@ -29,6 +29,7 @@ directory '/root/.euca'
 execute "Create admin credentials" do
   command "#{as_admin} euare-useraddkey admin -wld #{node["eucalyptus"]["dns"]["domain"]} -w > #{faststart_ini} --region localhost"
   creates faststart_ini
+  not_if { ::File.exist? "#{faststart_ini}" }
 end
 
 bash "Set default region" do
