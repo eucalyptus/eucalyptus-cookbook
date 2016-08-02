@@ -113,3 +113,8 @@ default["eucalyptus"]["nc"]["service-path"] = "axis2/services/EucalyptusNC"
 default["eucalyptus"]["nc"]["hypervisor"] = "kvm"
 default["eucalyptus"]["nc"]["max-cores"] = "0"
 default["eucalyptus"]["nc"]["instance-path"] = "/var/lib/eucalyptus/instances"
+
+# ceph-rgw
+default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw'] = nil
