@@ -50,3 +50,12 @@ METADATA_IP="<%= node["eucalyptus"]["network"]["metadata-ip"] %>"
 NC_ROUTER="<%= node["eucalyptus"]["network"]["nc-router"] %>"
 <% end -%>
 DISABLE_TUNNELING="<%= node["eucalyptus"]["network"]["disable-tunneling"] %>"
+<% if node[:ceph_user_name] -%>
+CEPH_USER_NAME="<%= node[:ceph_user_name] %>"
+<% end %>
+<% if node[:ceph_keyring_path] -%>
+CEPH_KEYRING_PATH="<%= node[:ceph_keyring_path] %>"
+<% end %>
+<% if node[:ceph_config_path] -%>
+CEPH_CONFIG_PATH="<%= node[:ceph_config_path] %>"
+<% end %>
