@@ -825,7 +825,7 @@ if [[ ! -f faststart-successful-phase1.log ]]; then
     offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
-    echo "Phase 1 (CLC) installed successfully...moving on to phase 2 (main cloud components)."
+    echo "Phase 1 (CLC) installed successfully...getting a 2nd cup of coffee and moving on to phase 2 (main cloud components)."
 fi
 
 # Add all other recipes to the run_list and execute phase 2
@@ -859,7 +859,7 @@ if [[ ! -f faststart-successful-phase2.log ]]; then
     offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
-    echo "Phase 2 installed successfully...moving on to phase 3 (create first resources)."
+    echo "Phase 2 installed successfully...yes, in fact having that 3rd cup of coffee and moving on to phase 3 (create first resources)."
 fi
 
 # add create first resources as a last item
