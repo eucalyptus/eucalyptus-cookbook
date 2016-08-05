@@ -8,3 +8,5 @@ cookbook "riak-cs-create-admin-user", github: "hectcastro/chef-riak-cs-create-ad
 cookbook "riak-cs-ssl", github: "hectcastro/chef-riak-cs-ssl"
 cookbook "midokura", github: "eucalyptus/midokura-cookbook"
 cookbook "iptables", "~> 1.1.0"
+cookbook "zookeeper", github: "shaon/zookeeper-cookbook"
+cookbook "cassandra", github: "shaon/cassandra-cookbook"

@@ -126,3 +126,18 @@ default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
 default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
 default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
 default['eucalyptus']['topology']['ceph-radosgw'] = nil
+
+# midokura repository
+default['eucalyptus']['midokura']['mem-urn'] = 'repo.midokura.com/mem-5/stable/el7/'
+default['eucalyptus']['midokura']['mics-url'] = 'http://repo.midokura.com/misc/stable/el7/'
+default['eucalyptus']['midokura']['gpgkey'] = 'https://repo.midokura.com/midorepo.key'
+default['eucalyptus']['midokura']['username'] = 'midokura-username'
+default['eucalyptus']['midokura']['password'] = 'midokura-password'
+default['eucalyptus']['midokura']['zookeeper-port'] = 2181
+
+# midonet-cluster
+default['eucalyptus']['midonet']['http-port'] = 8080
+default['eucalyptus']['midonet']['http-host'] = "127.0.0.1"
+
+default['eucalyptus']['midonet']['initial-tenant'] = 'mido_tenant'
+default['eucalyptus']['midonet']['default-tunnel-zone'] = 'mido-tz'
