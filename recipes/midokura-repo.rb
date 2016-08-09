@@ -1,8 +1,8 @@
-username = node['eucalyptus']['midokura']['username']
-password = node['eucalyptus']['midokura']['password']
-mem_urn = node['eucalyptus']['midokura']['mem-urn']
-mem_gpgkey = node['eucalyptus']['midokura']['gpgkey']
-mem_misc = node['eucalyptus']['midokura']['mics-url']
+username = node['eucalyptus']['midonet']['repo-username']
+password = node['eucalyptus']['midonet']['repo-password']
+mem_urn = node['eucalyptus']['midonet']['mem-urn']
+mem_gpgkey = node['eucalyptus']['midonet']['gpgkey']
+mem_misc = node['eucalyptus']['midonet']['mics-url']
 
 yum_repository "midokura" do
   description "Midokura Enterprise MidoNet"

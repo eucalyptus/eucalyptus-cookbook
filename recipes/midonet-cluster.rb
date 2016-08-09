@@ -11,7 +11,7 @@ end
 zookeepers = []
 
 node['cassandra']['topology'].each do |zk|
-  zookeepers.push("#{zk}:#{node['eucalyptus']['midokura']['zookeeper-port']}")
+  zookeepers.push("#{zk}:#{node['eucalyptus']['midonet']['zookeeper-port']}")
 end
 
 template '/etc/midonet/midonet.conf' do

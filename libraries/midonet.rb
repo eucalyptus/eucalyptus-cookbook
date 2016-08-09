@@ -21,7 +21,7 @@ def service_status(service_name)
   cmd = Mixlib::ShellOut::new("systemctl is-active #{service_name}")
   cmd.run_command
   {
-    :is_active => cmd.stdout =~ /active/,
+    :is_active => cmd.stdout.strip == "active",
     :result => cmd.stdout.strip,
   }
 end

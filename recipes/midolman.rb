@@ -8,8 +8,8 @@ end
 
 zookeepers = []
 
-node['cassandra']['topology'].each do |zk|
-  zookeepers.push("#{zk}:#{node['eucalyptus']['midokura']['zookeeper-port']}")
+node['zookeeper']['topology'].each do |zk|
+  zookeepers.push("#{zk}:#{node['eucalyptus']['midonet']['zookeeper-port']}")
 end
 
 template '/etc/midolman/midolman.conf' do

@@ -128,12 +128,12 @@ default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
 default['eucalyptus']['topology']['ceph-radosgw'] = nil
 
 # midokura repository
-default['eucalyptus']['midokura']['mem-urn'] = 'repo.midokura.com/mem-5/stable/el7/'
-default['eucalyptus']['midokura']['mics-url'] = 'http://repo.midokura.com/misc/stable/el7/'
-default['eucalyptus']['midokura']['gpgkey'] = 'https://repo.midokura.com/midorepo.key'
-default['eucalyptus']['midokura']['username'] = 'midokura-username'
-default['eucalyptus']['midokura']['password'] = 'midokura-password'
-default['eucalyptus']['midokura']['zookeeper-port'] = 2181
+default['eucalyptus']['midonet']['mem-urn'] = 'repo.midokura.com/mem-5/stable/el7/'
+default['eucalyptus']['midonet']['mics-url'] = 'http://repo.midokura.com/misc/stable/el7/'
+default['eucalyptus']['midonet']['gpgkey'] = 'https://repo.midokura.com/midorepo.key'
+default['eucalyptus']['midonet']['repo-username'] = 'midokura-username'
+default['eucalyptus']['midonet']['repo-password'] = 'midokura-password'
+default['eucalyptus']['midonet']['zookeeper-port'] = 2181
 
 # midonet-cluster
 default['eucalyptus']['midonet']['http-port'] = 8080
