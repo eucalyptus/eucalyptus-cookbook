@@ -1,10 +1,10 @@
 #### Install Info
 default["eucalyptus"]["install-type"] = "packages"
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
-default["eucalyptus"]["source-branch"] = "maint-4.1"
+default["eucalyptus"]["source-branch"] = "master"
 default['eucalyptus']['rm-source-dir'] = false
-default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/"
-default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/"
+default["eucalyptus"]["eucalyptus-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
+default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/7/x86_64/"
 default["eucalyptus"]["enterprise-repo"] = ""
 default["eucalyptus"]["eucalyptus-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
 default["eucalyptus"]["euca2ools-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
@@ -15,16 +15,16 @@ default['eucalyptus']['install-service-image'] = true
 #default['eucalyptus']['imaging-vm-type'] = 'm1.small'
 #default['eucalyptus']['loadbalancing-vm-type'] = 'm1.small'
 default['eucalyptus']['service-image-repo'] = ""
-default["eucalyptus"]["build-deps-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/build-deps/3.3/centos/6/x86_64/"
+default["eucalyptus"]["build-deps-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
 default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/enterprise-devel/centos/$releasever/$basearch/"
-default["eucalyptus"]["epel-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/epel-release-6.noarch.rpm"
-default["eucalyptus"]["elrepo-rpm"] = "http://downloads.eucalyptus.com/software/eucalyptus/3.4/centos/6/x86_64/elrepo-release-6.noarch.rpm"
+default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
 default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
 default['eucalyptus']['cloud-libs-branch'] = "master"
+default['eucalyptus']['configure-service-timeout'] = 180
 
 #### User console
 default['eucalyptus']['user-console']['source-branch'] = "develop"
@@ -37,11 +37,16 @@ default['eucalyptus']['user-console']['packaging-branch'] = "develop"
 default['eucalyptus']['admin-cred-dir'] = "/root"
 default['eucalyptus']['admin-ssh-pub-key'] = ""
 default["eucalyptus"]["home-directory"] = "/"
+# Allow the cookbooks discover the Eucalyptus service address to bind to. Requires bind-interface or bind-network to be set
 default["eucalyptus"]["set-bind-addr"] = false
+# If using 'set-bind-addr', 'bind-network' is used to locate the host address to bind to
+default["eucalyptus"]["bind-network"] = ""
+# If using 'set-bind-addr', 'bind-interface' is used to locate the host address to bind to
 # default["eucalyptus"]["bind-interface"] = 'eth0'
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
+default['eucalyptus']['dns']['domain'] = ""
 ### Topology must be set for key sync to work
 default['eucalyptus']['sync-keys'] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
@@ -99,6 +104,7 @@ default["eucalyptus"]["network"]["disable-tunneling"] = "Y"
 ## CC Specific
 default["eucalyptus"]["cc"]["port"] = "8774"
 default["eucalyptus"]["cc"]["scheduling-policy"] = "ROUNDROBIN"
+default["eucalyptus"]["cc"]["max-instances-per-cc"] = "128"
 
 ## Storage
 default["eucalyptus"]["storage"]["emc"]["navicli-url"] = "http://mirror.eucalyptus-systems.com/mirrors/emc/NaviCLI-Linux-64-latest.rpm"
@@ -114,3 +120,9 @@ default["eucalyptus"]["nc"]["service-path"] = "axis2/services/EucalyptusNC"
 default["eucalyptus"]["nc"]["hypervisor"] = "kvm"
 default["eucalyptus"]["nc"]["max-cores"] = "0"
 default["eucalyptus"]["nc"]["instance-path"] = "/var/lib/eucalyptus/instances"
+default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
+
+# ceph-rgw
+default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
+default['eucalyptus']['topology']['ceph-radosgw'] = nil

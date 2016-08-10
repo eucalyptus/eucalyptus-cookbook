@@ -2,7 +2,7 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: nuke
 #
-#Copyright [2014] [Eucalyptus Systems]
+# © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -17,19 +17,50 @@
 ##    limitations under the License.
 ##
 
+# used for platform_version comparison
+require 'chef/version_constraint'
+
 ## Stop all euca components
-service "eucalyptus-nc" do
-  action [ :stop ]
+
+# on el6 the init scripts are named differently than on el7
+# and systemctl does not like to enable unit files which are symlinks
+# so we will use the actual unit file here
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  service "eucalyptus-nc" do
+    action [ :stop ]
+  end
 end
 
-if node['eucalyptus']['network']['mode'] == 'EDGE'
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  service "eucalyptus-node" do
+    action [ :stop ]
+  end
+end
+
+if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['network']['mode'] == 'VPCMIDO'
   service "eucanetd" do
     action [ :stop ]
   end
 end
 
-service "eucalyptus-cc" do
-  action [ :stop ]
+execute "Clear all-networking for VPC cloud" do
+  command "eucanetd -Z"
+  ignore_failure true
+end
+
+# on el6 the init scripts are named differently than on el7
+# and systemctl does not like to enable unit files which are symlinks
+# so we will use the actual unit file here
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  service "eucalyptus-cc" do
+    action [ :stop ]
+  end
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  service "eucalyptus-cluster" do
+    action [ :stop ]
+  end
 end
 
 service "eucaconsole" do
@@ -230,4 +261,5 @@ end
 execute "Remove admin credentials" do
   command "rm -rf /root/.euca/faststart.ini"
   ignore_failure true
+  only_if { ::File.exist? "/root/.euca/faststart.ini" }
 end

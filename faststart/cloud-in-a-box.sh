@@ -5,7 +5,7 @@
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.2.2.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.3.0.tgz"
 nc_install_only=0
 
 function usage
@@ -145,7 +145,7 @@ function offer_support()
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
         ip addr show >> /tmp/$uuid/env.log
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        ifconfig >> /tmp/$uuid/env.log
+        ip link show >> /tmp/$uuid/env.log
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
         brctl show >> /tmp/$uuid/env.log
         printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
@@ -292,9 +292,9 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "An installation of Eucalyptus has been detected on this system. If you wish to"
     echo "reinstall Eucalyptus, please remove the previous installation first.  If you used"
-    echo "Faststart to install previously, you can use the \"nuke\" command:"
+    echo "Faststart to install previously, you can run the \"nuke\" recipe:"
     echo ""
-    echo "  cd cookbooks/eucalyptus/faststart; ./nuke.sh"
+    echo "  chef-client -z -o eucalyptus::nuke"
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_ALREADY_RUNNING&id=$uuid" >> /tmp/fsout.log
     exit 9
@@ -302,14 +302,14 @@ fi
 
 # Check to see that we're running on CentOS or RHEL 6.7.
 echo "[Precheck] Checking OS"
-cat /etc/redhat-release | egrep 'release.*6.[7]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*7.[2]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.7."
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 7.2"
     echo "To try Faststart on another platform, consider trying Eucadev:"
-    echo "https://github.com/eucalyptus/eucadev"
+    echo "https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=OS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
@@ -378,8 +378,14 @@ echo "[Precheck] Identifying primary network interface"
 
 ciab_nic_guess=""
 active_nic=""
+ciab_bridge_primary="0"
 
-if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
+primary_from_route=$(ip route | grep default | awk '{print $5}')
+if [ "$primary_from_route" != "" ]; then
+  echo ""
+  echo "Found network device: $primary_from_route"
+  echo ""
+  if [ "$primary_from_route" == "wlan0" ]; then
     echo "====="
     echo "[FATAL] Wireless install not supported!"
     echo ""
@@ -390,55 +396,59 @@ if [ "$(ifconfig wlan0 | grep 'inet addr')" ]; then
     echo "If you want to run a virtual version of Eucalyptus on a laptop,"
     echo "consider trying eucadev instead:"
     echo ""
-    echo "  https://github.com/eucalyptus/eucadev"
+    echo "  https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=WIRELESS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 23
-elif [ "$(ifconfig em1 | grep 'inet addr')" ]; then
-    echo "Active network interface em1 found"
-    ciab_nic_guess="em1"
-    active_nic="em1"
-elif [ "$(ifconfig eth0 | grep 'inet addr')" ]; then
-    echo "Active network interface eth0 found"
-    ciab_nic_guess="eth0"
-    active_nic="eth0"
-elif [ "$(ifconfig br0 | grep 'inet addr')" ]; then
+  elif [ "$primary_from_route" == "br0" ]; then
     # This is a corner case: if br0 is the primary interface,
     # it likely means that Eucalyptus has already been 
     # installed and a bridge established. We still need to determine
-    # the physical bridhge.
+    # the physical bridge.
     echo "Virtual network interface br0 found"
     active_nic="br0"
-    if [ "$(ifconfig em1)" ]; then
+    if [ "$(ip link show em1 2>/dev/null)" ]; then
         echo "Physical interface em1 found"
         ciab_nic_guess="em1"
-    elif [ "$(ifconfig eth0)" ]; then
+        ciab_bridge_primary="1"
+    elif [ "$(ip link show eth0 2>/dev/null)" ]; then
         echo "Physical interface eth0 found"
         ciab_nic_guess="eth0"
+        ciab_bridge_primary="1"
+    elif [ "$(ip link show eno1 2>/dev/null)" ]; then
+        echo "Physical interface en01 found"
+        ciab_nic_guess="en01"
+        ciab_bridge_primary="1"
     else
         echo "====="
-        echo "[WARN] No physical ethernet interface found"
+        echo "[WARN] Could not determine physical ethernet interface to use for bridging br0"
         echo ""
         echo "No active ethernet interface was found. Please check your network configuration"
         echo "and make sure that an ethernet interface is set up as your primary network"
         echo "interface, and that it is connected to the internet."
         echo ""
         echo "It's possible that you're using a non-standard network interface (we expect"
-        echo "eth0 or em1)."
+        echo "eth0, em1, or en01)."
         echo ""
     fi
+  else
+    echo "Active network interface $primary_from_route found"
+    ciab_nic_guess="$primary_from_route"
+    active_nic="$primary_from_route"
+  fi
 else
-    echo "====="
-    echo "[WARN] No active network interface found"
-    echo ""
-    echo "No active ethernet interface was found. Please check your network configuration"
-    echo "and make sure that an ethernet interface is set up as your primary network"
-    echo "interface, and that it's connected to the internet."
-    echo ""
-    echo "It's possible that you're using a non-standard network interface (we expect"
-    echo "eth0 or em1)."
-    echo ""
+  echo "====="
+  echo "[WARN] No active network interface found"
+  echo ""
+  echo "No active ethernet interface was found. Please check your network configuration"
+  echo "and make sure that an ethernet interface is set up as your primary network"
+  echo "interface, and that it's connected to the internet."
+  echo ""
+  echo "It's possible that you're using a non-standard network interface (we expect"
+  echo "eth0, em1, or en01)."
+  echo ""
 fi
+
 echo "[Precheck] OK, network interfaces checked."
 echo ""
 
@@ -472,12 +482,38 @@ echo ""
 ###############################################################################
 
 # Attempt to prepopulate values
-ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | cut -d':' -f2`
+if [ $(ip addr show $active_nic | grep "inet" | grep -v 'inet6' | wc -l) -gt 1 ]; then
+    echo ""
+    echo "We found too many IP addresses bound to $active_nic; this is unsupported!"
+    echo ""
+    echo "Please remove any IP addresses that may have been bound to this device, and re-run this script..."
+    exit 17
+fi
+ciab_ipaddr_guess=`ip addr show $active_nic | grep "inet" | grep -v 'inet6' | awk '{print $2}' | cut -d':' -f2 | cut -d'/' -f1`
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
-ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
-ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
-ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/ntp.conf | head -1`
+ciab_netmask_cidr=`ip addr show $active_nic | grep 'inet' | grep -v 'inet6' | awk '{print $2}' | cut -d':' -f2 | cut -d'/' -f2`
 
+if [ "$ciab_netmask_cidr" -eq 16 ]; then
+  ciab_netmask_guess="255.255.0.0"
+elif [ "$ciab_netmask_cidr" -eq 24 ]; then
+  ciab_netmask_guess="255.255.255.0"
+elif [ "$ciab_netmask_cidr" -eq 25 ]; then
+  ciab_netmask_guess="255.255.255.128"
+elif [ "$ciab_netmask_cidr" -eq 30 ]; then
+  ciab_netmask_guess="255.255.255.252"
+elif [ "$ciab_netmask_cidr" -eq 32 ]; then
+  ciab_netmask_guess="255.255.255.255"
+fi
+
+if [ "$ciab_netmask_guess" == "" ]; then
+    echo ""
+    echo "We cannot determine the NETMASK from the device $active_nic..."
+    echo ""
+    exit 19
+fi
+
+ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
+ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/chrony.conf | head -1`
 
 echo "====="
 echo ""
@@ -628,13 +664,14 @@ fi
 
 # Check to see if chef-solo is installed
 echo "[Chef] Checking if Chef Client is installed"
+CHEF_VERSION="12.8.1"
 which chef-solo
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl -L https://www.opscode.com/chef/install.sh | bash 1>>$LOGFILE
+    curl --insecure -L https://omnitruck.chef.io/install.sh | bash -s -- -v $CHEF_VERSION 1>>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Chef install failed!"
@@ -652,6 +689,7 @@ echo "[Chef] Removing old Chef templates"
 rm -rf /var/chef/* 1>>$LOGFILE
 
 echo "[Chef] Downloading necessary cookbooks"
+echo "[Chef] Downloading necessary cookbooks from URL: $cookbooks_url" >> $LOGFILE
 # Grab cookbooks from git
 yum install -y git 1>>$LOGFILE
 if [ "$?" != "0" ]; then
@@ -690,6 +728,18 @@ sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
 sed -i "s/NTP/$ciab_ntp/g" $chef_template
 
+if [ "$ciab_bridge_primary" -eq 1 ]; then
+    echo ""
+    echo "Binding Eucalyptus to device br0"
+    echo ""
+    sed -i "s/BINDINTERFACE/br0/g" $chef_template
+else
+    echo ""
+    echo "Binding Eucalyptus to device $ciab_nic"
+    echo ""
+    sed -i "s/BINDINTERFACE/$ciab_nic/g" $chef_template
+fi
+
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
 #
@@ -726,9 +776,10 @@ fi
 # failure to a file, and then succeed or fail based on whether the file
 # exists or not.
 
-rm -f faststart-successful.log
+rm -f faststart-successful*.log
 
 echo "[Yum Update] OK, running a full update of the OS. This could take a bit; please wait."
+echo ""
 echo "To see the update in progress, run the following command in another terminal:"
 echo ""
 echo "  tail -f $LOGFILE"
@@ -747,12 +798,80 @@ fi
 
 #
 # OK, THIS IS THE BIG STEP!  Install whichever chef template we're going with here.
-# On successful exit, write "success" to faststart-successful.log.
+# On successful exit, write "success" to faststart-successful*.log.
 
-(chef-solo -r cookbooks.tgz -j $chef_template 1>>$LOGFILE && echo "success" > faststart-successful.log) &
+if [ "$nc_install_only" -eq 0 ]; then
+  # add only the cloud-controller recipe to the run_list
+  runlistitems="recipe[eucalyptus::cloud-controller]"
+fi
+
+# Execute phase 1 which adds only the cloud-controller recipe to the run_list
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
 coffee $!
 
-if [[ ! -f faststart-successful.log ]]; then
+if [[ ! -f faststart-successful-phase1.log ]]; then
+    echo "[FATAL] Eucalyptus installation failed"
+    echo ""
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
+    echo ""
+    echo "Please try to run the installation again. If your installation fails again,"
+    echo "you can ask the Eucalyptus community for assistance:"
+    echo ""
+    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+    echo ""
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo ""
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+    offer_support "EUCA_INSTALL_FAILED"
+    exit 99
+  else
+    echo "Phase 1 (CLC) installed successfully...getting a 2nd cup of coffee and moving on to phase 2 (main cloud components)."
+fi
+
+# Add all other recipes to the run_list and execute phase 2
+if [ "$nc_install_only" -eq 0 ]; then
+  runlistitems=""
+  runlistitems="recipe[eucalyptus::user-console]"
+  runlistitems="$runlistitems,recipe[eucalyptus::register-components]"
+  runlistitems="$runlistitems,recipe[eucalyptus::walrus]"
+  runlistitems="$runlistitems,recipe[eucalyptus::cluster-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::storage-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::node-controller]"
+  runlistitems="$runlistitems,recipe[eucalyptus::configure]"
+fi
+
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
+coffee $!
+
+if [[ ! -f faststart-successful-phase2.log ]]; then
+    echo "[FATAL] Eucalyptus installation failed"
+    echo ""
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
+    echo ""
+    echo "Please try to run the installation again. If your installation fails again,"
+    echo "you can ask the Eucalyptus community for assistance:"
+    echo ""
+    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+    echo ""
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo ""
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+    offer_support "EUCA_INSTALL_FAILED"
+    exit 99
+  else
+    echo "Phase 2 installed successfully...yes, in fact having that 3rd cup of coffee and moving on to phase 3 (create first resources)."
+fi
+
+# add create first resources as a last item
+if [ "$nc_install_only" -eq 0 ]; then
+  runlistitems=""
+  runlistitems="recipe[eucalyptus::create-first-resources]"
+fi
+
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
+coffee $!
+
+if [[ ! -f faststart-successful-phase3.log ]]; then
     echo "[FATAL] Eucalyptus installation failed"
     echo ""
     echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
@@ -769,6 +888,8 @@ if [[ ! -f faststart-successful.log ]]; then
     exit 99
 fi
 
+
+
 ###############################################################################
 # SECTION 5: POST-INSTALL CONFIGURATION
 #
@@ -784,7 +905,6 @@ if [ "$nc_install_only" == "0" ]; then
 
     echo ""
     echo "[Config] Generating credentials"
-    export AWS_DEFAULT_REGION=localhost
 
     echo ""
     echo "[Config] Enabling web console"
@@ -857,7 +977,10 @@ else
     echo "Now, to register your node controller with your cloud, ssh to your"
     echo "cloud-in-a-box server and run the following command:"
     echo ""
-    echo "  /usr/sbin/euca_conf --register-nodes ${ciab_ipaddr}"
+    echo "  clusteradmin-register-nodes ${ciab_ipaddr}"
+    echo ""
+    echo "Finally copy keys to the node controller from the cloud-in-a-box server:"
+    echo "  clusteradmin-copy-keys ${ciab_ipaddr}"
     echo ""
     echo "Thanks for installing Eucalyptus!"
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log

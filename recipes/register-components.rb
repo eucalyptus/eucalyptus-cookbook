@@ -34,7 +34,7 @@ end
 
 ##### Register clusters
 clusters = node["eucalyptus"]["topology"]["clusters"]
-as_admin = "export AWS_DEFAULT_REGION=localhost; eval `clcadmin-assume-system-credentials` && "
+as_admin = "eval `clcadmin-assume-system-credentials` && "
 command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
 register_service = "#{command_prefix}/usr/bin/euserv-register-service"
 describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
@@ -50,7 +50,7 @@ clusters.each do |cluster, info|
   execute "Register CC" do
     command "#{register_service} -t cluster -z #{cluster} -h #{cc_ip} #{cluster}-cc-1"
     not_if "#{describe_services} | grep #{cluster}-cc-1"
-    retries 5
+    retries 15
     retry_delay 10
   end
   if info["sc-1"] == ""

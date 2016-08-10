@@ -2,7 +2,7 @@
 ## Cookbook Name:: eucalyptus
 ## Recipe:: install-source
 ##
-##Copyright [2014] [Eucalyptus Systems]
+## © Copyright 2014-2016 Hewlett Packard Enterprise Development Company LP
 ##
 ##Licensed under the Apache License, Version 2.0 (the "License");
 ##you may not use this file except in compliance with the License.
@@ -16,6 +16,20 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
+
+# used for platform_version comparison
+require 'chef/version_constraint'
+
+execute 'remove kvm_intel module if loaded' do
+  command 'modprobe -r kvm_intel'
+  only_if { '/sbin/lsmod | grep kvm_intel' }
+end
+
+execute 'remove kvm module if loaded' do
+  command 'modprobe -r kvm'
+  only_if { '/sbin/lsmod | grep kvm' }
+end
+
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -44,40 +58,100 @@ yum_repository "euca-build-deps" do
   url node['eucalyptus']['build-deps-repo']
   action :add
   metadata_expire "1"
+  gpgcheck false
 end
 
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
 
-%w{java-1.7.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy axis2-adb axis2-adb-codegen axis2c-devel
-  axis2-codegen curl-devel gawk git jpackage-utils libvirt-devel libxml2-devel json-c
-  libxslt-devel m2crypto openssl-devel python-devel python-setuptools json-c-devel
-  rampartc-devel swig xalan-j2-xsltc}.each do |dependency|
-  yum_package dependency do
-    options node['eucalyptus']['yum-options']
-    action :upgrade
+el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
+    axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
+    libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
+    python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc
+    gengetopt selinux-policy-devel}
+
+el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
+    axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
+    perl-Time-HiRes perl-Sys-Virt perl-XML-Simple dejavu-serif-fonts
+    device-mapper dhcp dhcp-common e2fsprogs euca2ools
+    file gawk httpd iptables iscsi-initiator-utils jpackage-utils
+    PyGreSQL libcurl libxml2-devel libxslt-devel lvm2
+    m2crypto openssl-devel parted patch perl-Crypt-OpenSSL-RSA
+    perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
+    python-devel python-setuptools rampartc rampartc-devel rsync
+    scsi-target-utils sudo swig util-linux vconfig velocity wget which
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python
+    libselinux-utils policycoreutils selinux-policy-base}
+
+# node controller specific deps
+el7ncdeps = %w{libvirt libvirt-python kvm qemu-kvm}
+
+el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
+    axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
+    git jpackage-utils libvirt-devel libxml2-devel json-c libxslt-devel
+    m2crypto openssl-devel python-devel python-setuptools json-c-devel
+    rampartc-devel swig xalan-j2-xsltc gengetopt}
+
+el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
+    axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
+    coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt
+    perl-XML-Simple dejavu-serif-fonts device-mapper dhcp dhcp-common
+    e2fsprogs euca2ools file gawk httpd
+    iptables iscsi-initiator-utils jpackage-utils PyGreSQL libcurl
+    libxml2-devel libxslt-devel lvm2 m2crypto
+    openssl-devel parted patch perl-Crypt-OpenSSL-RSA
+    perl-Crypt-OpenSSL-Random postgresql92 postgresql92-server pv
+    python-boto python-devel python-setuptools rampartc rampartc-devel rsync
+    scsi-target-utils sudo swig util-linux vconfig velocity vtun wget which
+    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}
+
+# node controller specific deps
+el6ncdeps = %w{libvirt libvirt-python kvm}
+
+# concatenate the runtime and build deps, remove dups, and sort
+el7deps = el7runtime.concat(el7build).uniq().sort()
+el6deps = el6runtime.concat(el6build).uniq().sort()
+
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  el6deps.each do |dependency|
+    yum_package dependency do
+      options node['eucalyptus']['yum-options']
+      action :upgrade
+    end
+  end
+  exp_run_list = node['expanded_run_list']
+  exp_run_list.each do |listitem|
+    if listitem.include? "node-controller"
+      Chef::Log.info "Installing node-controller specific packages (these packages should not be installed on all service machines)"
+      el6ncdeps.each do |dependency|
+        yum_package dependency do
+          options node['eucalyptus']['yum-options']
+          action :upgrade
+        end
+      end
+    end
   end
 end
 
-### Runtime deps
-%w{java-1.7.0-openjdk gcc bc make ant ant-nodeps apache-ivy axis2-adb-codegen axis2-codegen axis2c
-  axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils perl-Time-HiRes perl-Sys-Virt perl-XML-Simple
-  dejavu-serif-fonts device-mapper dhcp dhcp-common drbd drbd83 drbd83-kmod
-  drbd83-utils e2fsprogs euca2ools file gawk httpd iptables iscsi-initiator-utils jpackage-utils kvm
-  PyGreSQL libcurl libvirt libvirt-devel libxml2-devel libxslt-devel lvm2 m2crypto
-  openssl-devel parted patch perl-Crypt-OpenSSL-RSA perl-Crypt-OpenSSL-Random
-  postgresql92 postgresql92-server pv python-boto python-devel python-setuptools
-  rampartc rampartc-devel rsync scsi-target-utils sudo swig util-linux vconfig
-  velocity vtun wget which xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python}.each do |dependency|
-  yum_package dependency do
-    options node['eucalyptus']['yum-options']
-    action :upgrade
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  el7deps.each do |dependency|
+    yum_package dependency do
+      options node['eucalyptus']['yum-options']
+      action :upgrade
+    end
   end
-end
-
-### Get WSDL2C
-execute 'wget https://raw.githubusercontent.com/eucalyptus/eucalyptus-rpmspec/maint-4.2/euca-WSDL2C.sh && chmod +x euca-WSDL2C.sh' do
-  cwd home_directory
+  exp_run_list = node['expanded_run_list']
+  exp_run_list.each do |listitem|
+    if listitem.include? "node-controller"
+      Chef::Log.info "Installing node-controller specific packages (these packages should not be installed on all service machines)"
+      el7ncdeps.each do |dependency|
+        yum_package dependency do
+          options node['eucalyptus']['yum-options']
+          action :upgrade
+        end
+      end
+    end
+  end
 end
 
 execute "Remove source" do
@@ -94,8 +168,36 @@ git source_directory do
   action :sync
 end
 
-configure_command = "export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules --with-db-home=/usr/pgsql-9.2 --with-wsdl2c-sh=#{home_directory}/euca-WSDL2C.sh"
-make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.7.0-openjdk.x86_64' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make && make install"
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
+  db_home_path = "/usr/pgsql-9.2"
+  init_style = "--enable-sysvinit"
+end
+
+build_selinux_command = "make all && make reload && make relabel"
+execute "Build and install eucalyptus-selinux" do
+  command build_selinux_command
+  cwd "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux"
+  action :nothing
+end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  db_home_path = "/usr"
+  init_style = "--enable-systemd"
+  git "#{node['eucalyptus']["home-directory"]}/source/eucalyptus-selinux" do
+    repository "https://github.com/eucalyptus/eucalyptus-selinux"
+    action :sync
+    notifies :run, 'execute[Build and install eucalyptus-selinux]', :immediately
+  end
+end
+
+if node['eucalyptus']['source-repo'].include? "internal"
+  euca_wsdl_path = "#{source_directory}/eucalyptus/devel/euca-WSDL2C.sh"
+else
+  euca_wsdl_path = "#{source_directory}/devel/euca-WSDL2C.sh"
+end
+
+configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{euca_wsdl_path}"
+make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
 ### Run configure for open source
 execute "Run configure"  do
   command configure_command
@@ -131,15 +233,11 @@ if node['eucalyptus']['source-repo'].end_with?("internal")
 end
 
 tools_dir = "#{eucalyptus_dir}/tools"
-%w{eucalyptus-cloud eucalyptus-cc eucalyptus-nc}.each do |init_script|
-  execute "ln -sf #{tools_dir}/eucalyptus-cloud /etc/init.d/#{init_script}" do
-    creates "/etc/init.d/#{init_script}"
-  end
-  execute "chmod +x #{tools_dir}/eucalyptus-cloud"
-end
 
 if node["eucalyptus"]["network"]["mode"] == "EDGE"
-  execute "ln -fs #{tools_dir}/eucanetd /etc/init.d/eucanetd"
+  execute "ln -sf #{tools_dir}/eucanetd /etc/init.d/eucanetd" do
+    creates "/etc/init.d/eucanetd"
+  end
   execute "chmod +x #{tools_dir}/eucanetd"
 end
 
@@ -155,4 +253,9 @@ udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/
                 'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
 udev_mapping.each do |src, dst|
   execute "cp #{eucalyptus_dir}/#{src} #{dst}"
+end
+
+execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
+  command 'modprobe kvm_intel'
+  only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
 end

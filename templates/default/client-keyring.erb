@@ -3,6 +3,9 @@
   <% if @keyring['key'] -%>
   key = <%= @keyring['key'] %>
   <% end %>
+  <% if @keyring['caps mds'] -%>
+  caps mds = <%= @keyring['caps mds'] %>
+  <% end %>
   <% if @keyring['caps mon'] -%>
   caps mon = <%= @keyring['caps mon'] %>
   <% end %>

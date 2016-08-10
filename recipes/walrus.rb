@@ -31,8 +31,8 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-if node["eucalyptus"]["set-bind-addr"] and not node["eucalyptus"]["cloud-opts"].include?("bind-addr")
-  if node["eucalyptus"]["bind-interface"]
+if node["eucalyptus"]["set-bind-addr"] 
+  if node["eucalyptus"]["bind-interface"] or node["eucalyptus"]["bind-network"]
     # Auto detect IP from interface name
     bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
   else
@@ -46,6 +46,7 @@ template "eucalyptus.conf" do
   source "eucalyptus.conf.erb"
   path   "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf"
   action :create
+  notifies :restart, "service[eucalyptus-cloud]", :immediately
 end
 
 ruby_block "Sync keys for Walrus" do
