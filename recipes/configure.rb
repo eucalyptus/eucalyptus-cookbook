@@ -2,20 +2,20 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: configure
 #
-#Copyright [2014-2015] [Eucalyptus Systems]
-##
-##Licensed under the Apache License, Version 2.0 (the "License");
-##you may not use this file except in compliance with the License.
-##You may obtain a copy of the License at
-##
-##    http://www.apache.org/licenses/LICENSE-2.0
-##
-##    Unless required by applicable law or agreed to in writing, software
-##    distributed under the License is distributed on an "AS IS" BASIS,
-##    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-##    See the License for the specific language governing permissions and
-##    limitations under the License.
-##
+# Copyright [2014-2015] [Eucalyptus Systems]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
 require 'mixlib/shellout'
 
 disable_proxy = 'http_proxy=""'
@@ -31,7 +31,7 @@ if node['eucalyptus']['dns']['domain']
     retry_delay 20
   end
   execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
-    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns-domain']}"
     retries 15
     retry_delay 20
   end
@@ -214,11 +214,16 @@ execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
-file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-  content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-  mode '644'
+template "network.json" do
+  path   "#{node['eucalyptus']['admin-cred-dir']}/network.json"
+  source "network-vpc.json.erb"
   action :create
+  variables(
+    :gateways => node["eucalyptus"]["network"]['Gateways']
+  )
+  only_if { node['eucalyptus']['network']['mode'] == 'VPCMIDO' }
 end
+
 execute "Configure network" do
   command "#{euctl} cloud.network.network_configuration=@#{node['eucalyptus']['admin-cred-dir']}/network.json"
 end
@@ -363,7 +368,7 @@ ruby_block "Install Service Image" do
       if !service_image[:error].empty?
         raise Exception.new("Failed to fetch property because of: #{service_image[:error]}")
       end
-      
+
       if service_image[:is_configured]
         break
       else
