@@ -20,11 +20,6 @@ else
   include_recipe "eucalyptus::install-source"
 end
 
-# temp, if seen, must remove
-remote_file '/usr/sbin/eucanetd' do
-  source 'ftp://10.111.5.140/pub/eucanetd'
-end
-
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   execute "Set ip_forward sysctl values in sysctl.conf" do
     command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
