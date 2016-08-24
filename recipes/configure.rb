@@ -219,7 +219,9 @@ template "network.json" do
   source "network-vpc.json.erb"
   action :create
   variables(
-    :gateways => node["eucalyptus"]["network"]['Gateways']
+    :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
+    :gateways => node["eucalyptus"]["network"]['Gateways'],
+    :publicIps => node["eucalyptus"]["network"]["PublicIps"]
   )
   only_if { node['eucalyptus']['network']['mode'] == 'VPCMIDO' }
 end

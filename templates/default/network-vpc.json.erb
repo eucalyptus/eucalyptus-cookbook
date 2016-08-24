@@ -1,11 +1,17 @@
 {
   "InstanceDnsServers": [
-    "<%= node["eucalyptus"]["network"]["InstanceDnsServers"].join(",") %>"
+  <% @instanceDnsServers.each_with_index do |value, index| -%>
+    "<%= value %>"<%= "," unless @instanceDnsServers.size == index + 1 %>
+  <% end %>
   ],
   "Mido": {
     "Gateways": [
     <% @gateways.each_with_index do |gateway, index| -%>
-      {<%= gateway.map{ |k,v| "\"#{k}\": \"#{v}\"" }.join(",") %>}<%= "," unless @gateways.size == index + 1 %>
+      {
+      <% gateway.each_with_index do |(k,v),i | -%>
+        "<%= k %>": "<%= v %>"<%= "," unless gateway.size == i + 1 %>
+      <% end %>
+      }<%= "," unless @gateways.size == index + 1 %>
     <% end %>
     ],
     "EucanetdHost": "<%= node["eucalyptus"]["network"]['EucanetdHost'] %>",
@@ -14,8 +20,8 @@
   },
   "Mode": "VPCMIDO",
   "PublicIps": [
-  <% node["eucalyptus"]["network"]["PublicIps"].each do |value| -%>
-    "<%= node["eucalyptus"]["network"]["PublicIps"].join(",") %>"
+  <% @publicIps.each_with_index do |value, index| -%>
+    "<%= value %>"<%= "," unless @publicIps.size == index + 1 %>
   <% end %>
   ]
 }
