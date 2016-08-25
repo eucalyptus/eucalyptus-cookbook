@@ -232,19 +232,6 @@ if node['eucalyptus']['source-repo'].end_with?("internal")
   eucalyptus_dir = "#{source_directory}/eucalyptus"
 end
 
-tools_dir = "#{eucalyptus_dir}/tools"
-
-if node["eucalyptus"]["network"]["mode"] == "EDGE"
-  execute "ln -sf #{tools_dir}/eucanetd /etc/init.d/eucanetd" do
-    creates "/etc/init.d/eucanetd"
-  end
-  execute "chmod +x #{tools_dir}/eucanetd"
-end
-
-execute "Copy Policy Kit file for NC" do
-  command "cp #{tools_dir}/eucalyptus-nc-libvirt.pkla /var/lib/polkit-1/localauthority/10-vendor.d/"
-end
-
 ### Add udev rules
 directory '/etc/udev/rules.d'
 directory '/etc/udev/scripts'
