@@ -77,6 +77,11 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
+  group 'libvirt' do
+    action :manage
+    members 'eucalyptus'
+    append true
+  end
 end
 
 # make sure libvirt is started now in case
