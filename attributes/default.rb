@@ -1,10 +1,22 @@
 #### Install Info
 default["eucalyptus"]["install-type"] = "packages"
+
 default["eucalyptus"]["source-repo"] = "https://github.com/eucalyptus/eucalyptus.git"
 default["eucalyptus"]["source-branch"] = "master"
+default["eucalyptus"]["cloud-libs-repo"] = "https://github.com/eucalyptus/eucalyptus-cloud-libs.git"
+default["eucalyptus"]["cloud-libs-branch"] = "master"
+
+default["eucalyptus"]["san-repo"] = ""
+default["eucalyptus"]["san-branch"] = "master"
+default["eucalyptus"]["san-libs-repo"] = ""
+default["eucalyptus"]["san-libs-branch"] = "master"
+
+default["eucalyptus"]["selinux-repo"] = "https://github.com/eucalyptus/eucalyptus-selinux"
+default["eucalyptus"]["selinux-branch"] = "master"
+
 default['eucalyptus']['rm-source-dir'] = false
-default["eucalyptus"]["eucalyptus-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
-default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/7/x86_64/"
+default["eucalyptus"]["eucalyptus-repo"] = "http://downloads.eucalyptus.com/software/eucalyptus/nightly/devel/rhel/$releasever/$basearch/"
+default["eucalyptus"]["euca2ools-repo"] = "http://downloads.eucalyptus.com/software/euca2ools/nightly/devel/rhel/$releasever/$basearch/"
 default["eucalyptus"]["enterprise-repo"] = ""
 default["eucalyptus"]["eucalyptus-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
 default["eucalyptus"]["euca2ools-gpg-key"] = "http://downloads.eucalyptus.com/software/gpg/eucalyptus-release-key.pub"
@@ -15,15 +27,12 @@ default['eucalyptus']['install-service-image'] = true
 #default['eucalyptus']['imaging-vm-type'] = 'm1.small'
 #default['eucalyptus']['loadbalancing-vm-type'] = 'm1.small'
 default['eucalyptus']['service-image-repo'] = ""
-default["eucalyptus"]["build-deps-repo"] = "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/"
-default['eucalyptus']['vddk-libs-repo'] = "http://packages.release.eucalyptus-systems.com/yum/tags/enterprise-devel/centos/$releasever/$basearch/"
 default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 default['eucalyptus']['eustore-url'] = "http://emis.eucalyptus.com/"
 default['eucalyptus']['default-img-url'] = "http://euca-vagrant.s3.amazonaws.com/cirrosraw.img"
 default['eucalyptus']['yum-options'] = ""
 default['eucalyptus']['init-script-url'] = ""
 default['eucalyptus']['post-script-url'] = ""
-default['eucalyptus']['cloud-libs-branch'] = "master"
 default['eucalyptus']['configure-service-timeout'] = 180
 
 #### User console
