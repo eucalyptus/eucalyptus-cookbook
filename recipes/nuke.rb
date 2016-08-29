@@ -181,13 +181,6 @@ if node['eucalyptus']['install-type'] == 'source'
     action :remove
   end
 
-  ### remove build deps repo
-  yum_repository 'euca-build-deps' do
-    description 'Eucalyptus Build Dependencies repo'
-    url node['eucalyptus']['build-deps-repo']
-    action :remove
-  end
-
   execute 'Remove init script symlinks' do
     command 'rm -rf /etc/init.d/euca*'
   end
