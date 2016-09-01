@@ -24,22 +24,6 @@ return if node.recipe?("eucalyptus::cloud-controller")
 
 include_recipe "eucalyptus::cloud-service"
 
-
-# TODO: write individual recipe for osg and move this section
-yum_repository "ceph-hammer" do
-  description "Ceph Hammer Package Repo"
-  url "http://download.ceph.com/rpm-hammer/el6/x86_64/"
-  gpgcheck false
-  only_if { Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version']) }
-end
-
-yum_repository "ceph-hammer" do
-  description "Ceph Hammer Package Repo"
-  url "http://download.ceph.com/rpm-hammer/el7/x86_64/"
-  gpgcheck false
-  only_if { Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version']) }
-end
-
 yum_package "ceph-radosgw" do
   action :upgrade
   options node['eucalyptus']['yum-options']
