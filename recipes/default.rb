@@ -129,6 +129,12 @@ yum_repository "euca2ools" do
   metadata_expire "1"
 end
 
+yum_repository "ceph" do
+  description "Ceph Package Repo"
+  url node['eucalyptus']['ceph-repo']
+  gpgcheck false
+end
+
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   node.default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"
 end
