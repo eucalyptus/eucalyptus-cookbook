@@ -140,7 +140,7 @@ default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
 default['eucalyptus']['topology']['ceph-radosgw'] = nil
 
 # midokura repository
-default['eucalyptus']['midonet']['mem-urn'] = 'repo.midokura.com/mem-5/stable/el7/'
+default['eucalyptus']['midonet']['mem-urn'] = 'repo.midokura.com/mem-5.2/stable/el7/'
 default['eucalyptus']['midonet']['mics-url'] = 'http://repo.midokura.com/misc/stable/el7/'
 default['eucalyptus']['midonet']['gpgkey'] = 'https://repo.midokura.com/midorepo.key'
 default['eucalyptus']['midonet']['repo-username'] = 'midokura-username'
