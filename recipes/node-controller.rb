@@ -77,6 +77,13 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
+  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+    group 'libvirt' do
+      action :manage
+      members 'eucalyptus'
+      append true
+    end
+  end
 end
 
 # make sure libvirt is started now in case
