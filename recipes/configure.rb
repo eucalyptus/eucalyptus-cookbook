@@ -214,7 +214,7 @@ execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
-template "network.json" do
+template "create network.json for VPCMIDO" do
   path   "#{node['eucalyptus']['admin-cred-dir']}/network.json"
   source "network-vpc.json.erb"
   action :create
@@ -224,6 +224,18 @@ template "network.json" do
     :publicIps => node["eucalyptus"]["network"]["PublicIps"]
   )
   only_if { node['eucalyptus']['network']['mode'] == 'VPCMIDO' }
+end
+
+template "create network.json for EDGE" do
+  path   "/root/network.json"
+  source "network-edge.json.erb"
+  action :create
+  variables(
+    :clusters => JSON.pretty_generate(node["eucalyptus"]["network"]["clusters"], quirks_mode: true),
+    :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
+    :publicIps => node["eucalyptus"]["network"]["PublicIps"]
+  )
+  only_if { node['eucalyptus']['network']['mode'] == 'EDGE' }
 end
 
 execute "Configure network" do

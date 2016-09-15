@@ -1,0 +1,14 @@
+{
+  "Clusters": <%= @clusters %>,
+  "InstanceDnsServers": [
+  <% @instanceDnsServers.each_with_index do |value, index| -%>
+    "<%= value %>"<%= "," unless @instanceDnsServers.size == index + 1 %>
+  <% end %>
+  ],
+  "Mode": "EDGE",
+  "PublicIps": [
+  <% @publicIps.each_with_index do |value, index| -%>
+    "<%= value %>"<%= "," unless @publicIps.size == index + 1 %>
+  <% end %>
+  ]
+}
