@@ -256,15 +256,44 @@ end
 # Sets ceph specific node attributes for further use e.g in ERB templates.
 # This ruby_block needs to be executed anytime before eucalyptus.conf
 # is created by chef `template` and after /etc/ceph directory is created.
-ruby_block "Set Ceph Credentials" do
+ruby_block "Get Ceph Credentials" do
   block do
-    if node['ceph']
-      CephHelper::SetCephRbd.set_ceph_credentials(node, node['ceph']['users'][0]['name'])
-    else
-      CephHelper::SetCephRbd.set_ceph_credentials(node, "")
-    end
+    CephHelper::SetCephRbd.set_ceph_credentials(node, node['ceph']['users'][0]['name'])
   end
-  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) && node['ceph'] }
+end
+
+if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
+  cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+  ceph_keyrings = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-keyrings"],
+  node["eucalyptus"]["ceph-keyrings"])
+
+  node.set[:ceph_user_name] = (ceph_keyrings['rbd-user']['name']).sub(/^client./, '')
+  node.set[:ceph_keyring_path] = "#{ceph_keyrings['rbd-user']['keyring']}"
+  node.set[:ceph_config_path] = "/etc/ceph/ceph.conf"
+  node.save
+
+  ceph_config = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],
+  node["eucalyptus"]["ceph-config"])
+
+  template "/etc/ceph/ceph.conf" do
+    source "ceph.conf.erb"
+    action :create
+    variables(
+      :cephConfig => ceph_config
+    )
+  end
+
+  template "Write rbd-user keyring" do
+    path ceph_keyrings["rbd-user"]["keyring"]
+    source "client-keyring.erb"
+    variables(
+      :keyring => ceph_keyrings["rbd-user"]
+    )
+    action :create
+  end
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

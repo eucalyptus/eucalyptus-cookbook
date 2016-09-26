@@ -110,25 +110,26 @@ elsif node['eucalyptus']['topology']['riakcs']
   end
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
   execute "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
-elsif node['eucalyptus']['topology']['ceph-radosgw']
+elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "ceph-rgw"
   execute "Set OSG providerclient to ceph-rgw" do
     command "#{euctl} objectstorage.providerclient=ceph-rgw"
     retries 15
     retry_delay 20
   end
+  rgw_endpoint = node['eucalyptus']['topology']['objectstorage']['ceph-radosgw']['endpoint']
   execute "Set S3 endpoint for ceph-rgw" do
-    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['ceph-radosgw']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{rgw_endpoint}"
     retries 15
     retry_delay 20
   end
 
-  ceph_access_key = node['eucalyptus']['topology']['ceph-radosgw']['access-key']
-  ceph_secret_key = node['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+  ceph_access_key = node['eucalyptus']['topology']['objectstorage']['access-key']
+  ceph_secret_key = node['eucalyptus']['topology']['objectstorage']['secret-key']
 
   if ceph_access_key == nil || ceph_secret_key == nil
     found = CephHelper::SetCephRbd.get_radosgw_user_creds(node)
-    ceph_access_key = found['eucalyptus']['topology']['ceph-radosgw']['access-key']
-    ceph_secret_key = found['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+    ceph_access_key = found['eucalyptus']['topology']['objectstorage']['access-key']
+    ceph_secret_key = found['eucalyptus']['topology']['objectstorage']['secret-key']
   end
 
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{ceph_access_key}"
@@ -411,7 +412,7 @@ execute "create_imaging_worker" do
   only_if { node['eucalyptus']['install-service-image'] }
 end
 
-node['eucalyptus']['system-properties'].each do |key, value|
+node['eucalyptus']['cloud-properties'].each do |key, value|
   execute "#{euctl} #{key}=\"#{value}\"" do
     retries 10
     retry_delay 5

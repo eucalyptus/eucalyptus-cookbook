@@ -3,18 +3,41 @@ require "json"
 module CephHelper
   module SetCephRbd
 
+    def self.get_configurations(key_local, key_global)
+      if key_local
+        Chef::Log.info "Found LOCAL value, ignoring global!"
+        return key_local
+      elsif key_global
+        Chef::Log.info "Couldn't find local value, using GLOBAL!"
+        return key_global
+      else
+        raise Exception.new("Neither global nor local key found!!!")
+      end
+    end
+
     def self.is_ceph?(node)
+      cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
       if node['eucalyptus']['topology']
-        clusters = node['eucalyptus']['topology']['clusters']
+        cluster_controller = node['eucalyptus']['topology']['clusters'][cluster_name]
+      else
+        raise Exception.new("This node doesn't belong to any cluster!!!")
+      end
+      if cluster_controller["storage-backend"] == "ceph-rbd"
+        return true
+      end
+      return false
+    end
+
+    def self.is_ceph_radosgw?(node)
+      if node['eucalyptus']['topology'] && node['eucalyptus']['topology']['objectstorage']
+        objectstorage = node['eucalyptus']['topology']['objectstorage']
       else
         return false
       end
-      clusters.each do |name, info|
-        if info['storage-backend'] == 'ceph-rbd'
+      if objectstorage['providerclient'] == 'ceph-rgw'
           return true
-        else
+      else
           return false
-        end
       end
     end
 
@@ -115,7 +138,7 @@ module CephHelper
       ufses.each do |ufs|
         Chef::Log.debug "trying: #{ufs}"
         found = Chef::Search::Query.new.search(:node, "addresses:#{ufs}").first.first
-        if found.attributes['eucalyptus']['topology']['ceph-radosgw']['access-key']
+        if found.attributes['eucalyptus']['topology']['objectstorage']['access-key']
           Chef::Log.debug "found: #{found}"
           return found
           break

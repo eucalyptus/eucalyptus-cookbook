@@ -135,9 +135,9 @@ default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
 default['eucalyptus']['ceph-repo'] = "http://download.ceph.com/rpm-hammer/el7/x86_64/"
 
 # ceph-rgw
-default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
-default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
-default['eucalyptus']['topology']['ceph-radosgw'] = nil
+default['eucalyptus']['topology']['objectstorage']['access-key'] = nil
+default['eucalyptus']['topology']['objectstorage']['secret-key'] = nil
+default['eucalyptus']['topology']['objectstorage']['ceph-radosgw'] = nil
 
 # midokura repository
 default['eucalyptus']['midonet']['auth'] = false
