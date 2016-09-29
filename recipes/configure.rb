@@ -77,26 +77,26 @@ if node['riakcs_cluster']
     retries 5
     retry_delay 20
   end
-elsif node['eucalyptus']['topology']['riakcs']
+elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "riakcs"
   execute "Set OSG providerclient to riakcs" do
     command "#{euctl} objectstorage.providerclient=riakcs"
     retries 15
     retry_delay 20
   end
 
-  admin_key = node['eucalyptus']['topology']['riakcs']['access-key']
-  admin_secret = node['eucalyptus']['topology']['riakcs']['secret-key']
+  admin_key = node['eucalyptus']['topology']['objectstorage']['access-key']
+  admin_secret = node['eucalyptus']['topology']['objectstorage']['secret-key']
 
   if admin_key == ""
     admin_key, admin_secret = RiakCSHelper::CreateUser.create_riakcs_user(
-         node["eucalyptus"]["topology"]["riakcs"]["admin-name"],
-         node["eucalyptus"]["topology"]["riakcs"]["admin-email"],
-         node["eucalyptus"]["topology"]["riakcs"]["endpoint"],
-         node["eucalyptus"]["topology"]["riakcs"]["port"],
+         node["eucalyptus"]["topology"]["objectstorage"]["admin-name"],
+         node["eucalyptus"]["topology"]["objectstorage"]["admin-email"],
+         node["eucalyptus"]["topology"]["objectstorage"]["endpoint"],
+         node["eucalyptus"]["topology"]["objectstorage"]["port"],
     )
 
-    node.set['eucalyptus']['topology']['riakcs']['access-key'] = admin_key
-    node.set['eucalyptus']['topology']['riakcs']['secret-key'] = admin_secret
+    node.set['eucalyptus']['topology']['objectstorage']['access-key'] = admin_key
+    node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = admin_secret
     node.save
 
     Chef::Log.info "RiakCS admin_key: #{admin_key}"
@@ -104,7 +104,7 @@ elsif node['eucalyptus']['topology']['riakcs']
   end
 
   execute "Set S3 endpoint" do
-    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['objectstorage']['endpoint']}"
     retries 15
     retry_delay 20
   end
