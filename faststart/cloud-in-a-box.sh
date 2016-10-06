@@ -555,6 +555,15 @@ done
 echo "IPADDR="$ciab_ipaddr
 echo ""
 
+/usr/bin/dig $ciab_ipaddr.xip.io 2>&1 >/dev/null
+if [[ $? != 0 ]]; then
+    echo "Cannot resolve $ciab_ipaddr.xip.io!  We require network
+    connectivity to xip.io for FastStart service DNS resolution.
+    Please verify your network connectivity is functioning properly and attempt
+    your FastStart install again."
+    exit 1
+fi
+
 echo "What's the gateway for this host? ($ciab_gateway_guess)"
 until valid_ip $ciab_gateway; do
     read ciab_gateway
