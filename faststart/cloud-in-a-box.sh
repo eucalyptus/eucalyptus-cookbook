@@ -555,7 +555,7 @@ done
 echo "IPADDR="$ciab_ipaddr
 echo ""
 
-/usr/bin/dig $ciab_ipaddr.xip.io 2>&1 >/dev/null
+/usr/bin/ping -c 1 $ciab_ipaddr.xip.io 2>&1 >/dev/null
 if [[ $? != 0 ]]; then
     echo "Cannot resolve $ciab_ipaddr.xip.io!  We require network
     connectivity to xip.io for FastStart service DNS resolution.
