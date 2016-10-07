@@ -41,25 +41,16 @@ end
 ### Used for monitoring in 4.1
 group "eucalyptus-status"
 
-source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 home_directory =  node['eucalyptus']["home-directory"]
-cloud_libs_branch = node['eucalyptus']['cloud-libs-branch']
 
-directory source_directory do
-  recursive true
-  owner "eucalyptus"
-  group "eucalyptus"
-end
-
-
-### Add build deps repo
-yum_repository "euca-build-deps" do
-  description "Eucalyptus Build Dependencies repo"
-  url node['eucalyptus']['build-deps-repo']
+yum_repository "eucalyptus" do
+  description "Eucalyptus repo"
+  url node['eucalyptus']['eucalyptus-repo']
   action :add
   metadata_expire "1"
   gpgcheck false
 end
+
 
 ### This is a source install so we need the build time deps and runtime deps
 ### Build time first
@@ -68,7 +59,7 @@ el7build = %w{java-1.8.0-openjdk-devel ant ant-junit apache-ivy
     axis2c-devel axis2 curl-devel gawk git jpackage-utils libvirt-devel
     libxml2-devel json-c libxslt-devel m2crypto openssl-devel python-devel
     python-setuptools json-c-devel rampartc-devel swig xalan-j2-xsltc
-    gengetopt selinux-policy-devel}
+    gengetopt selinux-policy-devel autoconf}
 
 el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     axis2c-devel bridge-utils coreutils curl curl-devel scsi-target-utils
@@ -90,7 +81,7 @@ el6build = %w{java-1.8.0-openjdk-devel ant ant-junit ant-nodeps apache-ivy
     axis2-adb axis2-adb-codegen axis2c-devel axis2-codegen curl-devel gawk
     git jpackage-utils libvirt-devel libxml2-devel json-c libxslt-devel
     m2crypto openssl-devel python-devel python-setuptools json-c-devel
-    rampartc-devel swig xalan-j2-xsltc gengetopt}
+    rampartc-devel swig xalan-j2-xsltc gengetopt autoconf}
 
 el6runtime = %w{java-1.8.0-openjdk gcc bc make ant ant-nodeps apache-ivy
     axis2-adb-codegen axis2-codegen axis2c axis2c-devel bridge-utils
@@ -154,24 +145,124 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   end
 end
 
-execute "Remove source" do
-  command "rm -rf #{source_directory}"
+source_directory = "#{node['eucalyptus']["home-directory"]}/source"
+
+directory source_directory do
+  recursive true
+  action :delete
   only_if "#{node['eucalyptus']['rm-source-dir']}"
 end
 
-### Checkout Eucalyptus Source
-git source_directory do
+directory source_directory do
+  action :create
+end
+
+make_install = "make && make install"
+_prefix = "/usr"
+_configure = "./configure"
+java_home = "export JAVA_HOME=/usr/lib/jvm/java-1.8.0 && \
+export JAVA=$JAVA_home/jre/bin/java"
+
+
+###############################
+# Install eucalyptus-cloud-libs
+###############################
+
+cloud_libs_dir = "#{source_directory}/eucalyptus-cloud-libs"
+git cloud_libs_dir do
+  repository node['eucalyptus']['cloud-libs-repo']
+  revision node['eucalyptus']['cloud-libs-branch']
+  action :sync
+  notifies :run, 'execute[install-cloud-libs]', :immediately
+end
+
+build_cloud_libs = "autoconf && #{_configure} --prefix=#{_prefix} && \
+#{make_install}"
+execute "install-cloud-libs" do
+  command build_cloud_libs
+  cwd cloud_libs_dir
+  action :nothing
+end
+
+####################
+# Install eucalyptus
+####################
+
+eucalyptus_dir = "#{source_directory}/eucalyptus"
+git eucalyptus_dir do
   repository node['eucalyptus']['source-repo']
   revision node['eucalyptus']['source-branch']
-  enable_submodules true
-  notifies :run, 'execute[Run configure]', :immediately
   action :sync
+  notifies :run, 'execute[install-eucalyptus]', :immediately
 end
+
+db_home_path = "/usr"
+init_style = "--enable-systemd"
 
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
   db_home_path = "/usr/pgsql-9.2"
   init_style = "--enable-sysvinit"
 end
+
+build_eucalyptus = "#{java_home} && #{_configure} --prefix=/ \
+--disable-bundled-jars #{init_style} \
+--with-apache2-module-dir=/usr/lib64/httpd/modules \
+--with-axis2=/usr/share/axis2-* --with-axis2c=/usr/lib64/axis2c \
+--with-db-home=#{db_home_path} && #{make_install}"
+
+execute "install-eucalyptus" do
+  command build_eucalyptus
+  cwd eucalyptus_dir
+  action :nothing
+end
+
+
+##########################
+# Install storage-san-libs
+##########################
+
+san_libs_dir = "#{source_directory}/storage-san-libs"
+git san_libs_dir do
+  repository node['eucalyptus']['san-libs-repo']
+  revision node['eucalyptus']['san-libs-branch']
+  action :sync
+  notifies :run, 'execute[install-san-libs]', :immediately
+  only_if { Eucalyptus::Enterprise.is_san?(node) }
+end
+
+build_san_libs = "autoconf && #{_configure} --prefix=#{_prefix} && #{make_install}"
+execute "install-san-libs" do
+  command build_san_libs
+  cwd san_libs_dir
+  action :nothing
+end
+
+
+#####################
+# Install storage-san
+#####################
+
+storage_san_dir = "#{source_directory}/storage-san"
+git storage_san_dir do
+  repository node['eucalyptus']['san-repo']
+  revision node['eucalyptus']['san-branch']
+  action :sync
+  notifies :run, 'execute[install-storage-san]', :immediately
+  only_if { Eucalyptus::Enterprise.is_san?(node) }
+end
+
+build_storage_san = "autoconf && #{_configure} --prefix=#{_prefix} \
+--with-cloud-libs-dir=/usr/share/eucalyptus && #{make_install}"
+execute "install-storage-san" do
+  command build_storage_san
+  cwd storage_san_dir
+  action :nothing
+end
+
+
+############################
+# Install eucalyptus-selinux
+############################
 
 build_selinux_command = "make all && make reload && make relabel"
 execute "Build and install eucalyptus-selinux" do
@@ -196,24 +287,7 @@ else
   euca_wsdl_path = "#{source_directory}/devel/euca-WSDL2C.sh"
 end
 
-configure_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && ./configure '--with-axis2=/usr/share/axis2-*' --with-axis2c=/usr/lib64/axis2c --prefix=$EUCALYPTUS --with-apache2-module-dir=/usr/lib64/httpd/modules #{init_style} --with-db-home='#{db_home_path}' --with-wsdl2c-sh=#{euca_wsdl_path}"
-make_command = "export JAVA_HOME='/usr/lib/jvm/java-1.8.0' && export JAVA='$JAVA_HOME/jre/bin/java' && export EUCALYPTUS='#{home_directory}' && make CLOUD_LIBS_BRANCH='#{cloud_libs_branch}' && make install"
-### Run configure for open source
-execute "Run configure"  do
-  command configure_command
-  action :nothing
-  notifies :run, 'execute[Run make]', :immediately
-  cwd source_directory
-end
-
 execute "echo \"export PATH=$PATH:#{home_directory}/usr/sbin/\" >>/root/.bashrc"
-
-execute 'Run make' do
-  command make_command
-  cwd source_directory
-  action :nothing
-  timeout node["eucalyptus"]["compile-timeout"]
-end
 
 %w{/etc/eucalyptus /var/lib/eucalyptus /var/log/eucalyptus /var/run/eucalyptus}.each do |runtime_dir|
   execute "mkdir -p #{home_directory}/#{runtime_dir}"
@@ -227,7 +301,6 @@ end
   end
 end
 
-eucalyptus_dir = source_directory
 if node['eucalyptus']['source-repo'].end_with?("internal")
   eucalyptus_dir = "#{source_directory}/eucalyptus"
 end
