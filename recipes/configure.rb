@@ -214,7 +214,7 @@ end
             Timeout.timeout(@seconds) do
                 Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{service} to be ready."
                 loop do
-                    if EucalyptusHelper.getservicestates?("#{service}",["enabled", "broken"])
+                    if EucalyptusHelper.getservicestates?("#{service}",["enabled"])
                         Chef::Log.info "#{service} service ready, continuing..."
                         break
                     else
