@@ -16,14 +16,18 @@ module CephHelper
     end
 
     def self.is_ceph?(node)
-      cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
-      if node['eucalyptus']['topology']
-        cluster_controller = node['eucalyptus']['topology']['clusters'][cluster_name]
-      else
-        raise Exception.new("This node doesn't belong to any cluster!!!")
-      end
-      if cluster_controller["storage-backend"] == "ceph-rbd"
-        return true
+      begin
+        cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+        if node['eucalyptus']['topology']
+          cluster_controller = node['eucalyptus']['topology']['clusters'][cluster_name]
+        else
+          raise Exception.new("This node doesn't belong to any cluster!!!")
+        end
+        if cluster_controller["storage-backend"] == "ceph-rbd"
+          return true
+        end
+      rescue Exception => e
+        return false
       end
       return false
     end
