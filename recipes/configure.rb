@@ -191,6 +191,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         # This cluster is not SAN backed
         san_package = nil
       end
+      ## TODO: SAN packages should be installed with other packages, not during configure
       if san_package and node["eucalyptus"]["install-type"] == "packages"
         yum_package san_package do
           action :upgrade
@@ -436,4 +437,9 @@ if node['eucalyptus']['post-script-url'] != ""
   execute 'Running post script' do
     command "bash #{node['eucalyptus']['home-directory']}/post.sh"
   end
+end
+
+service "eucalyptus-cloud" do
+  supports :status => true, :start => true, :stop => true, :restart => true
+  action :nothing
 end
