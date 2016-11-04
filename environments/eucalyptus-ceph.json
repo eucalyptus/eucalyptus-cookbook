@@ -63,8 +63,8 @@
         "bridged-nic": "em1"
       },
       "init-script-url": "https://gist.githubusercontent.com/tbeckham/2e3a3ea403f3a6cbe92a/raw/datapath-network-interface",
-      "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/centos/6/x86_64/",
-      "euca2ools-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/euca2ools-devel/centos/6/x86_64/",
+      "eucalyptus-repo": "http://builds.qa1.eucalyptus-systems.com/packages/tags/eucalyptus-devel/centos/6/x86_64/",
+      "euca2ools-repo": "http://builds.qa1.eucalyptus-systems.com/packages/tags/euca2ools-devel/centos/6/x86_64/",
       "ceph-baseurl": "http://ceph.com/rpm-giant/el6/x86_64/",
       "ceph-gpgkey": "https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc",
       "yum-options": "--nogpg"
