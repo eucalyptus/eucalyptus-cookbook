@@ -1,7 +1,7 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/rhel/$releasever/$basearch/",
+      "eucalyptus-repo": "http://builds.qa1.eucalyptus-systems.com/packages/tags/eucalyptus-devel/rhel/$releasever/$basearch/",
       "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.3/centos/7/x86_64/",
       "install-service-image": EXTRASERVICES,
       "ntp-server": "NTP",
