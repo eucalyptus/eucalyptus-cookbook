@@ -3,6 +3,16 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+if [ "${region}" = "" ]
+then
+    echo "ERROR: Cannot determine region from file ../../../../ciab.json"
+    echo "Please verify that this tutorial is being run in the directory "
+    echo "/root/cookbooks/eucalyptus/faststart/tutorials where we expect it to"
+    echo "be run."
+    exit 1
+fi
+
 echo ""
 echo "*****"
 echo ""

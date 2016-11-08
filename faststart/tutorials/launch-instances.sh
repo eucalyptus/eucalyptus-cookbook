@@ -3,6 +3,16 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+if [ "${region}" = "" ]
+then
+    echo "ERROR: Cannot determine region from file ../../../../ciab.json"
+    echo "Please verify that this tutorial is being run in the directory "
+    echo "/root/cookbooks/eucalyptus/faststart/tutorials where we expect it to"
+    echo "be run."
+    exit 1
+fi
+
 echo ""
 echo ""
 echo "${bold}Launching Instances${normal}"
@@ -18,7 +28,7 @@ then
 fi
 
 # Be sure the tutorial image is installed
-EMI_ID=$(euca-describe-images --region admin@localhost | grep tutorial | grep emi | tail -n 1 | cut -f 2)
+EMI_ID=$(euca-describe-images --region admin@${region} | grep tutorial | grep emi | tail -n 1 | cut -f 2)
 echo $EMI_ID
 if [ "$EMI_ID" == "" ]
 then
@@ -29,14 +39,14 @@ then
    exit 1
 fi
 
-echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID --region admin@localhost${normal}"
-euca-run-instances -k my-first-keypair $EMI_ID --region admin@localhost
+echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID --region admin@${region}${normal}"
+euca-run-instances -k my-first-keypair $EMI_ID --region admin@${region}
 
 # Capture the instance ID and public address
 echo "Capturing the instance ID"
-INSTANCE_ID=$(euca-describe-instances --region admin@localhost | grep $EMI_ID | grep -v terminated | cut -f2)
+INSTANCE_ID=$(euca-describe-instances --region admin@${region} | grep $EMI_ID | grep -v terminated | cut -f2)
 echo "Capturing the public ip address"
-INSTANCE_ADDR=$(euca-describe-instances --region admin@localhost | grep $INSTANCE_ID | cut -f4)
+INSTANCE_ADDR=$(euca-describe-instances --region admin@${region} | grep $INSTANCE_ID | cut -f4)
 
 
 # Wait up to 30 seconds for the instance to start.
@@ -46,7 +56,7 @@ STATUS=
 while [ $TIMER -le 5 ]
 do
    sleep 5
-   STATUS=$(euca-describe-instances $INSTANCE_ID --region admin@localhost | grep $EMI_ID | grep running)
+   STATUS=$(euca-describe-instances $INSTANCE_ID --region admin@${region} | grep $EMI_ID | grep running)
    [ "$STATUS" != "" ] && break;
    TIMER=$(( $TIMER + 1 ))
    echo $TIMER

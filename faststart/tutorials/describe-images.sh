@@ -3,6 +3,16 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+if [ "${region}" = "" ]
+then
+    echo "ERROR: Cannot determine region from file ../../../../ciab.json"
+    echo "Please verify that this tutorial is being run in the directory "
+    echo "/root/cookbooks/eucalyptus/faststart/tutorials where we expect it to"
+    echo "be run."
+    exit 1
+fi
+
 echo ""
 echo ""
 echo "${bold}Listing Images${normal}"
@@ -35,9 +45,9 @@ echo "configuration file up for you. Once this has been"
 echo "set up, with each euca2ools command, the"
 echo "\"--region\" option must be used. For FastStart,"
 echo "the region option will contain the value"
-echo "\"admin@localhost\".  For example:"
+echo "\"admin@${region}\".  For example:"
 echo ""
-echo "${bold}euca-describe-availability-zones --region admin@localhost${normal}"
+echo "${bold}euca-describe-availability-zones --region admin@${region}${normal}"
 echo ""
 echo "To learn more about using euca2ools configuration file, please refer to"
 echo "the Euca2ools Guide section entitled \"Working with Euca2ools Configuration Files\":"
@@ -49,17 +59,17 @@ echo "The euca2ools command for listing images is ${bold}euca-describe-images${n
 echo "If you have ever worked with Amazon Web Services, you will"
 echo "notice that the command, and the output from the command, is"
 echo "nearly identical to the comparable AWS command; this is by design."
-echo "Press Enter to run ${bold}euca-describe-images --region admin@localhost${normal} now."
+echo "Press Enter to run ${bold}euca-describe-images --region admin@${region}${normal} now."
 
 read continue
 
-echo "${bold}+ euca-describe-images --region admin@localhost"
-euca-describe-images --region admin@localhost
+echo "${bold}+ euca-describe-images --region admin@${region}"
+euca-describe-images --region admin@${region}
 echo "${normal}"
 
 echo "Now let's review some of the key output of that command:"
 echo ""
-imagelist=`euca-describe-images --region admin@localhost| tail -n 1`
+imagelist=`euca-describe-images --region admin@${region}| tail -n 1`
 imageid=`echo $imagelist | awk '{print $2}'`
 imagepath=`echo $imagelist | awk '{print $3}'`
 public=`echo $imagelist | awk '{print $6}'`
