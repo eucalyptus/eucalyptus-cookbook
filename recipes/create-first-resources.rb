@@ -49,9 +49,6 @@ execute "Add keypair: my-first-keypair" do
 end
 
 execute "Authorizing SSH and ICMP traffic for default security group" do
-  #command "euca-authorize --region localhost -P icmp -t -1:-1 -s 0.0.0.0/0
-  #default --debug && euca-authorize --region localhost -P tcp -p 22 -s 0.0
-  #.0.0/0 default --debug"
   command "euca-authorize --region #{node["eucalyptus"]["dns"]["domain"]} -P icmp -t -1:-1 -s 0.0.0.0/0 default --debug && euca-authorize --region #{node["eucalyptus"]["dns"]["domain"]} -P tcp -p 22 -s 0.0.0.0/0 default --debug"
 end
 
