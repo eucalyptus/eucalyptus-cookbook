@@ -30,9 +30,6 @@ execute 'remove kvm module if loaded' do
   only_if { '/sbin/lsmod | grep kvm' }
 end
 
-### Used for monitoring in 4.1
-group "eucalyptus-status"
-
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
@@ -40,6 +37,19 @@ user "eucalyptus" do
   home "/var/lib/eucalyptus"
   system true
   shell "/sbin/nologin"
+end
+
+group 'eucalyptus' do
+  action :create
+  members 'eucalyptus'
+  system true
+end
+
+group 'eucalyptus-status' do
+  action :create
+  members 'eucalyptus'
+  append true
+  system true
 end
 
 home_directory =  node['eucalyptus']["home-directory"]
