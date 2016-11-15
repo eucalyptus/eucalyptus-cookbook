@@ -7,11 +7,11 @@ OPTIND=1  # Reset in case getopts has been used previously in the shell.
 # Initialize our own variables:
 cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.3.0.tgz"
 nc_install_only=0
-wildcard_dns="xip.io"
+wildcard_dns="nip.io"
 
 function usage
 {
-    echo "usage: cloud-in-a-box.sh [[[-u path-to-cookbooks-tgz ] [--nc] [-s|--wildcard-dns xip.io or nip.io]] | [-h]]"
+    echo "usage: cloud-in-a-box.sh [[[-u path-to-cookbooks-tgz ] [--nc]] | [-h]]"
 }
 
 while [ "$1" != "" ]; do
@@ -20,9 +20,6 @@ while [ "$1" != "" ]; do
                                          cookbooks_url=$1
                                 ;;
         --nc )                  nc_install_only=1
-                                ;;
-        -s | --wildcard-dns )   shift
-                                wildcard_dns=$1
                                 ;;
         -h | --help )           usage
                                 exit
