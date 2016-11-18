@@ -33,13 +33,24 @@ end
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
-  comment "Eucalyptus User"
-  home "/home/eucalyptus"
-  shell "/bin/bash"
+  comment "Eucalyptus cloud"
+  home "/var/lib/eucalyptus"
+  system true
+  shell "/sbin/nologin"
 end
 
-### Used for monitoring in 4.1
-group "eucalyptus-status"
+group 'eucalyptus' do
+  action :create
+  members 'eucalyptus'
+  system true
+end
+
+group 'eucalyptus-status' do
+  action :create
+  members 'eucalyptus'
+  append true
+  system true
+end
 
 home_directory =  node['eucalyptus']["home-directory"]
 
