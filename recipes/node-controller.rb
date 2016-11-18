@@ -172,6 +172,7 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
     notifies :run, "execute[brctl setfd]", :delayed
     notifies :run, "execute[brctl sethello]", :delayed
     notifies :run, "execute[brctl stp]", :delayed
+    notifies :run, "execute[Configure kernel parameters from 70-eucanetd.conf]", :immediately
   end
 else
   execute "Ensure bridge modules loaded into the kernel on NC" do
