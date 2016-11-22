@@ -35,7 +35,7 @@ end
 # this runs only during installation of eucanetd,
 # we don't handle reapplying changed ipset max_sets
 # during an update here
-if node["eucalyptus"]["network"]["mode"] == "EDGE"
+if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version']) && node["eucalyptus"]["network"]["mode"] == "EDGE"
   maxsets = node["eucalyptus"]["nc"]["ipset-maxsets"]
   # install ipset if necessary
   execute 'yum install -y ipset' do
