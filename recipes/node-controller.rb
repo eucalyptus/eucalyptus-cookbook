@@ -166,8 +166,8 @@ end
 
 ## use a different notifier to setup bridge in VPCMIDO mode
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
-  execute "Ensure bridge modules loaded into the kernel on NC" do
-    command '/usr/lib/systemd/systemd-modules-load || :'
+  execute "Ensure bridge and br_netfilter modules loaded into the kernel on NC" do
+    command "modprobe bridge; modprobe br_netfilter"
     notifies :run, "execute[network-restart]", :immediately
     notifies :run, "execute[brctl setfd]", :delayed
     notifies :run, "execute[brctl sethello]", :delayed
