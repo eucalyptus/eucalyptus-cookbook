@@ -196,12 +196,22 @@ end
 
 ## use a different notifier to setup bridge in VPCMIDO mode
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
-  execute "Ensure bridge modules loaded into the kernel on NC" do
-    command "modprobe bridge"
-    notifies :run, "execute[network-restart]", :immediately
-    notifies :run, "execute[brctl setfd]", :delayed
-    notifies :run, "execute[brctl sethello]", :delayed
-    notifies :run, "execute[brctl stp]", :delayed
+  if Chef::VersionConstraint.new("~> 7.3").include?(node['platform_version'])
+    execute "Ensure bridge modules loaded into the kernel on NC" do
+      command "modprobe bridge; modprobe br_netfilter"
+      notifies :run, "execute[network-restart]", :immediately
+      notifies :run, "execute[brctl setfd]", :delayed
+      notifies :run, "execute[brctl sethello]", :delayed
+      notifies :run, "execute[brctl stp]", :delayed
+    end
+  else
+    execute "Ensure bridge modules loaded into the kernel on NC" do
+      command "modprobe bridge"
+      notifies :run, "execute[network-restart]", :immediately
+      notifies :run, "execute[brctl setfd]", :delayed
+      notifies :run, "execute[brctl sethello]", :delayed
+      notifies :run, "execute[brctl stp]", :delayed
+    end
   end
 else
   execute "Ensure bridge modules loaded into the kernel on NC" do
