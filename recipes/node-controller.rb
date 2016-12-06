@@ -198,7 +198,7 @@ end
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   if Chef::VersionConstraint.new("~> 7.3").include?(node['platform_version'])
     execute "Ensure bridge modules loaded into the kernel on NC" do
-      command "modprobe bridge; modprobe br_netfilter"
+      command "modprobe bridge"
       notifies :run, "execute[network-restart]", :immediately
       notifies :run, "execute[brctl setfd]", :delayed
       notifies :run, "execute[brctl sethello]", :delayed
