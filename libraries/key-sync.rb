@@ -37,8 +37,10 @@ module Eucalyptus
         Chef::Log.info "Found cluster #{name} with attributes: #{info}"
         addresses = []
         node["network"]["interfaces"].each do |interface, info|
-          info["addresses"].each do |address, info|
-            addresses.push(address)
+          if info["addresses"]
+            info["addresses"].each do |address, info|
+              addresses.push(address)
+            end
           end
         end
         Chef::Log.info "Found addresses: " + addresses.join("  ")
