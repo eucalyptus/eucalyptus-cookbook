@@ -343,3 +343,14 @@ execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
   command 'modprobe kvm_intel'
   only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
 end
+
+if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
+  exp_run_list = node['expanded_run_list']
+  exp_run_list.each do |listitem|
+    if listitem.include? "node-controller"
+      execute "Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC" do
+        command '/usr/lib/systemd/systemd-modules-load'
+      end
+    end
+  end
+end
