@@ -825,7 +825,7 @@ if [[ ! -f faststart-successful-phase1.log ]]; then
     offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
-    echo "Phase 1 (CLC) installed successfully...moving on to phase 2 (all other cloud components)."
+    echo "Phase 1 (CLC) installed successfully...getting a 2nd cup of coffee and moving on to phase 2 (main cloud components)."
 fi
 
 # Add all other recipes to the run_list and execute phase 2
@@ -838,7 +838,6 @@ if [ "$nc_install_only" -eq 0 ]; then
   runlistitems="$runlistitems,recipe[eucalyptus::storage-controller]"
   runlistitems="$runlistitems,recipe[eucalyptus::node-controller]"
   runlistitems="$runlistitems,recipe[eucalyptus::configure]"
-  runlistitems="$runlistitems,recipe[eucalyptus::create-first-resources]"
 fi
 
 (chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
@@ -859,7 +858,37 @@ if [[ ! -f faststart-successful-phase2.log ]]; then
     curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
     offer_support "EUCA_INSTALL_FAILED"
     exit 99
+  else
+    echo "Phase 2 installed successfully...yes, in fact having that 3rd cup of coffee and moving on to phase 3 (create first resources)."
 fi
+
+# add create first resources as a last item
+if [ "$nc_install_only" -eq 0 ]; then
+  runlistitems=""
+  runlistitems="recipe[eucalyptus::create-first-resources]"
+fi
+
+(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
+coffee $!
+
+if [[ ! -f faststart-successful-phase3.log ]]; then
+    echo "[FATAL] Eucalyptus installation failed"
+    echo ""
+    echo "Eucalyptus installation failed. Please consult $LOGFILE for details."
+    echo ""
+    echo "Please try to run the installation again. If your installation fails again,"
+    echo "you can ask the Eucalyptus community for assistance:"
+    echo ""
+    echo "https://groups.google.com/a/eucalyptus.com/forum/#!forum/euca-users"
+    echo ""
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo ""
+    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
+    offer_support "EUCA_INSTALL_FAILED"
+    exit 99
+fi
+
+
 
 ###############################################################################
 # SECTION 5: POST-INSTALL CONFIGURATION

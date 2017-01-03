@@ -30,8 +30,8 @@ suites:
       - recipe[eucalyptus::create-first-resources]
     attributes:
       eucalyptus: 
-        "eucalyptus-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/eucalyptus-devel/centos/6/x86_64/"
-        "euca2ools-repo": "http://packages.release.eucalyptus-systems.com/yum/tags/euca2ools-devel/centos/6/x86_64/"
+        "eucalyptus-repo": "http://builds.qa1.eucalyptus-systems.com/packages/tags/eucalyptus-devel/centos/6/x86_64/"
+        "euca2ools-repo": "http://builds.qa1.eucalyptus-systems.com/packages/tags/euca2ools-devel/centos/6/x86_64/"
         "yum-options": "--nogpg"
         nc:
           hypervisor: qemu

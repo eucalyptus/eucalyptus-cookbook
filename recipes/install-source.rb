@@ -33,13 +33,25 @@ end
 ### Create eucalyptus user
 user "eucalyptus" do
   supports :manage_home => true
-  comment "Eucalyptus User"
-  home "/home/eucalyptus"
-  shell "/bin/bash"
+  comment "Eucalyptus cloud"
+  home "/var/lib/eucalyptus"
+  system true
+  shell "/sbin/nologin"
+end
+
+group 'eucalyptus' do
+  action :create
+  members 'eucalyptus'
+  system true
 end
 
 ### Used for monitoring in 4.1
-group "eucalyptus-status"
+group 'eucalyptus-status' do
+  action :create
+  members 'eucalyptus'
+  append true
+  system true
+end
 
 home_directory =  node['eucalyptus']["home-directory"]
 
@@ -145,7 +157,7 @@ git eucalyptus_dir do
 end
 
 build_eucalyptus = "#{java_home} && #{_configure} --prefix=/ \
---disable-bundled-jars --enable-systemd \
+--disable-bundled-jars \
 --with-apache2-module-dir=/usr/lib64/httpd/modules \
 --with-axis2=/usr/share/axis2-* --with-axis2c=/usr/lib64/axis2c \
 --with-db-home=/usr && #{make_install}"
@@ -212,7 +224,6 @@ execute "Build and install eucalyptus-selinux" do
 end
 
 db_home_path = "/usr"
-init_style = "--enable-systemd"
 git "#{source_directory}/eucalyptus-selinux" do
   repository node['eucalyptus']['selinux-repo']
   revision node['eucalyptus']['selinux-branch']

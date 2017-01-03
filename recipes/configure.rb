@@ -332,33 +332,6 @@ execute "Set loadbalancing VM instance type" do
   only_if { node['eucalyptus']['loadbalancing-vm-type'] }
 end
 
-# Determine what command to use to install service image
-# In faststart (cloud-in-a-box) we create admin creds first and
-# don't use the #{as_admin} prefix to the command
-exp_run_list = node['expanded_run_list']
-exp_run_list.each do |listitem|
-  if listitem.include? "create-first-resources"
-    Chef::Log.info "In faststart (cloud-in-a-box) installation, will create admin creds before installing service image."
-    faststart_ini = "/root/.euca/faststart.ini"
-    directory '/root/.euca'
-    execute "Create admin credentials" do
-      command "#{as_admin} euare-useraddkey admin -wld #{node["eucalyptus"]["dns"]["domain"]} -w > #{faststart_ini} --region localhost"
-      creates faststart_ini
-    end
-    bash "Set default region" do
-       user "root"
-       code <<-EOF
-          echo '[global]' >> #{faststart_ini}
-          echo 'default-region = localhost' >> #{faststart_ini}
-       EOF
-       not_if "grep -q default-region #{faststart_ini}"
-    end
-    node.default['faststart_running']=true
-  else
-    node.default['faststart_running']=false
-  end
-end
-
 ruby_block "Install Service Image" do
   block do
 
@@ -388,13 +361,8 @@ ruby_block "Install Service Image" do
       if service_image[:is_configured]
         break
       else
-        if node.default['faststart_running']
-          Chef::Log.info "running service image installation command: esi-install-image --region admin@localhost --install-default"
-          cmd = Mixlib::ShellOut.new("esi-install-image --region admin@localhost --install-default")
-        else
-          Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
-          cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default")
-        end
+        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
+        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default")
         cmd.run_command
         Chef::Log.info "cmd.stdout: #{cmd.stdout}"
         if !cmd.stderr.empty?

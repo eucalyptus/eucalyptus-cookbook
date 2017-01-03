@@ -85,7 +85,7 @@ else
 end
 
 ## Install repo rpms
-yum_repository "eucalyptus-release" do
+yum_repository "eucalyptus" do
   description "Eucalyptus Package Repo"
   url node["eucalyptus"]["eucalyptus-repo"]
   gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
@@ -111,7 +111,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
     EOH
     mode "0700"
   end
-  yum_repository "eucalyptus-enterprise-release" do
+  yum_repository "eucalyptus-enterprise" do
     description "Eucalyptus Enterprise Package Repo"
     url node["eucalyptus"]["enterprise-repo"]
     gpgkey node["eucalyptus"]["eucalyptus-gpg-key"]
@@ -122,7 +122,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-yum_repository "euca2ools-release" do
+yum_repository "euca2ools" do
   description "Euca2ools Package Repo"
   url node["eucalyptus"]["euca2ools-repo"]
   gpgkey node["eucalyptus"]["euca2ools-gpg-key"]
