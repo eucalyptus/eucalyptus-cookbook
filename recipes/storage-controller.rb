@@ -24,7 +24,7 @@ include_recipe "eucalyptus::default"
 ### Need to know cluster name before setting bind-addr
 
 ### Set bind-addr if necessary
-if node["eucalyptus"]["set-bind-addr"] 
+if node["eucalyptus"]["set-bind-addr"]
   if node["eucalyptus"]["bind-interface"] or node["eucalyptus"]["bind-network"]
     # Auto detect IP from interface name
     bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
@@ -110,13 +110,37 @@ end
 
 ruby_block "Get Ceph Credentials" do
   block do
-    if node['ceph']
-      CephHelper::SetCephRbd.make_ceph_config(node, node['ceph']['users'][0]['name'])
-    else
-      CephHelper::SetCephRbd.make_ceph_config(node, "")
-    end
+    CephHelper::SetCephRbd.make_ceph_config(node, node['ceph']['users'][0]['name'])
   end
-  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) && node['ceph'] }
+end
+
+if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
+  cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+  ceph_keyrings = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-keyrings"],
+  node["eucalyptus"]["ceph-keyrings"])
+
+  ceph_config = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],
+  node["eucalyptus"]["ceph-config"])
+
+  template "/etc/ceph/ceph.conf" do
+    source "ceph.conf.erb"
+    action :create
+    variables(
+      :cephConfig => ceph_config
+    )
+  end
+
+  template "Write rbd-user keyring" do
+    path ceph_keyrings["rbd-user"]["keyring"]
+    source "client-keyring.erb"
+    variables(
+      :keyring => ceph_keyrings["rbd-user"]
+    )
+    action :create
+  end
 end
 
 node['eucalyptus']['topology']['clusters'].each do |cluster, info|
@@ -126,8 +150,8 @@ node['eucalyptus']['topology']['clusters'].each do |cluster, info|
     service 'tgtd' do
       action [ :enable, :start ]
       supports :status => true, :start => true, :stop => true, :restart => true
-    end 
-  end 
+    end
+  end
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])

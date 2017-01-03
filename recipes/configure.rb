@@ -2,20 +2,20 @@
 # Cookbook Name:: eucalyptus
 # Recipe:: configure
 #
-#Copyright [2014-2015] [Eucalyptus Systems]
-##
-##Licensed under the Apache License, Version 2.0 (the "License");
-##you may not use this file except in compliance with the License.
-##You may obtain a copy of the License at
-##
-##    http://www.apache.org/licenses/LICENSE-2.0
-##
-##    Unless required by applicable law or agreed to in writing, software
-##    distributed under the License is distributed on an "AS IS" BASIS,
-##    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-##    See the License for the specific language governing permissions and
-##    limitations under the License.
-##
+# Copyright [2014-2015] [Eucalyptus Systems]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
 require 'mixlib/shellout'
 
 disable_proxy = 'http_proxy=""'
@@ -31,7 +31,7 @@ if node['eucalyptus']['dns']['domain']
     retry_delay 20
   end
   execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
-    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns-domain']}"
     retries 15
     retry_delay 20
   end
@@ -77,26 +77,26 @@ if node['riakcs_cluster']
     retries 5
     retry_delay 20
   end
-elsif node['eucalyptus']['topology']['riakcs']
+elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "riakcs"
   execute "Set OSG providerclient to riakcs" do
     command "#{euctl} objectstorage.providerclient=riakcs"
     retries 15
     retry_delay 20
   end
 
-  admin_key = node['eucalyptus']['topology']['riakcs']['access-key']
-  admin_secret = node['eucalyptus']['topology']['riakcs']['secret-key']
+  admin_key = node['eucalyptus']['topology']['objectstorage']['access-key']
+  admin_secret = node['eucalyptus']['topology']['objectstorage']['secret-key']
 
   if admin_key == ""
     admin_key, admin_secret = RiakCSHelper::CreateUser.create_riakcs_user(
-         node["eucalyptus"]["topology"]["riakcs"]["admin-name"],
-         node["eucalyptus"]["topology"]["riakcs"]["admin-email"],
-         node["eucalyptus"]["topology"]["riakcs"]["endpoint"],
-         node["eucalyptus"]["topology"]["riakcs"]["port"],
+         node["eucalyptus"]["topology"]["objectstorage"]["admin-name"],
+         node["eucalyptus"]["topology"]["objectstorage"]["admin-email"],
+         node["eucalyptus"]["topology"]["objectstorage"]["endpoint"],
+         node["eucalyptus"]["topology"]["objectstorage"]["port"],
     )
 
-    node.set['eucalyptus']['topology']['riakcs']['access-key'] = admin_key
-    node.set['eucalyptus']['topology']['riakcs']['secret-key'] = admin_secret
+    node.set['eucalyptus']['topology']['objectstorage']['access-key'] = admin_key
+    node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = admin_secret
     node.save
 
     Chef::Log.info "RiakCS admin_key: #{admin_key}"
@@ -104,31 +104,32 @@ elsif node['eucalyptus']['topology']['riakcs']
   end
 
   execute "Set S3 endpoint" do
-    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['riakcs']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['objectstorage']['endpoint']}"
     retries 15
     retry_delay 20
   end
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{admin_key}"
   execute "#{euctl} objectstorage.s3provider.s3secretkey=#{admin_secret}"
-elsif node['eucalyptus']['topology']['ceph-radosgw']
+elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "ceph-rgw"
   execute "Set OSG providerclient to ceph-rgw" do
     command "#{euctl} objectstorage.providerclient=ceph-rgw"
     retries 15
     retry_delay 20
   end
+  rgw_endpoint = node['eucalyptus']['topology']['objectstorage']['ceph-radosgw']['endpoint']
   execute "Set S3 endpoint for ceph-rgw" do
-    command "#{euctl} objectstorage.s3provider.s3endpoint=#{node['eucalyptus']['topology']['ceph-radosgw']['endpoint']}"
+    command "#{euctl} objectstorage.s3provider.s3endpoint=#{rgw_endpoint}"
     retries 15
     retry_delay 20
   end
 
-  ceph_access_key = node['eucalyptus']['topology']['ceph-radosgw']['access-key']
-  ceph_secret_key = node['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+  ceph_access_key = node['eucalyptus']['topology']['objectstorage']['access-key']
+  ceph_secret_key = node['eucalyptus']['topology']['objectstorage']['secret-key']
 
   if ceph_access_key == nil || ceph_secret_key == nil
     found = CephHelper::SetCephRbd.get_radosgw_user_creds(node)
-    ceph_access_key = found['eucalyptus']['topology']['ceph-radosgw']['access-key']
-    ceph_secret_key = found['eucalyptus']['topology']['ceph-radosgw']['secret-key']
+    ceph_access_key = found['eucalyptus']['topology']['objectstorage']['access-key']
+    ceph_secret_key = found['eucalyptus']['topology']['objectstorage']['secret-key']
   end
 
   execute "#{euctl} objectstorage.s3provider.s3accesskey=#{ceph_access_key}"
@@ -190,6 +191,7 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
         # This cluster is not SAN backed
         san_package = nil
       end
+      ## TODO: SAN packages should be installed with other packages, not during configure
       if san_package and node["eucalyptus"]["install-type"] == "packages"
         yum_package san_package do
           action :upgrade
@@ -214,11 +216,30 @@ execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
 end
 
-file "#{node['eucalyptus']['admin-cred-dir']}/network.json" do
-  content JSON.pretty_generate(node['eucalyptus']['network']['config-json'], quirks_mode: true)
-  mode '644'
+template "create network.json for VPCMIDO" do
+  path   "#{node['eucalyptus']['admin-cred-dir']}/network.json"
+  source "network-vpc.json.erb"
   action :create
+  variables(
+    :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
+    :gateways => node["eucalyptus"]["network"]['Gateways'],
+    :publicIps => node["eucalyptus"]["network"]["PublicIps"]
+  )
+  only_if { node['eucalyptus']['network']['mode'] == 'VPCMIDO' }
 end
+
+template "create network.json for EDGE" do
+  path   "/root/network.json"
+  source "network-edge.json.erb"
+  action :create
+  variables(
+    :clusters => JSON.pretty_generate(node["eucalyptus"]["network"]["clusters"], quirks_mode: true),
+    :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
+    :publicIps => node["eucalyptus"]["network"]["PublicIps"]
+  )
+  only_if { node['eucalyptus']['network']['mode'] == 'EDGE' }
+end
+
 execute "Configure network" do
   command "#{euctl} cloud.network.network_configuration=@#{node['eucalyptus']['admin-cred-dir']}/network.json"
 end
@@ -336,7 +357,7 @@ ruby_block "Install Service Image" do
       if !service_image[:error].empty?
         raise Exception.new("Failed to fetch property because of: #{service_image[:error]}")
       end
-      
+
       if service_image[:is_configured]
         break
       else
@@ -360,7 +381,7 @@ execute "create_imaging_worker" do
   only_if { node['eucalyptus']['install-service-image'] }
 end
 
-node['eucalyptus']['system-properties'].each do |key, value|
+node['eucalyptus']['cloud-properties'].each do |key, value|
   execute "#{euctl} #{key}=\"#{value}\"" do
     retries 10
     retry_delay 5
@@ -384,4 +405,9 @@ if node['eucalyptus']['post-script-url'] != ""
   execute 'Running post script' do
     command "bash #{node['eucalyptus']['home-directory']}/post.sh"
   end
+end
+
+service "eucalyptus-cloud" do
+  supports :status => true, :start => true, :stop => true, :restart => true
+  action :nothing
 end

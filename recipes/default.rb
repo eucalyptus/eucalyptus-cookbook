@@ -133,6 +133,7 @@ yum_repository "ceph" do
   description "Ceph Package Repo"
   url node['eucalyptus']['ceph-repo']
   gpgcheck false
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) || CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
 end
 
 if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])

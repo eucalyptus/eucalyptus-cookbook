@@ -74,7 +74,7 @@ el7runtime = %w{java-1.8.0-openjdk gcc bc make ant apache-ivy axis2c axis2
     perl-Crypt-OpenSSL-Random postgresql postgresql-server pv python-boto
     python-devel python-setuptools rampartc rampartc-devel rsync
     scsi-target-utils sudo swig util-linux vconfig velocity wget which
-    xalan-j2-xsltc ipset ebtables librbd1 librados2 libselinux-python
+    xalan-j2-xsltc ipset ebtables ceph-common librados2 libselinux-python
     libselinux-utils policycoreutils selinux-policy-base}
 
 # node controller specific deps
