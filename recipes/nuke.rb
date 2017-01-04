@@ -171,7 +171,7 @@ yum_repository 'euca2ools-release' do
   action :remove
 end
 
-if node['eucalyptus']['install-type'] == 'source'
+if node['eucalyptus']['install-type'] == 'sources'
   ### Remove eucalyptus user
   user 'eucalyptus' do
     supports :manage_home => true
