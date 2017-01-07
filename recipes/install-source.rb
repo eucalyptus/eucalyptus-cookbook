@@ -248,16 +248,6 @@ end
   end
 end
 
-### Add udev rules
-directory '/etc/udev/rules.d'
-directory '/etc/udev/scripts'
-udev_mapping = {'clc/modules/block-storage-common/udev/55-openiscsi.rules' => '/etc/udev/rules.d/55-openiscsi.rules',
-                'clc/modules/block-storage-common/udev/iscsidev.sh' => '/etc/udev/scripts/iscsidev.sh',
-                'clc/modules/block-storage/udev/rules.d/12-dm-permissions.rules' => '/etc/udev/rules.d/12-dm-permissions.rules'}
-udev_mapping.each do |src, dst|
-  execute "cp #{eucalyptus_dir}/#{src} #{dst}"
-end
-
 execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
   command 'modprobe kvm_intel'
   only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
