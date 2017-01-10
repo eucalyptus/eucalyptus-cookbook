@@ -172,8 +172,8 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
     not_if "ls #{bridge_file}"
   end
 
-  execute "Replace TYPE Ethernet in bridge file" do
-    command "sed -i 's/TYPE=Ethernet/TYPE=Bridge/g' #{bridge_file}"
+  execute "Add BRIDGE type to bridge file" do
+    command "echo 'TYPE=Bridge' >> #{bridge_file}"
     not_if "grep 'TYPE=Bridge' #{bridge_file}"
   end
 
