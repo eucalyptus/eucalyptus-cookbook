@@ -258,7 +258,7 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   exp_run_list.each do |listitem|
     if listitem.include? "cloud-controller"
       execute "Run systemd-sysctl to load kernel.sem settings in 70-eucalyptus-node.conf on CLC" do
-        command '/usr/lib/systemd/systemd-sysctl eucalyptus-cloud.service'
+        command '/usr/lib/systemd/systemd-sysctl /usr/lib/sysctl.d/70-eucalyptus-cloud.conf'
       end
     end
   end
