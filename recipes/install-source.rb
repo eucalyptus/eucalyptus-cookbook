@@ -257,12 +257,12 @@ exp_run_list = node['expanded_run_list']
 exp_run_list.each do |listitem|
   if listitem.include? "node-controller"
     execute "Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC" do
-      command '/usr/lib/systemd/systemd-modules-load /usr/lib/modules-load.d/70-eucalyptus-node.conf'
+      command '/usr/lib/systemd/systemd-modules-load || :'
     end
   end
   if listitem.include? "cloud-controller"
     execute "Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC" do
-      command '/usr/lib/systemd/systemd-modules-load /usr/lib/modules-load.d/70-eucalyptus-node.conf'
+      command '/usr/lib/systemd/systemd-modules-load || :'
     end
   end
 end
