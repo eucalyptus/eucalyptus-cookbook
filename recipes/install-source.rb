@@ -260,4 +260,9 @@ exp_run_list.each do |listitem|
       command '/usr/lib/systemd/systemd-modules-load'
     end
   end
+  if listitem.include? "cloud-controller"
+    execute "Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC" do
+      command '/usr/lib/systemd/systemd-modules-load'
+    end
+  end
 end
