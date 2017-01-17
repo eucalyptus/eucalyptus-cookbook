@@ -253,6 +253,15 @@ execute 'run \'modprobe kvm_intel\' to set permissions of /dev/kvm correctly' do
   only_if { ::File.exist? "/usr/lib/udev/rules.d/80-kvm.rules" }
 end
 
+exp_run_list = node['expanded_run_list']
+exp_run_list.each do |listitem|
+  if listitem.include? "cloud-controller"
+    execute "Run systemd-sysctl to load kernel.sem settings in 70-eucalyptus-node.conf on CLC" do
+      command '/usr/lib/systemd/systemd-sysctl /usr/lib/sysctl.d/70-eucalyptus-cloud.conf'
+    end
+  end
+end
+
 execute "Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC" do
   command '/usr/lib/systemd/systemd-modules-load || :'
 end
