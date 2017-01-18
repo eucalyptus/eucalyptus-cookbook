@@ -25,6 +25,14 @@ execute 'Set Midolman Template' do
   not_if { get_midolman_template('default')[:is_configured] }
 end
 
+max_heap = node['eucalyptus']['midolman']['max-heap-size']
+bash 'Set MAX_HEAP_SIZE for midolman' do
+  code <<-EOH
+    sed -i '/MAX_HEAP_SIZE=/c\\MAX_HEAP_SIZE=\"#{max_heap}\"' /etc/midolman/midolman-env.sh
+  EOH
+  only_if { max_heap }
+end
+
 service "restart-midolman" do
   service_name "midolman"
   supports :status => true, :start => true, :stop => true, :restart => true

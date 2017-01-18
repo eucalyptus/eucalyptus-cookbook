@@ -160,6 +160,11 @@ default['eucalyptus']['midonet']['zookeeper-port'] = 2181
 # midonet-cluster
 default['eucalyptus']['midonet']['http-port'] = 8080
 default['eucalyptus']['midonet']['http-host'] = "127.0.0.1"
+default['eucalyptus']['midonet']['max-heap-size'] = nil
+default['eucalyptus']['midonet']['heap-newsize'] = nil
 
 default['eucalyptus']['midonet']['initial-tenant'] = "mido_tenant"
 default['eucalyptus']['midonet']['default-tunnel-zone'] = "mido-tz"
+
+# midolman
+default['eucalyptus']['midolman']['max-heap-size'] = nil
