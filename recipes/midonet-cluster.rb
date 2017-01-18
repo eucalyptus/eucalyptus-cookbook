@@ -48,6 +48,22 @@ execute 'Set MidoNet HTTP Port' do
   not_if { get_mn_http_host(node['eucalyptus']['midonet']['http-host'])[:is_configured] }
 end
 
+max_heap = node['eucalyptus']['midonet']['max-heap-size']
+bash 'Set MAX_HEAP_SIZE for midonet-cluster' do
+  code <<-EOH
+    sed -i '/MAX_HEAP_SIZE=/c\\MAX_HEAP_SIZE=\"#{max_heap}\"' /etc/midonet-cluster/midonet-cluster-env.sh
+  EOH
+  only_if { max_heap }
+end
+
+heap_newsize = node['eucalyptus']['midonet']['heap-newsize']
+bash 'Set HEAP_NEWSIZE for midonet-cluster' do
+  code <<-EOH
+    sed -i '/HEAP_NEWSIZE=/c\\HEAP_NEWSIZE=\"#{heap_newsize}\"' /etc/midonet-cluster/midonet-cluster-env.sh
+  EOH
+  only_if { heap_newsize }
+end
+
 service "restart-midonet-cluster" do
   service_name "midonet-cluster"
   supports :status => true, :start => true, :stop => true, :restart => true
