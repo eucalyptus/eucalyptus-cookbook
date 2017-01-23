@@ -43,11 +43,6 @@ if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['networ
   end
 end
 
-execute "Clear all-networking for VPC cloud" do
-  command "eucanetd -Z"
-  ignore_failure true
-end
-
 # on el6 the init scripts are named differently than on el7
 # and systemctl does not like to enable unit files which are symlinks
 # so we will use the actual unit file here
