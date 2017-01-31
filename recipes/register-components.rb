@@ -103,6 +103,8 @@ user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{register_service} -t user-api -h #{uf_ip} API_#{uf_ip}"
     not_if "#{describe_services} | egrep 'API_#{uf_ip}'"
+    retries 20
+    retry_delay 10
   end
 end
 
