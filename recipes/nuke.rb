@@ -20,6 +20,14 @@
 # used for platform_version comparison
 require 'chef/version_constraint'
 
+# cache the dhcpd pid for use later
+ruby_block 'read dhcpd pid from /var/run/eucalyptus/net/euca-dhcp.pid' do
+  block do
+    $dhcpdpid = `cat /var/run/eucalyptus/net/euca-dhcp.pid`
+  end
+  action :run
+end
+
 ## Stop all euca components
 
 # on el6 the init scripts are named differently than on el7
@@ -81,6 +89,11 @@ end
   yum_package pkg do
     action :purge
   end
+end
+
+# Stop eucanetd spawned dhcpd
+execute "Stop eucalyptus dhcpd" do
+  command lazy { "/usr/bin/kill #{$dhcpdpid}" }
 end
 
 ## Remove euca packages chef yum_package does not seem to like wildcard
