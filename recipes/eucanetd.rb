@@ -48,7 +48,7 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
     execute "Configure kernel parameters from 70-eucanetd.conf" do
       command "/usr/lib/systemd/systemd-sysctl 70-eucanetd.conf"
-      notifies :run, "execute[Ensure bridge modules loaded into the kernel on NC]", :before
+      notifies :run, "execute[Run systemd-modules-load to load modules in 70-eucalyptus-node.conf on NC]", :before
     end
   end
 end
