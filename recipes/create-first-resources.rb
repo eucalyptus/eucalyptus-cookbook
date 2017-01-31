@@ -76,3 +76,12 @@ end
 execute "Running an instance" do
   command "euca-run-instances --region #{node["eucalyptus"]["dns"]["domain"]} -k my-first-keypair $(euca-describe-images --region #{node["eucalyptus"]["dns"]["domain"]} | grep default | grep emi | cut -f 2)"
 end
+
+service "eucaconsole" do
+  action :nothing
+end
+
+execute "Update console.ini with ufshost = #{node["eucalyptus"]["dns"]["domain"]}" do
+  command "sed -i 's/ufshost = localhost/ufshost = #{node["eucalyptus"]["dns"]["domain"]}/' /etc/eucaconsole/console.ini"
+  notifies :restart, "service[eucaconsole]", :delayed
+end

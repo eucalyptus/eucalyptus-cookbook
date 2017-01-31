@@ -88,6 +88,10 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   execute "setsebool httpd_can_network_connect true" do
     command "/usr/sbin/setsebool -P httpd_can_network_connect 1"
   end
+  execute "restorecon /etc/eucaconsole/console.crt /etc/eucaconsole/console.key" do
+    command "restorecon /etc/eucaconsole/console.crt /etc/eucaconsole/console.key"
+    only_if "/usr/sbin/getenforce | grep Enabled"
+  end
 end
 
 service "eucaconsole" do
