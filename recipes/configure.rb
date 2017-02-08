@@ -31,7 +31,7 @@ if node['eucalyptus']['dns']['domain']
     retry_delay 20
   end
   execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
-    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns-domain']}"
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
     retries 15
     retry_delay 20
   end
@@ -97,7 +97,6 @@ elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "riak
 
     node.set['eucalyptus']['topology']['objectstorage']['access-key'] = admin_key
     node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = admin_secret
-    node.save
 
     Chef::Log.info "RiakCS admin_key: #{admin_key}"
     Chef::Log.info "RiakCS admin_secret: #{admin_secret}"
@@ -262,6 +261,8 @@ end
 
 execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
+  retries 15
+  retry_delay 10
 end
 
 template "create network.json for VPCMIDO" do
@@ -409,8 +410,10 @@ ruby_block "Install Service Image" do
       if service_image[:is_configured]
         break
       else
-        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
-        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default")
+        ec2_url = "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/"
+        iam_url = "http://iam.#{node["eucalyptus"]["dns"]["domain"]}:8773/"
+        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --iam_url #{iam_url} --region localhost --install-default"
+        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --iam_url #{iam_url} --region localhost --install-default")
         cmd.run_command
         Chef::Log.info "cmd.stdout: #{cmd.stdout}"
         if !cmd.stderr.empty?

@@ -91,7 +91,6 @@ ruby_block "Create New Ceph User" do
       new_user = JSON.parse(shell.stdout)
       node.set['eucalyptus']['topology']['objectstorage']['access-key'] = new_user['keys'][0]['access_key']
       node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = new_user['keys'][0]['secret_key']
-      node.save
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }

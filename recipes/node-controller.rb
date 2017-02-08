@@ -241,7 +241,6 @@ if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
   node.set[:ceph_user_name] = (ceph_keyrings['rbd-user']['name']).sub(/^client./, '')
   node.set[:ceph_keyring_path] = "#{ceph_keyrings['rbd-user']['keyring']}"
   node.set[:ceph_config_path] = "/etc/ceph/ceph.conf"
-  node.save
 
   ceph_config = CephHelper::SetCephRbd.get_configurations(
   node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],
