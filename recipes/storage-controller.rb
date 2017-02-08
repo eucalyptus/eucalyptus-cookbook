@@ -32,7 +32,10 @@ if node["eucalyptus"]["set-bind-addr"]
     # Use default gw interface IP
     bind_addr = node["ipaddress"]
   end
-  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  if not node['eucalyptus']['cloud-opts'].include?"--bind-addr="
+    Chef::Log.info "Adding --bind-addr to eucalyptus.conf cloud-opts"
+    node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  end
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
