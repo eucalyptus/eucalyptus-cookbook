@@ -11,7 +11,7 @@
           "authentication.signing_certificates_limit": 10,
           "authentication.credential_download_generate_certificate": "Limited"
       },
-      "dns": {"domain": "IPADDR.WILDCARD-DNS"},
+      "dns-domain": "IPADDR.WILDCARD-DNS",
       "set-bind-addr": true,
       "bind-interface": "BINDINTERFACE",
       "topology": {

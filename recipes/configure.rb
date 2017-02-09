@@ -24,14 +24,14 @@ command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
 describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 euctl = "#{command_prefix}/usr/bin/euctl"
 
-if node['eucalyptus']['dns']['domain']
+if !node['eucalyptus']['dns-domain'].nil? && !node['eucalyptus']['dns-domain'].empty?
   execute "Enable DNS delegation" do
     command "#{euctl} bootstrap.webservices.use_dns_delegation=true"
     retries 15
     retry_delay 20
   end
-  execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
-    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns']['domain']}"
+  execute "Set DNS domain to #{node['eucalyptus']['dns-domain']}" do
+    command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns-domain']}"
     retries 15
     retry_delay 20
   end
