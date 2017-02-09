@@ -2,7 +2,7 @@
     "eucalyptus": {
       "yum-options": "--nogpg",
       "cloud-properties": {},
-      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.3/rhel/7/x86_64/",
+      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/nightly/4.4/rhel/7/x86_64/",
       "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.3/rhel/7/x86_64/",
       "install-service-image": EXTRASERVICES,
       "ntp-server": "NTP",
@@ -15,7 +15,7 @@
       "set-bind-addr": true,
       "bind-interface": "BINDINTERFACE",
       "topology": {
-        "clc-1": "IPADDR",
+        "clc": ["IPADDR"],
         "user-facing": ["IPADDR"],
         "clusters": {
           "default": {
@@ -30,6 +30,7 @@
           "walrusbackend": ["IPADDR"]
           }
       },
+      "sync-keys": true,
       "network": {
         "mode": "EDGE",
         "public-interface": "br0",
@@ -48,7 +49,7 @@
               "Netmask": "NETMASK",
               "Gateway": "GATEWAY"
             },
-            "PrivateIps": [ "PRIVATEIPS1-PRIVATEIPS2"]
+            "PrivateIps": ["PRIVATEIPS1-PRIVATEIPS2"]
           }
         ]
       }

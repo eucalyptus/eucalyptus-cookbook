@@ -208,7 +208,7 @@ ruby_block "Sync keys for NC" do
   block do
     Eucalyptus::KeySync.get_node_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 
@@ -241,6 +241,7 @@ if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
   node.set[:ceph_user_name] = (ceph_keyrings['rbd-user']['name']).sub(/^client./, '')
   node.set[:ceph_keyring_path] = "#{ceph_keyrings['rbd-user']['keyring']}"
   node.set[:ceph_config_path] = "/etc/ceph/ceph.conf"
+  node.save
 
   ceph_config = CephHelper::SetCephRbd.get_configurations(
   node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],

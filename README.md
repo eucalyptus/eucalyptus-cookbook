@@ -172,7 +172,7 @@ Once invoked the script does the following:
 
 Inputs from the user are searched and replaced into the templates in `faststart/ciab-template.json` and `fastart/node-template.json` and then used as follows to run the cookbook:
 
-    chef-solo -r cookbooks.tgz -j ciab.json
+    chef-client -z -r cookbooks.tgz -j ciab.json
 
 ### Releasing
 In order to release a new version of Faststart, you must first package up the current cookbook versions with Berkshelf.

@@ -91,6 +91,7 @@ ruby_block "Create New Ceph User" do
       new_user = JSON.parse(shell.stdout)
       node.set['eucalyptus']['topology']['objectstorage']['access-key'] = new_user['keys'][0]['access_key']
       node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = new_user['keys'][0]['secret_key']
+      node.save
     end
   end
   only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
@@ -100,7 +101,7 @@ ruby_block "Sync keys for User Facing Services" do
   block do
     Eucalyptus::KeySync.get_cloud_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 service "ufs-eucalyptus-cloud" do

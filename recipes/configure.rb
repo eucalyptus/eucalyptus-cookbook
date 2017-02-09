@@ -97,6 +97,7 @@ elsif node['eucalyptus']['topology']['objectstorage']['providerclient'] == "riak
 
     node.set['eucalyptus']['topology']['objectstorage']['access-key'] = admin_key
     node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = admin_secret
+    node.save
 
     Chef::Log.info "RiakCS admin_key: #{admin_key}"
     Chef::Log.info "RiakCS admin_secret: #{admin_secret}"
@@ -278,11 +279,11 @@ template "create network.json for VPCMIDO" do
 end
 
 template "create network.json for EDGE" do
-  path   "/root/network.json"
+  path   "#{node['eucalyptus']['admin-cred-dir']}/network.json"
   source "network-edge.json.erb"
   action :create
   variables(
-    :clusters => JSON.pretty_generate(node["eucalyptus"]["network"]["clusters"], quirks_mode: true),
+    :clusters => Chef::JSONCompat.to_json_pretty(node["eucalyptus"]["network"]["clusters"]),
     :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
     :publicIps => node["eucalyptus"]["network"]["PublicIps"]
   )
@@ -411,9 +412,8 @@ ruby_block "Install Service Image" do
         break
       else
         ec2_url = "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/"
-        iam_url = "http://iam.#{node["eucalyptus"]["dns"]["domain"]}:8773/"
-        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --iam_url #{iam_url} --region localhost --install-default"
-        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --iam_url #{iam_url} --region localhost --install-default")
+        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default"
+        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default")
         cmd.run_command
         Chef::Log.info "cmd.stdout: #{cmd.stdout}"
         if !cmd.stderr.empty?

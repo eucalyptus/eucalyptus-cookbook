@@ -677,10 +677,10 @@ fi
 #
 ###############################################################################
 
-# Check to see if chef-solo is installed
+# Check to see if chef-client is installed
 echo "[Chef] Checking if Chef Client is installed"
 CHEF_VERSION="12.8.1"
-which chef-solo
+which chef-client
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[INFO] Chef not found. Installing Chef Client"
@@ -822,7 +822,7 @@ if [ "$nc_install_only" -eq 0 ]; then
 fi
 
 # Execute phase 1 which adds only the cloud-controller recipe to the run_list
-(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase1.log ]]; then
@@ -856,7 +856,7 @@ if [ "$nc_install_only" -eq 0 ]; then
   runlistitems="$runlistitems,recipe[eucalyptus::configure]"
 fi
 
-(chef-solo -r cookbooks.tgz -j $chef_template -o "$runlistitems" 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o "$runlistitems" 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase2.log ]]; then
@@ -884,7 +884,7 @@ if [ "$nc_install_only" -eq 0 ]; then
   runlistitems="recipe[eucalyptus::create-first-resources]"
 fi
 
-(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase3.log ]]; then
