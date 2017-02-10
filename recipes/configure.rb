@@ -391,8 +391,8 @@ ruby_block "Install Service Image" do
       osg_urls.push("http://#{ufs}:8773/services/objectstorage/")
     end
 
-    if node['eucalyptus']['dns']['domain']
-      osg_urls.push("http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/")
+    if node['eucalyptus']['dns-domain']
+      osg_urls.push("http://s3.#{node["eucalyptus"]["dns-domain"]}:8773/")
     end
     osg_urls.each do |osg_url|
       Chef::Log.info "Attempting to install service image using s3 url: #{osg_url}"
@@ -411,7 +411,7 @@ ruby_block "Install Service Image" do
       if service_image[:is_configured]
         break
       else
-        ec2_url = "http://ec2.#{node["eucalyptus"]["dns"]["domain"]}:8773/"
+        ec2_url = "http://ec2.#{node["eucalyptus"]["dns-domain"]}:8773/"
         Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default"
         cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default")
         cmd.run_command
