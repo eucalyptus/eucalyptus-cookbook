@@ -58,7 +58,7 @@ class EmiManager:
         self.temp_dir_prefix = "emis"
 
     def check_dependencies(self):
-        deps_list = ["wget", "xz"]
+        deps_list = ["wget", "xz", "bzip2"]
 
         print
         sys.stdout.write("\t\t%s\r" % "checking euca2ools...")
@@ -214,6 +214,15 @@ class EmiManager:
                     download_path)
                 sys.exit("Bye")
             image_path = download_path.strip(".xz")
+            print_info("Decompressed image can be found at: " + image_path)
+        elif image["url"].endswith(".bz2"):
+            print_info("Decompressing image...")
+            if call(["bzip2", "-d", download_path]):
+                print_error(
+                    "Unable to decompress image downloaded to: " +
+                    download_path)
+                sys.exit("Bye")
+            image_path = download_path.strip(".bz2")
             print_info("Decompressed image can be found at: " + image_path)
         else:
             image_path = download_path
