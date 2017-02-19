@@ -60,6 +60,7 @@ script "install_image" do
   code <<-EOH
   curl #{node['eucalyptus']['default-img-url']} > default.img
   euca-install-image -i default.img -b default -n default -r x86_64 --virtualization-type hvm
+  euca-describe-images --filter name=default | sed 's/.*\(emi-.\{8\}\).*/\1/' | xargs euca-create-tags --tag source=#{node['eucalyptus']['default-img-url']}
   EOH
 end
 
