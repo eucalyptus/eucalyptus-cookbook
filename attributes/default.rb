@@ -140,17 +140,16 @@ default['eucalyptus']['topology']['objectstorage']['secret-key'] = nil
 default['eucalyptus']['topology']['objectstorage']['ceph-radosgw'] = nil
 
 # midokura repository
-default['eucalyptus']['midonet']['auth'] = false
+default['eucalyptus']['midonet']['repository'] = "opensource"
 default['eucalyptus']['midonet']['version'] = 5.2
-version = default['eucalyptus']['midonet']['version']
 
 # open-source midonet
-default['eucalyptus']['midonet']['midonet-url'] = "http://builds.midonet.org/midonet-#{version}/stable/el7/"
+default['eucalyptus']['midonet']['midonet-url'] = "http://builds.midonet.org/midonet-VERSION/stable/el7/"
 default['eucalyptus']['midonet']['misc-url'] = "http://builds.midonet.org/misc/stable/el7/"
 default['eucalyptus']['midonet']['gpgkey'] = "https://builds.midonet.org/midorepo.key"
 
 # midokura enterprise midonet
-default['eucalyptus']['midonet']['mem-urn'] = "repo.midokura.com/mem-#{version}/stable/el7/"
+default['eucalyptus']['midonet']['mem-urn'] = "repo.midokura.com/mem-VERSION/stable/el7/"
 default['eucalyptus']['midonet']['mem-misc-url'] = "http://repo.midokura.com/misc/stable/el7/"
 default['eucalyptus']['midonet']['mem-gpgkey'] = "https://repo.midokura.com/midorepo.key"
 default['eucalyptus']['midonet']['repo-username'] = "midokura-username"
