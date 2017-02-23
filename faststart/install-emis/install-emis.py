@@ -405,7 +405,7 @@ def exit_message():
 def main():
     parser = argparse.ArgumentParser(description='Process Arguments.')
     parser.add_argument('-c', '--catalog',
-                        default="http://shaon.me/catalog-web",
+                        default="https://raw.githubusercontent.com/shaon/scripts/master/catalog-web",
                         help='Image catalog json file')
     args = parser.parse_args()
 
