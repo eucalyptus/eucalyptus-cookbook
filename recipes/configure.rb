@@ -24,13 +24,13 @@ command_prefix = "#{as_admin} #{node['eucalyptus']['home-directory']}"
 describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 euctl = "#{command_prefix}/usr/bin/euctl"
 
-if node['eucalyptus']['dns']['domain']
+if !node['eucalyptus']['dns-domain'].nil? && !node['eucalyptus']['dns-domain'].empty?
   execute "Enable DNS delegation" do
     command "#{euctl} bootstrap.webservices.use_dns_delegation=true"
     retries 15
     retry_delay 20
   end
-  execute "Set DNS domain to #{node['eucalyptus']['dns']['domain']}" do
+  execute "Set DNS domain to #{node['eucalyptus']['dns-domain']}" do
     command "#{euctl} system.dns.dnsdomain=#{node['eucalyptus']['dns-domain']}"
     retries 15
     retry_delay 20
@@ -204,16 +204,66 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   end
 end
 
-%w{objectstorage compute cloudformation}.each do |service|
-  execute "Wait for enabled #{service}" do
-    command "#{describe_services} --filter service-type=#{service} | grep enabled"
-    retries 15
-    retry_delay 20
+%w{objectstorage}.each do |service|
+  ruby_block "Block until #{service} ready" do
+    block do
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{service} to be ready."
+                loop do
+                    if EucalyptusHelper.getservicestates?("#{service}",["enabled", "broken"])
+                        Chef::Log.info "#{service} service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "#{service} service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for #{service} to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
+            end
+    end
+  end
+end
+
+%w{compute cloudformation}.each do |service|
+  ruby_block "Block until #{service} ready" do
+    block do
+        # stole loop from:
+        # https://github.com/chef-cookbooks/aws/blob/bd40e6c668e3975a1bbb1e82361c462db646c221/providers/elastic_ip.rb#L70-L89
+        begin
+            # Timeout.timeout() apparently can't take the #{} chef
+            # variable construct so use ruby @ instance variable instead
+            @seconds = node['eucalyptus']['configure-service-timeout']
+            Timeout.timeout(@seconds) do
+                Chef::Log.info "Setting a #{node['eucalyptus']['configure-service-timeout']} second timeout and waiting for #{service} to be ready."
+                loop do
+                    if EucalyptusHelper.getservicestates?("#{service}",["enabled"])
+                        Chef::Log.info "#{service} service ready, continuing..."
+                        break
+                    else
+                        Chef::Log.info "#{service} service state not ready, sleeping 5 seconds."
+                    end
+                    sleep 5
+                end
+            end
+            rescue Timeout::Error
+                raise "Timed out waiting for #{service} to be ready after #{node['eucalyptus']['configure-service-timeout']} seconds"
+            end
+    end
   end
 end
 
 execute "Set DNS server on CLC" do
   command "#{euctl} system.dns.nameserveraddress=#{node["eucalyptus"]["network"]["dns-server"]}"
+  retries 15
+  retry_delay 10
 end
 
 template "create network.json for VPCMIDO" do
@@ -229,11 +279,11 @@ template "create network.json for VPCMIDO" do
 end
 
 template "create network.json for EDGE" do
-  path   "/root/network.json"
+  path   "#{node['eucalyptus']['admin-cred-dir']}/network.json"
   source "network-edge.json.erb"
   action :create
   variables(
-    :clusters => JSON.pretty_generate(node["eucalyptus"]["network"]["clusters"], quirks_mode: true),
+    :clusters => Chef::JSONCompat.to_json_pretty(node["eucalyptus"]["network"]["clusters"]),
     :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
     :publicIps => node["eucalyptus"]["network"]["PublicIps"]
   )
@@ -341,8 +391,8 @@ ruby_block "Install Service Image" do
       osg_urls.push("http://#{ufs}:8773/services/objectstorage/")
     end
 
-    if node['eucalyptus']['dns']['domain']
-      osg_urls.push("http://s3.#{node["eucalyptus"]["dns"]["domain"]}:8773/")
+    if node['eucalyptus']['dns-domain']
+      osg_urls.push("http://s3.#{node["eucalyptus"]["dns-domain"]}:8773/")
     end
     osg_urls.each do |osg_url|
       Chef::Log.info "Attempting to install service image using s3 url: #{osg_url}"
@@ -361,8 +411,9 @@ ruby_block "Install Service Image" do
       if service_image[:is_configured]
         break
       else
-        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default"
-        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --region localhost --install-default")
+        ec2_url = "http://ec2.#{node["eucalyptus"]["dns-domain"]}:8773/"
+        Chef::Log.info "running service image installation command: #{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default"
+        cmd = Mixlib::ShellOut.new("#{as_admin} S3_URL=#{osg_url} esi-install-image --ec2_url #{ec2_url} --region localhost --install-default")
         cmd.run_command
         Chef::Log.info "cmd.stdout: #{cmd.stdout}"
         if !cmd.stderr.empty?

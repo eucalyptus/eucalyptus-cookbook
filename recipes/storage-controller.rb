@@ -32,7 +32,10 @@ if node["eucalyptus"]["set-bind-addr"]
     # Use default gw interface IP
     bind_addr = node["ipaddress"]
   end
-  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  if not node['eucalyptus']['cloud-opts'].include?"--bind-addr="
+    Chef::Log.info "Adding --bind-addr to eucalyptus.conf cloud-opts"
+    node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  end
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
@@ -102,9 +105,9 @@ end
 
 ruby_block "Sync keys for SC" do
   block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+    Eucalyptus::KeySync.get_cluster_keys(node, "sc")
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
   notifies :restart, "service[eucalyptus-cloud]", :before
 end
 
@@ -144,12 +147,14 @@ if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
 end
 
 node['eucalyptus']['topology']['clusters'].each do |cluster, info|
-  Chef::Log.warn("Checking SC bindaddr: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
-  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
-    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
-    service 'tgtd' do
-      action [ :enable, :start ]
-      supports :status => true, :start => true, :stop => true, :restart => true
+  Chef::Log.warn("Checking SC bindaddr: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc:#{info['sc']}")
+  info['sc'].each do |sc_ipaddr|
+    if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc'] == bind_addr or sc_ipaddr == node["ipaddress"])
+      Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
+      service 'tgtd' do
+        action [ :enable, :start ]
+        supports :status => true, :start => true, :stop => true, :restart => true
+      end
     end
   end
 end

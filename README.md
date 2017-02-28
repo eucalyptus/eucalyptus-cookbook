@@ -1,7 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/eucalyptus/eucalyptus-cookbook.png?label=ready&title=Ready)](https://waffle.io/eucalyptus/eucalyptus-cookbook)
 eucalyptus Cookbook
 ===================
-This cookbook installs and configures Eucalyptus on CentOS 6 physical and virtual machines. Source and package installations are supported.
+This cookbook installs and configures Eucalyptus on RHEL/CentOS 7 physical and virtual machines. Source and package installations are supported.
 
 Requirements
 ------------
@@ -15,6 +15,7 @@ The following table descirbes the branch to use for each Eucalyptus release:
 |euca-4.0 | 0.3.x| 4.0.2 |Stable branch for 4.0.x installs |
 |euca-4.1 | 0.4.x | 4.1.1 | Maint branch for 4.1.x installs|
 |euca-4.2 | 1.0.x | 4.2.0 |breaks the attribute API |
+|euca-4.3 | 1.0.x | 4.3.0 |Stable branch for 4.3.x installs |
 
 ### Environment
 To deploy a distributed topology it is necessary to define an environment with at least these attributes defined:
@@ -64,7 +65,7 @@ To deploy a distributed topology it is necessary to define an environment with a
 ```
 
 #### Platforms
-This cookbook only supports RHEL/CentOS 6 at the time being.
+This cookbook only supports RHEL/CentOS 7 at the time being.
 
 #### Berkshelf
 A Berksfile is included to allow users to easily download the required cookbook dependencies.
@@ -171,7 +172,7 @@ Once invoked the script does the following:
 
 Inputs from the user are searched and replaced into the templates in `faststart/ciab-template.json` and `fastart/node-template.json` and then used as follows to run the cookbook:
 
-    chef-solo -r cookbooks.tgz -j ciab.json
+    chef-client -z -r cookbooks.tgz -j ciab.json
 
 ### Releasing
 In order to release a new version of Faststart, you must first package up the current cookbook versions with Berkshelf.

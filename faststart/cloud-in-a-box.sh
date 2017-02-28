@@ -5,8 +5,9 @@
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.2.0.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.3.1.tgz"
 nc_install_only=0
+wildcard_dns="nip.io"
 
 function usage
 {
@@ -302,12 +303,12 @@ fi
 
 # Check to see that we're running on CentOS or RHEL and the right version.
 echo "[Precheck] Checking OS"
-cat /etc/redhat-release | egrep 'release.*7.[2]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*7.[23]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 7.2"
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 7.2 or 7.3"
     echo "To try Faststart on another platform, consider trying Eucadev:"
     echo "https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
@@ -555,6 +556,20 @@ done
 echo "IPADDR="$ciab_ipaddr
 echo ""
 
+echo "Using $wildcard_dns for wildcard dns." >>$LOGFILE
+/usr/bin/ping -c 1 $ciab_ipaddr.$wildcard_dns 2>&1 >>$LOGFILE
+if [[ $? != 0 ]]; then
+    echo "Cannot resolve $ciab_ipaddr.$wildcard_dns!  We require network
+    connectivity to $wildcard_dns for FastStart service DNS resolution.
+    Please verify your network connectivity is functioning properly and attempt
+    your FastStart install again."
+    echo "Cannot resolve $ciab_ipaddr.$wildcard_dns!  We require network
+    connectivity to $wildcard_dns for FastStart service DNS resolution.
+    Please verify your network connectivity is functioning properly and attempt
+    your FastStart install again." >>$LOGFILE
+    exit 1
+fi
+
 echo "What's the gateway for this host? ($ciab_gateway_guess)"
 until valid_ip $ciab_gateway; do
     read ciab_gateway
@@ -662,10 +677,10 @@ fi
 #
 ###############################################################################
 
-# Check to see if chef-solo is installed
+# Check to see if chef-client is installed
 echo "[Chef] Checking if Chef Client is installed"
 CHEF_VERSION="12.8.1"
-which chef-solo
+which chef-client
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[INFO] Chef not found. Installing Chef Client"
@@ -727,6 +742,7 @@ sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
 sed -i "s/NTP/$ciab_ntp/g" $chef_template
+sed -i "s/WILDCARD-DNS/$wildcard_dns/g" $chef_template
 
 if [ "$ciab_bridge_primary" -eq 1 ]; then
     echo ""
@@ -806,7 +822,7 @@ if [ "$nc_install_only" -eq 0 ]; then
 fi
 
 # Execute phase 1 which adds only the cloud-controller recipe to the run_list
-(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase1.log ]]; then
@@ -840,7 +856,7 @@ if [ "$nc_install_only" -eq 0 ]; then
   runlistitems="$runlistitems,recipe[eucalyptus::configure]"
 fi
 
-(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o "$runlistitems" 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase2.log ]]; then
@@ -868,7 +884,7 @@ if [ "$nc_install_only" -eq 0 ]; then
   runlistitems="recipe[eucalyptus::create-first-resources]"
 fi
 
-(chef-solo -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
+(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase3.log ]]; then

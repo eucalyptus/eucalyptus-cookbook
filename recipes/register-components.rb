@@ -29,7 +29,6 @@ ruby_block "Upload cloud keys Chef Server" do
   block do
     Eucalyptus::KeySync.upload_cloud_keys(node)
   end
-  not_if "#{Chef::Config[:solo]}"
 end
 
 ##### Register clusters
@@ -78,7 +77,6 @@ clusters.each do |cluster, info|
         node.save
       end
     end
-    not_if "#{Chef::Config[:solo]}"
   end
   ruby_block "Upload cluster keys Chef Server" do
     block do
@@ -88,12 +86,6 @@ clusters.each do |cluster, info|
         node.save
       end
     end
-    not_if "#{Chef::Config[:solo]}"
-  end
-  ### In solo mode (ie faststart) ensure that we copy the cluster keys over for the CC
-  execute "Copy keys locally" do
-    command "cp #{cluster_keys_dir}/* #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/"
-    only_if "#{Chef::Config[:solo]}"
   end
 end
 
@@ -107,6 +99,8 @@ user_facing.each do |uf_ip|
   execute "Register User Facing #{uf_ip}" do
     command "#{register_service} -t user-api -h #{uf_ip} API_#{uf_ip}"
     not_if "#{describe_services} | egrep 'API_#{uf_ip}'"
+    retries 20
+    retry_delay 10
   end
 end
 

@@ -59,9 +59,9 @@ node.save
 
 ruby_block "Sync keys for CC" do
   block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
+    Eucalyptus::KeySync.get_cluster_keys(node, "cc")
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 execute "Ensure bridge modules loaded into the kernel on CC" do

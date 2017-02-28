@@ -167,7 +167,7 @@ end
 ## use a different notifier to setup bridge in VPCMIDO mode
 if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   execute "Ensure bridge modules loaded into the kernel on NC" do
-    command '/usr/lib/systemd/systemd-modules-load || :'
+    command "modprobe bridge"
     notifies :run, "execute[network-restart]", :immediately
     notifies :run, "execute[brctl setfd]", :delayed
     notifies :run, "execute[brctl sethello]", :delayed
@@ -208,7 +208,7 @@ ruby_block "Sync keys for NC" do
   block do
     Eucalyptus::KeySync.get_node_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 
