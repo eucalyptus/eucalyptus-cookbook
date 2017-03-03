@@ -7,7 +7,7 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
-region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.nip.io'`
 if [ "${region}" = "" ]
 then
     echo "ERROR: Cannot determine region from file ../../../../ciab.json"
@@ -140,5 +140,3 @@ echo "+ ${bold}euca-describe-images --region admin@${region}${normal}"
 euca-describe-images --region admin@${region}
 
 echo ""
-
-
