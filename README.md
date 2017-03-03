@@ -16,6 +16,7 @@ The following table descirbes the branch to use for each Eucalyptus release:
 |euca-4.1 | 0.4.x | 4.1.1 | Maint branch for 4.1.x installs|
 |euca-4.2 | 1.0.x | 4.2.0 |breaks the attribute API |
 |euca-4.3 | 1.0.x | 4.3.0 |Stable branch for 4.3.x installs |
+|euca-4.4 | 1.0.x | 4.4.0 |Stable branch for 4.4.x installs |
 
 ### Environment
 To deploy a distributed topology it is necessary to define an environment with at least these attributes defined:
