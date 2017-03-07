@@ -29,7 +29,6 @@ ruby_block "Upload cloud keys Chef Server" do
   block do
     Eucalyptus::KeySync.upload_cloud_keys(node)
   end
-  not_if "#{Chef::Config[:solo]}"
 end
 
 ##### Register clusters
@@ -41,27 +40,31 @@ describe_services = "#{command_prefix}/usr/bin/euserv-describe-services"
 
 
 clusters.each do |cluster, info|
-  if info["cc-1"] == ""
-    cc_ip = node['ipaddress']
+  if info["cc"] == ""
+    cc_ips = node['ipaddress']
   else
-    cc_ip = info["cc-1"]
+    cc_ips = info["cc"]
   end
 
-  execute "Register CC" do
-    command "#{register_service} -t cluster -z #{cluster} -h #{cc_ip} #{cluster}-cc-1"
-    not_if "#{describe_services} | grep #{cluster}-cc-1"
-    retries 15
-    retry_delay 10
+  cc_ips.each_with_index do |cc_ip, index|
+    execute "Register CC" do
+      command "#{register_service} -t cluster -z #{cluster} -h #{cc_ip} #{cluster}-cc-#{index}"
+      not_if "#{describe_services} | grep #{cluster}-cc-#{index}"
+      retries 15
+      retry_delay 10
+    end
   end
-  if info["sc-1"] == ""
-    sc_ip = node['ipaddress']
+  if info["sc"] == ""
+    sc_ips = node['ipaddress']
   else
-    sc_ip = info["sc-1"]
+    sc_ips = info["sc"]
   end
 
-  execute "Register SC" do
-    command "#{register_service} -t storage -z #{cluster} -h #{sc_ip} #{cluster}-sc-1"
-    not_if "#{describe_services} | grep #{cluster}-sc-1"
+  sc_ips.each_with_index do |sc_ip, index|
+    execute "Register SC" do
+      command "#{register_service} -t storage -z #{cluster} -h #{sc_ip} #{cluster}-sc-#{index}"
+      not_if "#{describe_services} | grep #{cluster}-sc-#{index}"
+    end
   end
 
   #### Sync cluster keys
@@ -74,7 +77,6 @@ clusters.each do |cluster, info|
         node.save
       end
     end
-    not_if "#{Chef::Config[:solo]}"
   end
   ruby_block "Upload cluster keys Chef Server" do
     block do
@@ -84,12 +86,6 @@ clusters.each do |cluster, info|
         node.save
       end
     end
-    not_if "#{Chef::Config[:solo]}"
-  end
-  ### In solo mode (ie faststart) ensure that we copy the cluster keys over for the CC
-  execute "Copy keys locally" do
-    command "cp #{cluster_keys_dir}/* #{node["eucalyptus"]["home-directory"]}/var/lib/eucalyptus/keys/"
-    only_if "#{Chef::Config[:solo]}"
   end
 end
 
@@ -108,9 +104,12 @@ user_facing.each do |uf_ip|
   end
 end
 
-if node['eucalyptus']['topology']['walrus']
-  execute "Register Walrus" do
-    command "#{register_service} -t walrusbackend -h #{node['eucalyptus']['topology']['walrus']} walrus-1"
-    not_if "#{describe_services} | grep walrus"
+if node['eucalyptus']['topology']['objectstorage']['walrusbackend']
+  walrusbackends = node['eucalyptus']['topology']['objectstorage']['walrusbackend']
+  walrusbackends.each_with_index do |walrus, index|
+    execute "Register Walrus" do
+      command "#{register_service} -t walrusbackend -h #{walrus} walrus-#{index}"
+      not_if "#{describe_services} | grep walrus"
+    end
   end
 end

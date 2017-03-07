@@ -53,7 +53,7 @@ ruby_block "Sync keys for Walrus" do
   block do
     Eucalyptus::KeySync.get_cloud_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 service "eucalyptus-cloud" do

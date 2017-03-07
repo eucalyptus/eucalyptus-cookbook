@@ -24,7 +24,7 @@ include_recipe "eucalyptus::default"
 ### Need to know cluster name before setting bind-addr
 
 ### Set bind-addr if necessary
-if node["eucalyptus"]["set-bind-addr"] 
+if node["eucalyptus"]["set-bind-addr"]
   if node["eucalyptus"]["bind-interface"] or node["eucalyptus"]["bind-network"]
     # Auto detect IP from interface name
     bind_addr = Eucalyptus::BindAddr.get_bind_interface_ip(node)
@@ -32,7 +32,10 @@ if node["eucalyptus"]["set-bind-addr"]
     # Use default gw interface IP
     bind_addr = node["ipaddress"]
   end
-  node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  if not node['eucalyptus']['cloud-opts'].include?"--bind-addr="
+    Chef::Log.info "Adding --bind-addr to eucalyptus.conf cloud-opts"
+    node.override['eucalyptus']['cloud-opts'] = node['eucalyptus']['cloud-opts'] + " --bind-addr=" + bind_addr
+  end
 end
 
 if node["eucalyptus"]["install-type"] == "packages"
@@ -102,32 +105,58 @@ end
 
 ruby_block "Sync keys for SC" do
   block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "sc-1")
+    Eucalyptus::KeySync.get_cluster_keys(node, "sc")
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
   notifies :restart, "service[eucalyptus-cloud]", :before
 end
 
 ruby_block "Get Ceph Credentials" do
   block do
-    if node['ceph']
-      CephHelper::SetCephRbd.make_ceph_config(node, node['ceph']['users'][0]['name'])
-    else
-      CephHelper::SetCephRbd.make_ceph_config(node, "")
-    end
+    CephHelper::SetCephRbd.make_ceph_config(node, node['ceph']['users'][0]['name'])
   end
-  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) && node['ceph'] }
+end
+
+if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
+  cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+  ceph_keyrings = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-keyrings"],
+  node["eucalyptus"]["ceph-keyrings"])
+
+  ceph_config = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],
+  node["eucalyptus"]["ceph-config"])
+
+  template "/etc/ceph/ceph.conf" do
+    source "ceph.conf.erb"
+    action :create
+    variables(
+      :cephConfig => ceph_config
+    )
+  end
+
+  template "Write rbd-user keyring" do
+    path ceph_keyrings["rbd-user"]["keyring"]
+    source "client-keyring.erb"
+    variables(
+      :keyring => ceph_keyrings["rbd-user"]
+    )
+    action :create
+  end
 end
 
 node['eucalyptus']['topology']['clusters'].each do |cluster, info|
-  Chef::Log.warn("Checking SC bindaddr: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc-1:#{info['sc-1']}")
-  if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc-1'] == bind_addr or info['sc-1'] == node["ipaddress"])
-    Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
-    service 'tgtd' do
-      action [ :enable, :start ]
-      supports :status => true, :start => true, :stop => true, :restart => true
-    end 
-  end 
+  Chef::Log.warn("Checking SC bindaddr: #{bind_addr}, ip:#{node["ipaddress"]}, backend:#{info['storage-backend']}, against sc:#{info['sc']}")
+  info['sc'].each do |sc_ipaddr|
+    if (info['storage-backend'] == 'das' or info['storage-backend'] == 'overlay') and (info['sc'] == bind_addr or sc_ipaddr == node["ipaddress"])
+      Chef::Log.info("Enabling tgtd service for storage controller at: #{bind_addr}, backend:#{info['storage-backend']}")
+      service 'tgtd' do
+        action [ :enable, :start ]
+        supports :status => true, :start => true, :stop => true, :restart => true
+      end
+    end
+  end
 end
 
 if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])

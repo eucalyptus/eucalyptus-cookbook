@@ -31,42 +31,6 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   nodecontrollerservice = "service[eucalyptus-node]"
 end
 
-
-# this runs only during installation of eucanetd,
-# we don't handle reapplying changed ipset max_sets
-# during an update here
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version']) && node["eucalyptus"]["network"]["mode"] == "EDGE"
-  maxsets = node["eucalyptus"]["nc"]["ipset-maxsets"]
-  # install ipset if necessary
-  execute 'yum install -y ipset' do
-    not_if "rpm -q ipset"
-  end
-  execute 'unload-ipset-hash-net' do
-    command 'rmmod ip_set_hash_net'
-    ignore_failure true
-    action :nothing
-    only_if 'lsmod | grep ip_set_hash_net'
-  end
-  execute 'unload-ipset' do
-    command 'rmmod ip_set'
-    ignore_failure true
-    action :nothing
-    only_if 'lsmod | grep ip_set'
-  end
-  execute 'load-ipset' do
-    command 'modprobe ip_set'
-    action :nothing
-  end
-  # configure ipset max_sets parameter on NC
-  execute "Configure ip_set max_sets options in /etc/modprobe.d/ip_set.conf file" do
-    command "echo 'options ip_set max_sets=#{maxsets}' > /etc/modprobe.d/ip_set.conf"
-    not_if "grep #{maxsets} /sys/module/ip_set/parameters/max_sets || grep \"options ip_set max_sets=#{maxsets}\" /etc/modprobe.d/ip_set.conf"
-    notifies :run, 'execute[unload-ipset-hash-net]', :immediately
-    notifies :run, 'execute[unload-ipset]', :immediately
-    notifies :run, 'execute[load-ipset]', :immediately
-  end
-end
-
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
   yum_package "eucalyptus-nc" do
@@ -77,12 +41,10 @@ if node["eucalyptus"]["install-type"] == "packages"
   end
 else
   include_recipe "eucalyptus::install-source"
-  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-    group 'libvirt' do
-      action :manage
-      members 'eucalyptus'
-      append true
-    end
+  group 'libvirt' do
+    action :manage
+    members 'eucalyptus'
+    append true
   end
 end
 
@@ -90,6 +52,14 @@ end
 # we want to delete its networks for dhcp conflicts later
 service 'libvirtd' do
   action [ :enable, :start ]
+end
+
+# Remove default virsh network which runs its own dhcp server
+execute 'virsh net-destroy default' do
+  ignore_failure true
+end
+execute 'virsh net-autostart default --disable' do
+  ignore_failure true
 end
 
 # only install eucanetd on NC for non vpc modes
@@ -131,7 +101,7 @@ end
 
 ## Setup Bridge EDGE mode only
 execute "network-restart" do
-  command "service network restart"
+  command "systemctl restart network.service"
   action :nothing
 end
 
@@ -215,7 +185,7 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   end
 else
   execute "Ensure bridge modules loaded into the kernel on NC" do
-    command "modprobe bridge"
+    command '/usr/lib/systemd/systemd-modules-load || :'
     notifies :run, "execute[ifup-br0]", :immediately
   end
 end
@@ -248,7 +218,7 @@ ruby_block "Sync keys for NC" do
   block do
     Eucalyptus::KeySync.get_node_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 
@@ -265,15 +235,44 @@ end
 # Sets ceph specific node attributes for further use e.g in ERB templates.
 # This ruby_block needs to be executed anytime before eucalyptus.conf
 # is created by chef `template` and after /etc/ceph directory is created.
-ruby_block "Set Ceph Credentials" do
+ruby_block "Get Ceph Credentials" do
   block do
-    if node['ceph']
-      CephHelper::SetCephRbd.set_ceph_credentials(node, node['ceph']['users'][0]['name'])
-    else
-      CephHelper::SetCephRbd.set_ceph_credentials(node, "")
-    end
+    CephHelper::SetCephRbd.set_ceph_credentials(node, node['ceph']['users'][0]['name'])
   end
-  only_if { CephHelper::SetCephRbd.is_ceph?(node) }
+  only_if { CephHelper::SetCephRbd.is_ceph?(node) && node['ceph'] }
+end
+
+if CephHelper::SetCephRbd.is_ceph?(node) && !node['ceph']
+  cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+  ceph_keyrings = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-keyrings"],
+  node["eucalyptus"]["ceph-keyrings"])
+
+  node.set[:ceph_user_name] = (ceph_keyrings['rbd-user']['name']).sub(/^client./, '')
+  node.set[:ceph_keyring_path] = "#{ceph_keyrings['rbd-user']['keyring']}"
+  node.set[:ceph_config_path] = "/etc/ceph/ceph.conf"
+  node.save
+
+  ceph_config = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["clusters"][cluster_name]["ceph-config"],
+  node["eucalyptus"]["ceph-config"])
+
+  template "/etc/ceph/ceph.conf" do
+    source "ceph.conf.erb"
+    action :create
+    variables(
+      :cephConfig => ceph_config
+    )
+  end
+
+  template "Write rbd-user keyring" do
+    path ceph_keyrings["rbd-user"]["keyring"]
+    source "client-keyring.erb"
+    variables(
+      :keyring => ceph_keyrings["rbd-user"]
+    )
+    action :create
+  end
 end
 
 template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf" do

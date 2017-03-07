@@ -3,7 +3,7 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
-region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.nip.io'`
 if [ "${region}" = "" ]
 then
     echo "ERROR: Cannot determine region from file ../../../../ciab.json"
@@ -38,10 +38,10 @@ fi
 echo ""
 echo "* * * * *"
 echo ""
-echo "That's all for now. Check back for new tutorials by running the"
-echo "following command from this directory:"
+echo "That's all for now."
 echo ""
-echo "git pull"
+echo "You can try launching the image we just installed by running the "
+echo "\'launch-instance.sh\' script next."
 echo ""
 echo "Thanks for trying Eucalyptus!"
 echo ""

@@ -55,7 +55,7 @@ default["eucalyptus"]["bind-network"] = ""
 default["eucalyptus"]["log-level"] = "INFO"
 default["eucalyptus"]["user"] = "eucalyptus"
 default["eucalyptus"]["cloud-opts"] = ""
-default['eucalyptus']['dns']['domain'] = ""
+default['eucalyptus']['dns-domain'] = nil
 ### Topology must be set for key sync to work
 default['eucalyptus']['sync-keys'] = true
 default["eucalyptus"]["local-cluster-name"] = "default"
@@ -135,6 +135,35 @@ default["eucalyptus"]["nc"]["ipset-maxsets"] = "2048"
 default['eucalyptus']['ceph-repo'] = "http://download.ceph.com/rpm-hammer/el7/x86_64/"
 
 # ceph-rgw
-default['eucalyptus']['topology']['ceph-radosgw']['access-key'] = nil
-default['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = nil
-default['eucalyptus']['topology']['ceph-radosgw'] = nil
+default['eucalyptus']['topology']['objectstorage']['access-key'] = nil
+default['eucalyptus']['topology']['objectstorage']['secret-key'] = nil
+default['eucalyptus']['topology']['objectstorage']['ceph-radosgw'] = nil
+
+# midokura repository
+default['eucalyptus']['midonet']['repository'] = "opensource"
+default['eucalyptus']['midonet']['version'] = 5.2
+
+# open-source midonet
+default['eucalyptus']['midonet']['midonet-url'] = "http://builds.midonet.org/midonet-VERSION/stable/el7/"
+default['eucalyptus']['midonet']['misc-url'] = "http://builds.midonet.org/misc/stable/el7/"
+default['eucalyptus']['midonet']['gpgkey'] = "https://builds.midonet.org/midorepo.key"
+
+# midokura enterprise midonet
+default['eucalyptus']['midonet']['mem-urn'] = "repo.midokura.com/mem-VERSION/stable/el7/"
+default['eucalyptus']['midonet']['mem-misc-url'] = "http://repo.midokura.com/misc/stable/el7/"
+default['eucalyptus']['midonet']['mem-gpgkey'] = "https://repo.midokura.com/midorepo.key"
+default['eucalyptus']['midonet']['repo-username'] = "midokura-username"
+default['eucalyptus']['midonet']['repo-password'] = "midokura-password"
+default['eucalyptus']['midonet']['zookeeper-port'] = 2181
+
+# midonet-cluster
+default['eucalyptus']['midonet']['http-port'] = 8080
+default['eucalyptus']['midonet']['http-host'] = "127.0.0.1"
+default['eucalyptus']['midonet']['max-heap-size'] = nil
+default['eucalyptus']['midonet']['heap-newsize'] = nil
+
+default['eucalyptus']['midonet']['initial-tenant'] = "mido_tenant"
+default['eucalyptus']['midonet']['default-tunnel-zone'] = "mido-tz"
+
+# midolman
+default['eucalyptus']['midolman']['max-heap-size'] = nil

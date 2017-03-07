@@ -1,21 +1,21 @@
-<% if node['eucalyptus']['topology']['ceph-config'] -%>
-  <% node['eucalyptus']['topology']['ceph-config'].each do |section, config_value| -%>
+<% if @cephConfig-%>
+  <% @cephConfig.each do |section, config_value| -%>
 [<%= section %>]
     <% config_value.each do |key, value| -%>
   <%= key %> = <%= value %>
     <% end %>
   <% end %>
 <% end -%>
-<% if node['eucalyptus']['topology']['ceph-radosgw'] -%>
-[<%= node['eucalyptus']['topology']['ceph-radosgw']['name'] %>]
+<% if @cephRadosGW -%>
+[<%= @cephRadosGW['name'] %>]
   host = <%= node['hostname'] %>
-  <% if node['eucalyptus']['topology']['ceph-radosgw']['keyring'] -%>
-  keyring = <%= node['eucalyptus']['topology']['ceph-radosgw']['keyring'] %>
+  <% if @cephRadosGW['keyring'] -%>
+  keyring = <%= @cephRadosGW['keyring'] %>
   <% end %>
-  <% if node['eucalyptus']['topology']['ceph-radosgw']['log file'] -%>
-  log file = <%= node['eucalyptus']['topology']['ceph-radosgw']['log file'] %>
+  <% if @cephRadosGW['log file'] -%>
+  log file = <%= @cephRadosGW['log file'] %>
   <% end %>
-  <% if node['eucalyptus']['topology']['ceph-radosgw']['rgw frontends'] -%>
-  rgw frontends = "<%= node['eucalyptus']['topology']['ceph-radosgw']['rgw frontends'] %>"
+  <% if @cephRadosGW['rgw frontends'] -%>
+  rgw frontends = "<%= @cephRadosGW['rgw frontends'] %>"
   <% end %>
 <% end %>

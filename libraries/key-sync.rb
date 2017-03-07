@@ -45,9 +45,15 @@ module Eucalyptus
         end
         Chef::Log.info "Found addresses: " + addresses.join("  ")
         all_cluster_machines = []
-        all_cluster_machines << info["sc-1"]
-        all_cluster_machines << info["cc-1"]
-        all_cluster_machines.concat info["nodes"].split()
+        info["sc"].each do |sc_ip|
+          all_cluster_machines << sc_ip
+        end
+        info["cc"].each do |cc_ip|
+          all_cluster_machines << cc_ip
+        end
+        info["nodes"].each do |node_ip|
+          all_cluster_machines << node_ip
+        end
         Chef::Log.info "Machines in #{name} cluster: " + all_cluster_machines.join("  ")
         all_cluster_machines.each do |ip|
           if addresses.include?(ip)
@@ -122,12 +128,14 @@ module Eucalyptus
         retry_delay = 10
         total_retries = 12
         begin
-          clc_ip = node["eucalyptus"]["topology"]["clc-1"]
-          environment = node.chef_environment
-          Chef::Log.info "Getting keys from CLC #{clc_ip}"
-          clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first.first
-          if clc.nil?
-            raise "Unable to find CLC:#{clc_ip} on chef server"
+          clc_ips = node["eucalyptus"]["topology"]["clc"]
+          clc_ips.each do |clc_ip|
+            environment = node.chef_environment
+            Chef::Log.info "Getting keys from CLC #{clc_ip}"
+            clc = Chef::Search::Query.new.search(:node, "addresses:#{clc_ip}").first.first
+            if clc.nil?
+              raise "Unable to find CLC:#{clc_ip} on chef server"
+            end
           end
         rescue Exception => e
           if retry_count < total_retries

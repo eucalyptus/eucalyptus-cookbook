@@ -3,7 +3,7 @@
 bold=`tput bold`
 normal=`tput sgr0`
 
-region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.xip.io'`
+region=`grep domain ../../../../ciab.json | egrep -o '([0-9]{1,3}\.){3}[0-9]{1,3}.nip.io'`
 if [ "${region}" = "" ]
 then
     echo "ERROR: Cannot determine region from file ../../../../ciab.json"
@@ -29,7 +29,14 @@ fi
 
 # Be sure the tutorial image is installed
 EMI_ID=$(euca-describe-images --region admin@${region} | grep tutorial | grep emi | tail -n 1 | cut -f 2)
-echo $EMI_ID
+
+echo "In order to run the instance, we must know the EMI.  It can be found by running the command:"
+echo ""
+echo "${bold}euca-describe-images --region admin@${region} | grep tutorial | grep emi${normal}"
+
+echo ""
+echo "EMI ID is: $EMI_ID"
+
 if [ "$EMI_ID" == "" ]
 then
    echo "Unable to find the Fedora machine image. Use this command to install it:"
@@ -39,15 +46,27 @@ then
    exit 1
 fi
 
-echo "${bold}euca-run-instances -k my-first-keypair $EMI_ID --region admin@${region}${normal}"
-euca-run-instances -k my-first-keypair $EMI_ID --region admin@${region}
+echo ""
+
+echo "${bold}euca-run-instances --show-empty-fields -k my-first-keypair $EMI_ID --region admin@${region}${normal}"
+euca-run-instances --show-empty-fields -k my-first-keypair $EMI_ID --region admin@${region} | tee run_instance_output.txt
+
+echo ""
+echo "From the euca-run-instances command above, the important information is the Instance ID"
+echo "and the public IP address of the instance."
+echo ""
+echo "The Instance ID is the 2nd field, and the public IP address is the 17th field. For reference, they are:"
 
 # Capture the instance ID and public address
-echo "Capturing the instance ID"
-INSTANCE_ID=$(euca-describe-instances --region admin@${region} | grep $EMI_ID | grep -v terminated | cut -f2)
-echo "Capturing the public ip address"
-INSTANCE_ADDR=$(euca-describe-instances --region admin@${region} | grep $INSTANCE_ID | cut -f4)
+INSTANCE_ID=$(cat run_instance_output.txt | grep INSTANCE | cut -f2)
+INSTANCE_ADDR=$(cat run_instance_output.txt | grep INSTANCE | cut -f17)
 
+echo ""
+echo "Instance ID: $INSTANCE_ID"
+echo "IP Address: $INSTANCE_ADDR"
+echo ""
+
+rm run_instance_output.txt
 
 # Wait up to 30 seconds for the instance to start.
 echo "Waiting for your instance to start"

@@ -4,12 +4,14 @@ EUCA_USER="<%= node["eucalyptus"]["user"] %>"
 CLOUD_OPTS="<%= node["eucalyptus"]["cloud-opts"] %>"
 CC_PORT="<%= node["eucalyptus"]["cc"]["port"] %>"
 SCHEDPOLICY="<%= node["eucalyptus"]["cc"]["scheduling-policy"] %>"
-<% if (node.recipe? "eucalyptus::cluster-controller") && node["eucalyptus"]["topology"]["clusters"].has_key?(Eucalyptus::KeySync.get_local_cluster_name(node)) -%>
-NODES="<%= node["eucalyptus"]["topology"]["clusters"][Eucalyptus::KeySync.get_local_cluster_name(node)]["nodes"] %>"
+<% if node["eucalyptus"]["nodes"] -%>
+NODES="<%= node["eucalyptus"]["nodes"].join(' ') %>"
 <% else -%>
 NODES=""
 <% end -%>
+<% if not node["eucalyptus"]["nc"]["service-path"].eql? "axis2/services/EucalyptusNC" -%>
 NC_SERVICE="<%= node["eucalyptus"]["nc"]["service-path"] %>"
+<% end -%>
 NC_PORT="<%= node["eucalyptus"]["nc"]["port"] %>"
 <% if node["eucalyptus"]["nc"]["work-size"] -%>
 NC_WORK_SIZE=<%= node["eucalyptus"]["nc"]["work-size"] %>

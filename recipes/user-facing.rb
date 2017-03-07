@@ -28,46 +28,58 @@ yum_package "ceph-radosgw" do
   action :upgrade
   options node['eucalyptus']['yum-options']
   flush_cache [:before]
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
+end
+
+if CephHelper::SetCephRbd.is_ceph_radosgw?(node)
+  ceph_config = CephHelper::SetCephRbd.get_configurations(
+  node["eucalyptus"]["topology"]["objectstorage"]["ceph-config"],
+  node["eucalyptus"]["ceph-config"])
+
+  ceph_radosgw = CephHelper::SetCephRbd.get_configurations(
+  node['eucalyptus']["topology"]["objectstorage"]['ceph-radosgw'],
+  node['eucalyptus']['ceph-radosgw'])
 end
 
 template "/etc/ceph/ceph.conf" do
   source "ceph.conf.erb"
   action :create
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  variables(
+    :cephConfig => ceph_config,
+    :cephRadosGW => ceph_radosgw
+  )
+  only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
 end
 
-if node['eucalyptus']['topology']['ceph-keyrings']
-  if node['eucalyptus']['topology']['ceph-keyrings']['radosgw']
-    radosgw = node['eucalyptus']['topology']['ceph-keyrings']['radosgw']
-    template "#{radosgw['keyring']}" do
-      source "client-keyring.erb"
-      variables(
-        :keyring => radosgw
-      )
-      action :create
-    end
-  end
+if CephHelper::SetCephRbd.is_ceph_radosgw?(node)
+  ceph_keyrings = CephHelper::SetCephRbd.get_configurations(
+  node['eucalyptus']["topology"]["objectstorage"]['ceph-keyrings'],
+  node['eucalyptus']['ceph-keyrings'])
 
-  if node['eucalyptus']['topology']['ceph-keyrings']['ceph-admin']
-    adminkeyring = node['eucalyptus']['topology']['ceph-keyrings']['ceph-admin']
-    template "#{adminkeyring['keyring']}" do
-      source "client-keyring.erb"
-      variables(
-        :keyring => adminkeyring
-      )
-      action :create
+  %w{radosgw ceph-admin}.each do |ceph_user_keyring|
+    if ceph_keyrings[ceph_user_keyring]
+      template "#{ceph_keyrings[ceph_user_keyring]["keyring"]}" do
+        source "client-keyring.erb"
+        variables(
+          :keyring => ceph_keyrings[ceph_user_keyring]
+        )
+        action :create
+      end
+    else
+      raise Exception.new("Unable to create keyring file for #{ceph_user_keyring}!!!")
     end
   end
 end
 
+# TODO make sure when multiple UFS is present, ceph user created once
 ruby_block "Create New Ceph User" do
   block do
-    if node['eucalyptus']['topology']['ceph-radosgw']['access-key'] == nil || node['eucalyptus']['topology']['ceph-radosgw']['secret-key'] == nil
-      if node['eucalyptus']['topology']['ceph-radosgw']['username']
-        new_username = node['eucalyptus']['topology']['ceph-radosgw']['username']
+    if node['eucalyptus']['topology']['objectstorage']['access-key'] == nil ||
+      node['eucalyptus']['topology']['objectstorage']['secret-key'] == nil
+      if node['eucalyptus']['topology']['objectstorage']['ceph-radosgw']['username']
+        new_username = node['eucalyptus']['topology']['objectstorage']['ceph-radosgw']['username']
       else
-        raise Exception.new("'username' not found in node['eucalyptus']['topology']['ceph-radosgw']")
+        raise Exception.new("'username' not found in node['eucalyptus']['topology']['objectstorage']['ceph-radosgw']")
       end
       Chef::Log.info "ACCESS_KEY and/or SECRET_KEY not found. Creating new user: #{new_username}"
       cmd = "radosgw-admin user create --uid=#{new_username} --display-name=#{new_username}"
@@ -77,19 +89,19 @@ ruby_block "Create New Ceph User" do
         raise "#{cmd} failed: " + shell.stdout + ", " + shell.stderr
       end
       new_user = JSON.parse(shell.stdout)
-      node.set['eucalyptus']['topology']['ceph-radosgw']['access-key'] = new_user['keys'][0]['access_key']
-      node.set['eucalyptus']['topology']['ceph-radosgw']['secret-key'] = new_user['keys'][0]['secret_key']
+      node.set['eucalyptus']['topology']['objectstorage']['access-key'] = new_user['keys'][0]['access_key']
+      node.set['eucalyptus']['topology']['objectstorage']['secret-key'] = new_user['keys'][0]['secret_key']
       node.save
     end
   end
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
 end
 
 ruby_block "Sync keys for User Facing Services" do
   block do
     Eucalyptus::KeySync.get_cloud_keys(node)
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 service "ufs-eucalyptus-cloud" do
@@ -103,5 +115,5 @@ service "ceph-radosgw" do
   supports :status => true, :start => true, :stop => true, :restart => true
   retries 3
   retry_delay 10
-  only_if { node['eucalyptus']['topology']['ceph-radosgw'] }
+  only_if { CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
 end

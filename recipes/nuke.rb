@@ -43,11 +43,6 @@ if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['networ
   end
 end
 
-execute "Clear all-networking for VPC cloud" do
-  command "eucanetd -Z"
-  ignore_failure true
-end
-
 # on el6 the init scripts are named differently than on el7
 # and systemctl does not like to enable unit files which are symlinks
 # so we will use the actual unit file here
@@ -129,6 +124,27 @@ if node['eucalyptus']['home-directory'] != '/'
 end
 
 ## Remove repo rpms
+yum_repository 'eucalyptus' do
+  description 'Eucalyptus Package Repo'
+  url node['eucalyptus']['eucalyptus-repo']
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
+  action :remove
+end
+
+yum_repository 'eucalyptus-enterprise' do
+  description 'Eucalyptus Enterprise Package Repo'
+  url node['eucalyptus']['enterprise-repo']
+  gpgkey node['eucalyptus']['eucalyptus-gpg-key']
+  action :remove
+end
+
+yum_repository 'euca2ools' do
+  description 'Euca2ools Package Repo'
+  url node['eucalyptus']['euca2ools-repo']
+  gpgkey node['eucalyptus']['euca2ools-gpg-key']
+  action :remove
+end
+
 yum_repository 'eucalyptus-release' do
   description 'Eucalyptus Package Repo'
   url node['eucalyptus']['eucalyptus-repo']
@@ -150,20 +166,13 @@ yum_repository 'euca2ools-release' do
   action :remove
 end
 
-if node['eucalyptus']['install-type'] == 'source'
+if node['eucalyptus']['install-type'] == 'sources'
   ### Remove eucalyptus user
   user 'eucalyptus' do
     supports :manage_home => true
     comment 'Eucalyptus User'
     home '/home/eucalyptus'
     shell '/bin/bash'
-    action :remove
-  end
-
-  ### remove build deps repo
-  yum_repository 'euca-build-deps' do
-    description 'Eucalyptus Build Dependencies repo'
-    url node['eucalyptus']['build-deps-repo']
     action :remove
   end
 

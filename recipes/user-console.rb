@@ -23,7 +23,7 @@ require 'chef/version_constraint'
 
 include_recipe "eucalyptus::default"
 
-if node['eucalyptus']['user-console']['install-type'] == 'source'
+if node['eucalyptus']['user-console']['install-type'] == 'sources'
   %w{openssl-devel python-devel swig gcc libmemcached1 python-pylibmc
      python-pyramid}.each do |package_name|
     yum_package package_name do

@@ -53,11 +53,15 @@ template "eucalyptus.conf" do
 end
 
 cluster_name = Eucalyptus::KeySync.get_local_cluster_name(node)
+
+node.set["eucalyptus"]["nodes"] = node["eucalyptus"]["topology"]["clusters"][cluster_name]["nodes"]
+node.save
+
 ruby_block "Sync keys for CC" do
   block do
-    Eucalyptus::KeySync.get_cluster_keys(node, "cc-1")
+    Eucalyptus::KeySync.get_cluster_keys(node, "cc")
   end
-  only_if { not Chef::Config[:solo] and node['eucalyptus']['sync-keys'] }
+  only_if { node['eucalyptus']['sync-keys'] }
 end
 
 execute "Ensure bridge modules loaded into the kernel on CC" do
@@ -86,7 +90,7 @@ if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
   end
 end
 
-nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes'].split()
+nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes']
 log "Registering the following nodes: #{nc_ips}"
 nc_ips.each do |nc_ip|
   execute 'Register Nodes' do
