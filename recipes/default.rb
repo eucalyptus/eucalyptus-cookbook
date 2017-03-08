@@ -16,9 +16,6 @@
 ##    limitations under the License.
 ##
 
-# used for platform_version comparison
-require 'chef/version_constraint'
-
 directory node['eucalyptus']['home-directory'] do
   recursive true
 end
@@ -67,21 +64,13 @@ execute "Flush and save iptables" do
   not_if "service eucalyptus-cc status || service eucanetd status || service eucalyptus-cloud status || service eucalyptus-nc status"
 end
 
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  ## Setup NTP
-  include_recipe "ntp"
-  execute "ntpdate -u #{node["eucalyptus"]["ntp-server"]}" do
-    cwd '/tmp'
-  end
-else
-  yum_package "chrony" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-  end
-  service "chronyd" do
-    supports :status => true, :restart => true, :reload => true
-    action [ :enable, :start ]
-  end
+yum_package "chrony" do
+  action :upgrade
+  options node['eucalyptus']['yum-options']
+end
+service "chronyd" do
+  supports :status => true, :restart => true, :reload => true
+  action [ :enable, :start ]
 end
 
 ## Install repo rpms
@@ -134,10 +123,6 @@ yum_repository "ceph" do
   url node['eucalyptus']['ceph-repo']
   gpgcheck false
   only_if { CephHelper::SetCephRbd.is_ceph?(node) || CephHelper::SetCephRbd.is_ceph_radosgw?(node) }
-end
-
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  node.default["eucalyptus"]["epel-rpm"] = "http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"
 end
 
 remote_file "/tmp/epel-release.rpm" do
