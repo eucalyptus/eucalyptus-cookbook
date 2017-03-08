@@ -18,18 +18,9 @@
 ##
 #
 
-# used for platform_version comparison
-require 'chef/version_constraint'
-
 include_recipe "eucalyptus::default"
 
-
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  clustercontrollerservice = "service[eucalyptus-cc]"
-end
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  clustercontrollerservice = "service[eucalyptus-cluster]"
-end
+clustercontrollerservice = "service[eucalyptus-cluster]"
 
 ## Install binaries for the CC
 if node["eucalyptus"]["install-type"] == "packages"
@@ -73,21 +64,9 @@ if network_mode == "MANAGED" or network_mode == "MANAGED-NOVLAN"
   include_recipe "eucalyptus::eucanetd"
 end
 
-# on el6 the init scripts are named differently than on el7
-# systemctl does not like unit files which are symlinks
-# so we will use the actual unit file names here
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  service "eucalyptus-cc" do
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
-end
-
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  service "eucalyptus-cluster" do
-    action [ :enable, :start ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
+service "eucalyptus-cluster" do
+  action [ :enable, :start ]
+  supports :status => true, :start => true, :stop => true, :restart => true
 end
 
 nc_ips = node['eucalyptus']['topology']['clusters'][cluster_name]['nodes']

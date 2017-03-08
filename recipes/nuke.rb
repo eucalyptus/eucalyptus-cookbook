@@ -17,24 +17,10 @@
 ##    limitations under the License.
 ##
 
-# used for platform_version comparison
-require 'chef/version_constraint'
-
 ## Stop all euca components
 
-# on el6 the init scripts are named differently than on el7
-# and systemctl does not like to enable unit files which are symlinks
-# so we will use the actual unit file here
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  service "eucalyptus-nc" do
-    action [ :stop ]
-  end
-end
-
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  service "eucalyptus-node" do
-    action [ :stop ]
-  end
+service "eucalyptus-node" do
+  action [ :stop ]
 end
 
 if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['network']['mode'] == 'VPCMIDO'
@@ -43,19 +29,8 @@ if node['eucalyptus']['network']['mode'] == 'EDGE' || node['eucalyptus']['networ
   end
 end
 
-# on el6 the init scripts are named differently than on el7
-# and systemctl does not like to enable unit files which are symlinks
-# so we will use the actual unit file here
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  service "eucalyptus-cc" do
-    action [ :stop ]
-  end
-end
-
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  service "eucalyptus-cluster" do
-    action [ :stop ]
-  end
+service "eucalyptus-cluster" do
+  action [ :stop ]
 end
 
 service "eucaconsole" do
