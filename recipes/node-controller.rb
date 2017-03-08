@@ -17,19 +17,11 @@
 ##    limitations under the License.
 ##
 
-# used for platform_version comparison
-require 'chef/version_constraint'
-
 include_recipe "eucalyptus::default"
 
 source_directory = "#{node['eucalyptus']["home-directory"]}/source/#{node['eucalyptus']['source-branch']}"
 
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  nodecontrollerservice = "service[eucalyptus-nc]"
-end
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  nodecontrollerservice = "service[eucalyptus-node]"
-end
+nodecontrollerservice = "service[eucalyptus-node]"
 
 ## Install packages for the NC
 if node["eucalyptus"]["install-type"] == "packages"
@@ -67,35 +59,12 @@ if node["eucalyptus"]["network"]["mode"] != "VPCMIDO"
   include_recipe "eucalyptus::eucanetd"
 end
 
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
-    execute "Set ip_forward sysctl values in sysctl.conf" do
-      command "sed -i 's/net.ipv4.ip_forward.*/net.ipv4.ip_forward = 1/' /etc/sysctl.conf"
-    end
-    execute "Set bridge-nf-call-iptables sysctl values in sysctl.conf" do
-      command "sed -i 's/net.bridge.bridge-nf-call-iptables.*/net.bridge.bridge-nf-call-iptables = 1/' /etc/sysctl.conf"
-    end
-    execute "Reload sysctl values" do
-        command "sysctl -p"
-    end
-  end
-end
-
 # setup subscriber to restart midolman when bridge is created in VPC mode
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
-  if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-        execute 'midolman-restart' do
-            command "service midolman restart"
-            action :nothing
-            subscribes :run, "execute[ifup-br0]", :immediately
-        end
-  end
-  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-        execute 'midolman-restart' do
-            command "systemctl restart midolman"
-            action :nothing
-            subscribes :run, "execute[ifup-br0]", :immediately
-        end
+  execute 'midolman-restart' do
+      command "systemctl restart midolman"
+      action :nothing
+      subscribes :run, "execute[ifup-br0]", :immediately
   end
 end
 
@@ -271,19 +240,7 @@ template "#{node["eucalyptus"]["home-directory"]}/etc/eucalyptus/eucalyptus.conf
   notifies :restart, "#{nodecontrollerservice}", :delayed
 end
 
-# on el6 the init scripts are named differently than on el7
-# systemctl does not like unit files which are symlinks
-# so we will use the actual unit file names here
-if Chef::VersionConstraint.new("~> 6.0").include?(node['platform_version'])
-  service "eucalyptus-nc" do
-    action [ :enable ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
-end
-
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  service "eucalyptus-node" do
-    action [ :enable ]
-    supports :status => true, :start => true, :stop => true, :restart => true
-  end
+service "eucalyptus-node" do
+  action [ :enable ]
+  supports :status => true, :start => true, :stop => true, :restart => true
 end

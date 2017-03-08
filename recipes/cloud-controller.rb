@@ -35,17 +35,13 @@ if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
     action :upgrade
     options node['eucalyptus']['yum-options']
   end
-  if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-    execute "setsebool httpd_can_network_connect true" do
-      command "/usr/sbin/setsebool -P httpd_can_network_connect 1"
-    end
+  execute "setsebool httpd_can_network_connect true" do
+    command "/usr/sbin/setsebool -P httpd_can_network_connect 1"
   end
 end
 
-if Chef::VersionConstraint.new("~> 7.0").include?(node['platform_version'])
-  execute "Configure kernel parameters from 70-eucalyptus-cloud.conf" do
-    command "/usr/lib/systemd/systemd-sysctl 70-eucalyptus-cloud.conf"
-  end
+execute "Configure kernel parameters from 70-eucalyptus-cloud.conf" do
+  command "/usr/lib/systemd/systemd-sysctl 70-eucalyptus-cloud.conf"
 end
 
 service "eucalyptus-cloud" do
