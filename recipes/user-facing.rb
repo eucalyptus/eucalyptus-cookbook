@@ -110,7 +110,7 @@ service "ufs-eucalyptus-cloud" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-service "ceph-radosgw" do
+service "ceph-radosgw@#{node['hostname']}" do
   action [:enable, :start]
   supports :status => true, :start => true, :stop => true, :restart => true
   retries 3
