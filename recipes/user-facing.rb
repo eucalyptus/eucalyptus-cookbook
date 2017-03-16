@@ -59,7 +59,7 @@ if CephHelper::SetCephRbd.is_ceph_radosgw?(node)
   node['eucalyptus']["topology"]["objectstorage"]['ceph-keyrings'],
   node['eucalyptus']['ceph-keyrings'])
 
-  %w{radosgw bootstrap-rgw}.each do |ceph_user_keyring|
+  %w{admin radosgw bootstrap-rgw}.each do |ceph_user_keyring|
     if ceph_keyrings[ceph_user_keyring]
       template "#{ceph_keyrings[ceph_user_keyring]["keyring"]}" do
         source "client-keyring.erb"
