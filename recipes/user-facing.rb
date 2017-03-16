@@ -43,6 +43,9 @@ end
 
 template "/etc/ceph/ceph.conf" do
   source "ceph.conf.erb"
+  owner 'ceph'
+  group 'ceph'
+  mode '0644'
   action :create
   variables(
     :cephConfig => ceph_config,
@@ -56,10 +59,13 @@ if CephHelper::SetCephRbd.is_ceph_radosgw?(node)
   node['eucalyptus']["topology"]["objectstorage"]['ceph-keyrings'],
   node['eucalyptus']['ceph-keyrings'])
 
-  %w{radosgw ceph-admin}.each do |ceph_user_keyring|
+  %w{radosgw bootstrap-rgw}.each do |ceph_user_keyring|
     if ceph_keyrings[ceph_user_keyring]
       template "#{ceph_keyrings[ceph_user_keyring]["keyring"]}" do
         source "client-keyring.erb"
+        owner 'ceph'
+        group 'ceph'
+        mode '0600'
         variables(
           :keyring => ceph_keyrings[ceph_user_keyring]
         )
@@ -110,7 +116,7 @@ service "ufs-eucalyptus-cloud" do
   supports :status => true, :start => true, :stop => true, :restart => true
 end
 
-service "ceph-radosgw@#{node['hostname']}" do
+service "ceph-radosgw@rgw.euca-osg" do
   action [:enable, :start]
   supports :status => true, :start => true, :stop => true, :restart => true
   retries 3
