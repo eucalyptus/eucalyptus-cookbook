@@ -16,71 +16,74 @@
 ##    See the License for the specific language governing permissions and
 ##    limitations under the License.
 ##
-## Install packages for the user-console
-include_recipe "eucalyptus::default"
+## Install packages for the user-console if ['eucalyptus']['install-console']
+##  attribute is true
+if node['eucalyptus']['install-console'] == 'true'
+  include_recipe "eucalyptus::default"
 
-if node['eucalyptus']['user-console']['install-type'] == 'source'
-  %w{openssl-devel python-devel swig gcc libmemcached1 python-pylibmc
-     python-pyramid}.each do |package_name|
-    yum_package package_name do
-      options node['eucalyptus']['yum-options']
+  if node['eucalyptus']['user-console']['install-type'] == 'source'
+    %w{openssl-devel python-devel swig gcc libmemcached1 python-pylibmc
+      python-pyramid}.each do |package_name|
+      yum_package package_name do
+        options node['eucalyptus']['yum-options']
+      end
     end
-  end
-  source_branch = node['eucalyptus']['user-console']['source-branch']
-  source_repo = node['eucalyptus']['user-console']['source-repo']
-  source_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole"
-  ### Checkout eucaconsole Source
-  git source_directory do
-    repository source_repo
-    revision source_branch
-    action :sync
-  end
-  execute "Install python dependencies" do
-    command "python setup.py develop"
-    cwd source_directory
-  end
-  execute "Copy config file into place" do
-    command "cp conf/console.default.ini console.ini"
-    cwd source_directory
-  end
-  ### Setup eucaconsole service
-  ### Checkout eucaconsole packaging code
-  packaging_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole-rpmspec"
-  git packaging_directory do
-    repository node['eucalyptus']['user-console']['packaging-repo']
-    revision node['eucalyptus']['user-console']['packaging-branch']
-    action :sync
-  end
-  user "eucaconsole"
-  config_directory = "/etc/eucaconsole"
-  run_directory = "/var/run/eucaconsole"
-  eucaconsole_user = 'eucaconsole'
-  [config_directory, run_directory].each do |eucaconsole_dir|
-    directory eucaconsole_dir do
+    source_branch = node['eucalyptus']['user-console']['source-branch']
+    source_repo = node['eucalyptus']['user-console']['source-repo']
+    source_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole"
+    ### Checkout eucaconsole Source
+    git source_directory do
+      repository source_repo
+      revision source_branch
+      action :sync
+    end
+    execute "Install python dependencies" do
+      command "python setup.py develop"
+      cwd source_directory
+    end
+    execute "Copy config file into place" do
+      command "cp conf/console.default.ini console.ini"
+      cwd source_directory
+    end
+    ### Setup eucaconsole service
+    ### Checkout eucaconsole packaging code
+    packaging_directory = "#{node['eucalyptus']["home-directory"]}/source/eucaconsole-rpmspec"
+    git packaging_directory do
+      repository node['eucalyptus']['user-console']['packaging-repo']
+      revision node['eucalyptus']['user-console']['packaging-branch']
+      action :sync
+    end
+    user "eucaconsole"
+    config_directory = "/etc/eucaconsole"
+    run_directory = "/var/run/eucaconsole"
+    eucaconsole_user = 'eucaconsole'
+    [config_directory, run_directory].each do |eucaconsole_dir|
+      directory eucaconsole_dir do
+        owner eucaconsole_user
+        group eucaconsole_user
+        action :create
+      end
+    end
+    file "/var/log/eucaconsole.log" do
       owner eucaconsole_user
       group eucaconsole_user
+      mode "0755"
       action :create
     end
+    execute "chmod +x #{packaging_directory}/eucaconsole"
+    execute "ln -sf #{source_directory}/console.ini #{config_directory}/console.ini"
+    execute "ln -sf #{packaging_directory}/eucaconsole /usr/bin/eucaconsole"
+    execute "ln -sf #{packaging_directory}/eucaconsole.init /etc/init.d/eucaconsole"
+  else
+    yum_package "eucaconsole" do
+      action :upgrade
+      options node['eucalyptus']['yum-options']
+      flush_cache [:before]
+    end
   end
-  file "/var/log/eucaconsole.log" do
-    owner eucaconsole_user
-    group eucaconsole_user
-    mode "0755"
-    action :create
-  end
-  execute "chmod +x #{packaging_directory}/eucaconsole"
-  execute "ln -sf #{source_directory}/console.ini #{config_directory}/console.ini"
-  execute "ln -sf #{packaging_directory}/eucaconsole /usr/bin/eucaconsole"
-  execute "ln -sf #{packaging_directory}/eucaconsole.init /etc/init.d/eucaconsole"
-else
-  yum_package "eucaconsole" do
-    action :upgrade
-    options node['eucalyptus']['yum-options']
-    flush_cache [:before]
-  end
-end
 
-service "eucaconsole" do
-  action [ :enable, :start ]
-  supports :status => true, :start => true, :stop => true, :restart => true
+  service "eucaconsole" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end
