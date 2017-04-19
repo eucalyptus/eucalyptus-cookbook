@@ -272,7 +272,8 @@ template "create network.json for VPCMIDO" do
   action :create
   variables(
     :instanceDnsServers => node["eucalyptus"]["network"]["InstanceDnsServers"],
-    :gateways => node["eucalyptus"]["network"]['Gateways'],
+    :bgpasn => node["eucalyptus"]["midonet"]['BgpAsn'],
+    :mygateways => JSON.pretty_generate(node["eucalyptus"]["midonet"]['Gateways'], quirks_mode: true),
     :publicIps => node["eucalyptus"]["network"]["PublicIps"]
   )
   only_if { node['eucalyptus']['network']['mode'] == 'VPCMIDO' }
