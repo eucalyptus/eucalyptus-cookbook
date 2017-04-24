@@ -1,27 +1,17 @@
 {
+  "Mode": "VPCMIDO",
+  "PublicIps": [
+  <% @publicIps.each_with_index do |value, index| -%>
+    "<%= value %>"<%= "," unless @publicIps.size == index + 1 %>
+  <% end %>
+  ],
   "InstanceDnsServers": [
   <% @instanceDnsServers.each_with_index do |value, index| -%>
     "<%= value %>"<%= "," unless @instanceDnsServers.size == index + 1 %>
   <% end %>
   ],
   "Mido": {
-    "Gateways": [
-    <% @gateways.each_with_index do |gateway, index| -%>
-      {
-      <% gateway.each_with_index do |(k,v),i | -%>
-        "<%= k %>": "<%= v %>"<%= "," unless gateway.size == i + 1 %>
-      <% end %>
-      }<%= "," unless @gateways.size == index + 1 %>
-    <% end %>
-    ],
-    "EucanetdHost": "<%= node["eucalyptus"]["network"]['EucanetdHost'] %>",
-    "PublicGatewayIP": "<%= node["eucalyptus"]["network"]['PublicGatewayIP'] %>",
-    "PublicNetworkCidr": "<%= node["eucalyptus"]["network"]['PublicNetworkCidr'] %>"
-  },
-  "Mode": "VPCMIDO",
-  "PublicIps": [
-  <% @publicIps.each_with_index do |value, index| -%>
-    "<%= value %>"<%= "," unless @publicIps.size == index + 1 %>
-  <% end %>
-  ]
+    "BgpAsn": <%= @bgpasn %>,
+    "Gateways": <%= @mygateways %>
+  }
 }
