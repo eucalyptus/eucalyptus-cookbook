@@ -86,20 +86,41 @@ bridge_interface = node["eucalyptus"]["network"]["bridge-interface"]
 bridged_nic_file = "#{network_script_directory}/ifcfg-" + bridged_nic
 bridge_file = "#{network_script_directory}/ifcfg-" + bridge_interface
 bridged_nic_hwaddr = `cat #{bridged_nic_file} | grep HWADDR`.strip
+bridged_nic_bootproto = `cat #{bridged_nic_file} | grep BOOTPROTO | awk -F'=' '{print $2}'`.strip.tr('"', '')
+
+Chef::Log.info "Using BOOTPROTO \"#{bridged_nic_bootproto}\""
 
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
-  template bridge_file do
-    source "ifcfg-br-dhcp-vpcmido.erb"
-    mode 0644
-    owner "root"
-    group "root"
+  if "#{bridged_nic_bootproto}" == "static"
+    template bridge_file do
+      source "ifcfg-br-static-vpcmido.erb"
+      mode 0644
+      owner "root"
+      group "root"
+    end
+  else
+    template bridge_file do
+      source "ifcfg-br-dhcp-vpcmido.erb"
+      mode 0644
+      owner "root"
+      group "root"
+    end
   end
 else
-  template bridge_file do
-    source "ifcfg-br-dhcp.erb"
-    mode 0644
-    owner "root"
-    group "root"
+  if "#{bridged_nic_bootproto}" == "static"
+    template bridge_file do
+      source "ifcfg-br-static.erb"
+      mode 0644
+      owner "root"
+      group "root"
+    end
+  else
+    template bridge_file do
+      source "ifcfg-br-dhcp.erb"
+      mode 0644
+      owner "root"
+      group "root"
+    end
   end
 end
 

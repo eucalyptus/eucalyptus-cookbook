@@ -1,0 +1,18 @@
+DEVICE=<%= node["eucalyptus"]["network"]["bridge-interface"] %>
+BOOTPROTO=static
+NOZEROCONF=true
+ONBOOT=yes
+TYPE=Bridge
+PERSISTENT_DHCLIENT=1
+IPV6INIT=yes
+IPV6_AUTOCONF=no
+DHCPV6=no
+STP=yes
+DELAY=2
+DEFROUTE=no
+IPV4_FAILURE_FATAL=no
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+BRIDGING_OPTS=priority=32768
+PEERDNS=yes
+PEERROUTES=yes
