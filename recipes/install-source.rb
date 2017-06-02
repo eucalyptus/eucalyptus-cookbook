@@ -156,7 +156,7 @@ git eucalyptus_dir do
   notifies :run, 'execute[install-eucalyptus]', :immediately
 end
 
-build_eucalyptus = "#{java_home} && #{_configure} --prefix=/ \
+build_eucalyptus = "#{java_home} && autoconf && #{_configure} --prefix=/ \
 --disable-bundled-jars \
 --with-apache2-module-dir=/usr/lib64/httpd/modules \
 --with-axis2=/usr/share/axis2-* --with-axis2c=/usr/lib64/axis2c \
