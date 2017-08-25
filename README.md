@@ -160,9 +160,9 @@ For distributed topologies...
 Faststart
 -------------------
 ### Methodology
-Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for eucalyptus.com/eucalyptus-install that points to that script in the faststart branch so that users can use the following to invoke it:
+Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for eucalyptus.com/install that points to that script in the faststart branch so that users can use the following to invoke it:
 
-    bash <(curl -Ls eucalyptus.com/eucalyptus-install)
+    bash <(curl -Ls eucalyptus.com/install)
 
 Once invoked the script does the following:
 
