@@ -3,7 +3,7 @@ Faststart for Cloud-in-a-box!
 To install your Eucalyptus cloud on a CentOS/RHEL 7 system, run the following
 on the command line:
 
-bash <(curl -Ls eucalyptus.com/eucalyptus-install)
+bash <(curl -Ls eucalyptus.com/install)
 
 A few notes:
 * Must run as root;
