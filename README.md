@@ -77,7 +77,7 @@ A Berksfile is included to allow users to easily download the required cookbook 
 - `ntp` - sets up NTP for all Eucalyptus servers
 - `yum` - used for managing repositories
 
-#### Chef server config 
+#### Chef server config
 Ensure that the following config is set in `/etc/chef-server/chef-server.rb`:
 erchef['s3_url_ttl'] = 3600
 
@@ -160,9 +160,9 @@ For distributed topologies...
 Faststart
 -------------------
 ### Methodology
-Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for hphelion.com/eucalyptus-install that points to that script in the faststart branch so that users can use the following to invoke it:
+Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for eucalyptus.com/install that points to that script in the faststart branch so that users can use the following to invoke it:
 
-    bash <(curl -Ls hphelion.com/eucalyptus-install)
+    bash <(curl -Ls eucalyptus.com/install)
 
 Once invoked the script does the following:
 
