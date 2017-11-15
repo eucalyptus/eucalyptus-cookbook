@@ -118,78 +118,6 @@ function timer()
     fi
 }
 
-# Offer free support for the more difficult errors
-function offer_support()
-{
-    errorCondition=$1
-    echo "Upload log file to improve quality? [Y/n]"
-    read continue_upload
-    if [ "$continue_upload" = "Y" ] || [ "$continue_upload" == "y" ]
-    then
-        curl -Ls https://raw.githubusercontent.com/eucalyptus/eucalyptus-cookbook/master/faststart/faststart-logger.priv > /tmp/faststart-logger.priv
-        chmod 0600 /tmp/faststart-logger.priv
-        mkdir /tmp/$uuid
-        echo "Let us gather some environment data."
-        df -B M >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        ps aux >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        free >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        uptime >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        iptables -L >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        iptables -L -t nat >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        arp -a >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        ip addr show >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        ip link show >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        brctl show >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        route >> /tmp/$uuid/env.log
-        printf "\n\n====================================\n\n" >> /tmp/$uuid/env.log
-        netstat -lnp >> /tmp/$uuid/env.log
-
-        cp $LOGFILE /tmp/$uuid/ &> /dev/null
-        cp -r /var/log/eucalyptus/* /tmp/$uuid/ &> /dev/null
-        tar -czvf /tmp/$uuid.tar.gz /tmp/$uuid &> /dev/null
-        echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
-    fi
-    echo ""
-    echo "Free support is available for this error. Visit this link to speak"
-    echo "with the Eucalyptus technical community:"
-    echo "     http://bit.ly/euca-users"
-    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
-    echo "     http://bit.ly/euca-irc"
-} 
-
-# Notify support team that a user wants help
-function submit_support_request()
-{
-    emailAddress=$1
-    errorCondition=$2
-    installLogFile=$3
-
-    # Build the URL used to call Marketo for this new account
-    dataString="mktForm_116=mktForm_116"
-    dataString="$dataString&""Email=$emailAddress"
-    dataString="$dataString&""FastStart_Install_Error_Msg__c=$errorCondition"
-    dataString="$dataString&""fastStartInstallLog=$installLogFile"
-    dataString="$dataString&""mktFrmSubmit=Submit"
-    dataString="$dataString&""lpId=4976"
-    dataString="$dataString&""subId=198"
-    dataString="$dataString&""munchkinId=729-HPK-685"
-    dataString="$dataString&""lpurl=http%3A%2F%2Fgo.eucalyptus.com/FastStart-Install-Support?cr={creative}&kw={keyword}"
-    dataString="$dataString&""formid=116"
-    dataString="$dataString&""_mkt_dis=return"
-  
-    curl -s --data "$dataString"  http://go.eucalyptus.com/index.php/leadCapture/save >> /tmp/fsout.log
-}
-
 # Create uuid
 uuid=`uuidgen -t`
 
@@ -254,14 +182,6 @@ fi
 echo "[Precheck] OK, curl is up to date"
 echo ""
 
-if [ "$nc_install_only" == "1" ];
-then
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_BEGIN&id=$uuid" >> /tmp/fsout.log
-else
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_BEGIN&id=$uuid" >> /tmp/fsout.log
-fi
-
-
 # Check disk space.
 DiskSpace=`df -Pk /var | tail -1 | awk '{ print $4}'`
 
@@ -279,7 +199,6 @@ if [ "$DiskSpace" -lt "100000000" ]; then
     if [ "$continue_disk" = "n" ] || [ "$continue_disk" = "N" ] || [ -z "$continue_disk" ]
     then 
         echo "Stopped by user request."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NOT_ENOUGH_DISK_SPACE&id=$uuid" >> /tmp/fsout.log
         exit 1
     fi
 fi
@@ -297,7 +216,6 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "  chef-client -z -o eucalyptus::nuke"
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_ALREADY_RUNNING&id=$uuid" >> /tmp/fsout.log
     exit 9
 fi
 
@@ -313,7 +231,6 @@ if [ "$?" != "0" ]; then
     echo "https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=OS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 10
 fi
 echo "[Precheck] OK, OS is supported"
@@ -328,7 +245,6 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of PackageKit indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=DESKTOP_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 12
 fi
 
@@ -340,7 +256,6 @@ if [ "$?" == "0" ]; then
     echo ""
     echo "The presence of NetworkManager indicates that you have installed a Desktop environment."
     echo "Please run Faststart on a minimal OS without a Desktop environment installed."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=DESKTOP_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 12
 fi
 
@@ -357,7 +272,6 @@ if [ "$?" != "0" ]; then
     echo "system that supports virtualization."
     echo ""
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=VIRT_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 20
 fi
 echo "[Precheck] OK, processor supports virtualization"
@@ -399,7 +313,6 @@ if [ "$primary_from_route" != "" ]; then
     echo ""
     echo "  https://github.com/eucalyptus/eucalyptus-cookbook/blob/master/eucadev.md"
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=WIRELESS_NOT_SUPPORTED&id=$uuid" >> /tmp/fsout.log
     exit 23
   elif [ "$primary_from_route" == "br0" ]; then
     # This is a corner case: if br0 is the primary interface,
@@ -468,7 +381,6 @@ if [ "$?" == "0" ]; then
     if [ "$continue_dhcp" = "n" ] || [ "$continue_dhcp" = "N" ] || [ -z "$continue_dhcp" ]
     then 
         echo "Stopped by user request."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=DHCP_NOT_RECOMMENDED&id=$uuid" >> /tmp/fsout.log
         exit 1
     fi
 fi
@@ -692,7 +604,6 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Chef install failed!"
         echo ""
         echo "Failed to install Chef. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=CHEF_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
         exit 22
     fi
 fi
@@ -712,7 +623,6 @@ if [ "$?" != "0" ]; then
         echo "[FATAL] Failed to install git!"
         echo ""
         echo "Failed to install git. See $LOGFILE for details."
-        curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=GIT_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
         exit 25
 fi
 rm -rf cookbooks
@@ -808,7 +718,6 @@ if [ "$?" != "0" ]; then
     echo ""
     echo "Failed to do a full update of the OS. See $LOGFILE for details. /var/log/yum.log"
     echo "may also have some details related to the same."
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=FULL_YUM_UPDATE_FAILED&id=$uuid" >> /tmp/fsout.log
     exit 24
 fi
 
@@ -837,8 +746,6 @@ if [[ ! -f faststart-successful-phase1.log ]]; then
     echo ""
     echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-    offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
     echo "Phase 1 (CLC) installed successfully...getting a 2nd cup of coffee and moving on to phase 2 (main cloud components)."
@@ -871,8 +778,6 @@ if [[ ! -f faststart-successful-phase2.log ]]; then
     echo ""
     echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-    offer_support "EUCA_INSTALL_FAILED"
     exit 99
   else
     echo "Phase 2 installed successfully...yes, in fact having that 3rd cup of coffee and moving on to phase 3 (create first resources)."
@@ -899,8 +804,6 @@ if [[ ! -f faststart-successful-phase3.log ]]; then
     echo ""
     echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
     echo ""
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_FAILED&id=$uuid" >> /tmp/fsout.log
-    offer_support "EUCA_INSTALL_FAILED"
     exit 99
 fi
 
@@ -935,7 +838,6 @@ if [ "$nc_install_only" == "0" ]; then
     echo "[SUCCESS] Eucalyptus installation complete!"
     total_time=$(timer $t)
     printf 'Time to install: %s\n' $total_time
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=EUCA_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
     # Add links to the /etc/motd file
     tutorial_path=`pwd`
@@ -999,7 +901,6 @@ else
     echo "  clusteradmin-copy-keys ${ciab_ipaddr}"
     echo ""
     echo "Thanks for installing Eucalyptus!"
-    curl --silent "https://www.eucalyptus.com/docs/faststart_errors.html?msg=NC_INSTALL_SUCCESS&id=$uuid" >> /tmp/fsout.log
 
 fi
 
