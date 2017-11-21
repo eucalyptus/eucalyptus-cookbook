@@ -178,18 +178,6 @@ Inputs from the user are searched and replaced into the templates in `faststart/
     chef-client -z -r cookbooks.tgz -j ciab.json
 
 
-# FIXME mbacchi
-### Releasing
-In order to release a new version of Faststart, you must first package up the current cookbook versions with Berkshelf.
-
-1. Ensure Berkshelf is installed via the [ChefDK](https://downloads.chef.io/chef-dk/)
-2. Change directories to where your eucalyptus-cookbook repo lives.
-3. Run `berks package` to bundle all cookbook deps into a tarball, replacing VERSION with the desired release number, for example 4.2.0: `berks package eucalyptus-cookbooks-$VERSION.tgz`
-4. Upload the tarball to S3 in the euca-chef bucket, then make the object publicly readable. To test this, simply try to download the file via its URL, by using your browser. An example URL is http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-$VERSION.tgz
-5. Change the $cookbooks_url variable in faststart/cloud-in-a-box.sh to point to your new publicly available tarball.
-6. Commit and push that change to the branch for this release, for example euca-4.2.
-7. In order to push the change live, merge the branch into faststart.
-
 Contributing
 ------------
 
