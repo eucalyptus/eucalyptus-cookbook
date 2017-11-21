@@ -221,7 +221,7 @@ fi
 
 # Check to see that we're running on CentOS or RHEL and the right version.
 echo "[Precheck] Checking OS"
-cat /etc/redhat-release | egrep 'release.*7.[23]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*7.[34]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
@@ -591,14 +591,13 @@ fi
 
 # Check to see if chef-client is installed
 echo "[Chef] Checking if Chef Client is installed"
-CHEF_VERSION="12.8.1"
 which chef-client
 if [ "$?" != "0" ]; then
     echo "====="
     echo "[INFO] Chef not found. Installing Chef Client"
     echo ""
     echo ""
-    curl --insecure -L https://omnitruck.chef.io/install.sh | bash -s -- -v $CHEF_VERSION 1>>$LOGFILE
+    curl --insecure -L https://omnitruck.chef.io/install.sh | bash -s -- -P chefdk 1>>$LOGFILE
     if [ "$?" != "0" ]; then
         echo "====="
         echo "[FATAL] Chef install failed!"
@@ -614,8 +613,6 @@ echo "[Chef] Removing old Chef templates"
 # Get rid of old Chef stuff lying about.
 rm -rf /var/chef/* 1>>$LOGFILE
 
-echo "[Chef] Downloading necessary cookbooks"
-echo "[Chef] Downloading necessary cookbooks from URL: $cookbooks_url" >> $LOGFILE
 # Grab cookbooks from git
 yum install -y git 1>>$LOGFILE
 if [ "$?" != "0" ]; then
@@ -625,8 +622,12 @@ if [ "$?" != "0" ]; then
         echo "Failed to install git. See $LOGFILE for details."
         exit 25
 fi
+
+echo "[Chef] Running \"berks package\" to bundle all dependencies"
+echo "[Chef] Running \"berks package\" to bundle all dependencies" >> $LOGFILE
+
+berks package cookbooks.tgz 1>>$LOGFILE 2>&1
 rm -rf cookbooks
-curl $cookbooks_url > cookbooks.tgz
 tar zxfv cookbooks.tgz
 
 # Copy the templates to the local directory
@@ -727,11 +728,13 @@ fi
 
 if [ "$nc_install_only" -eq 0 ]; then
   # add only the cloud-controller recipe to the run_list
-  runlistitems="recipe[eucalyptus::cloud-controller]"
+  runlistitems="eucalyptus::cloud-controller"
 fi
 
+curdir=`pwd`
+jsonpath="$curdir/$chef_template"
 # Execute phase 1 which adds only the cloud-controller recipe to the run_list
-(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
+(chef-client -z -r cookbooks.tgz -j "$jsonpath" -o $runlistitems 1>>$LOGFILE && echo "Phase 1 success" > faststart-successful-phase1.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase1.log ]]; then
@@ -754,16 +757,16 @@ fi
 # Add all other recipes to the run_list and execute phase 2
 if [ "$nc_install_only" -eq 0 ]; then
   runlistitems=""
-  runlistitems="recipe[eucalyptus::user-console]"
-  runlistitems="$runlistitems,recipe[eucalyptus::register-components]"
-  runlistitems="$runlistitems,recipe[eucalyptus::walrus]"
-  runlistitems="$runlistitems,recipe[eucalyptus::cluster-controller]"
-  runlistitems="$runlistitems,recipe[eucalyptus::storage-controller]"
-  runlistitems="$runlistitems,recipe[eucalyptus::node-controller]"
-  runlistitems="$runlistitems,recipe[eucalyptus::configure]"
+  runlistitems="eucalyptus::user-console"
+  runlistitems="$runlistitems,eucalyptus::register-components"
+  runlistitems="$runlistitems,eucalyptus::walrus"
+  runlistitems="$runlistitems,eucalyptus::cluster-controller"
+  runlistitems="$runlistitems,eucalyptus::storage-controller"
+  runlistitems="$runlistitems,eucalyptus::node-controller"
+  runlistitems="$runlistitems,eucalyptus::configure"
 fi
 
-(chef-client -z -r cookbooks.tgz -j $chef_template -o "$runlistitems" 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
+(chef-client -z -r cookbooks.tgz -j "$jsonpath" -o "$runlistitems" 1>>$LOGFILE && echo "Phase 2 success" > faststart-successful-phase2.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase2.log ]]; then
@@ -786,10 +789,10 @@ fi
 # add create first resources as a last item
 if [ "$nc_install_only" -eq 0 ]; then
   runlistitems=""
-  runlistitems="recipe[eucalyptus::create-first-resources]"
+  runlistitems="eucalyptus::create-first-resources"
 fi
 
-(chef-client -z -r cookbooks.tgz -j $chef_template -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
+(chef-client -z -r cookbooks.tgz -j "$jsonpath" -o $runlistitems 1>>$LOGFILE && echo "Phase 3 success" > faststart-successful-phase3.log) &
 coffee $!
 
 if [[ ! -f faststart-successful-phase3.log ]]; then

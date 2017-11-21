@@ -160,9 +160,11 @@ For distributed topologies...
 Faststart
 -------------------
 ### Methodology
-Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. There is an HTTP redirect in place for eucalyptus.com/install that points to that script in the faststart branch so that users can use the following to invoke it:
+Faststart is a Bash script, `faststart/cloud-in-a-box.sh`, that invokes the Eucalyptus cookbook in order to install a single host cloud-in-a-box install. It will package up the Chef cookbooks as a berks package, then install Eucalyptus. To run the Faststart script, from the 
+top level eucalyptus-cookbook directory, execute:
 
-    bash <(curl -Ls eucalyptus.com/install)
+    faststart/cloud-in-a-box.sh
+    
 
 Once invoked the script does the following:
 
@@ -175,6 +177,8 @@ Inputs from the user are searched and replaced into the templates in `faststart/
 
     chef-client -z -r cookbooks.tgz -j ciab.json
 
+
+# FIXME mbacchi
 ### Releasing
 In order to release a new version of Faststart, you must first package up the current cookbook versions with Berkshelf.
 
