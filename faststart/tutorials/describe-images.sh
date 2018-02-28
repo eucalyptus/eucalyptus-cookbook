@@ -69,7 +69,7 @@ echo "${normal}"
 
 echo "Now let's review some of the key output of that command:"
 echo ""
-imagelist=`euca-describe-images --region admin@${region}| tail -n 1`
+imagelist=`euca-describe-images --region admin@${region}|grep IMAGE| tail -n 1`
 imageid=`echo $imagelist | awk '{print $2}'`
 imagepath=`echo $imagelist | awk '{print $3}'`
 public=`echo $imagelist | awk '{print $6}'`
