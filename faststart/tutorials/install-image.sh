@@ -44,7 +44,7 @@ read continue
 
 echo "Many Linux distributions now have preconfigured cloud images, so"
 echo "you can download and install them to your cloud easily. For this"
-echo "tutorial we will add a Fedora 20 cloud image to your cloud."
+echo "tutorial we will add a Fedora 27 cloud image to your cloud."
 echo ""
 echo "First, we will download and the image with curl. Eucalyptus"
 echo "accepts raw images by default, so we will download a"
@@ -54,8 +54,8 @@ echo "Hit Enter to download the image with curl. (Note: it may take a while.)"
 
 read continue
 
-echo "+ ${bold}curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz${normal}"
-curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+echo "+ ${bold}curl -L https://download.fedoraproject.org/pub/fedora/linux/releases/27/CloudImages/x86_64/images/Fedora-Cloud-Base-27-1.6.x86_64.raw.xz > fedora.raw.xz${normal}"
+curl -L https://download.fedoraproject.org/pub/fedora/linux/releases/27/CloudImages/x86_64/images/Fedora-Cloud-Base-27-1.6.x86_64.raw.xz > fedora.raw.xz
 
 # Fail if the image download fails
 if [ "$?" != "0" ]; then
@@ -86,9 +86,9 @@ echo ""
 echo "OK, now you are ready to install the image into your cloud."
 echo "To install the image, we will run the following command:"
 echo ""
-echo "${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}${normal}"
+echo "${bold}euca-install-image -n Fedora27 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}${normal}"
 echo ""
-echo "  ${bold}-n Fedora20${normal} specifies the name we're giving the image."
+echo "  ${bold}-n Fedora27${normal} specifies the name we're giving the image."
 echo "  ${bold}-b tutorial${normal} specifies the bucket we're putting the image into."
 echo "  ${bold}-i fedora.raw${normal} specifies the filename of the input image."
 echo "  ${bold}-r x86_64${normal} specifies the architecture of the image."
@@ -99,8 +99,8 @@ echo "Hit Enter to install the image."
 read continue
 
 # Install the image.
-echo "+ ${bold}euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}${normal}"
-euca-install-image -n Fedora20 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}
+echo "+ ${bold}euca-install-image -n Fedora27 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}${normal}"
+euca-install-image -n Fedora27 -b tutorial -i fedora.raw -r x86_64 --virtualization-type hvm --region admin@${region}
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[OOPS] euca-install-image failed!"
