@@ -91,7 +91,7 @@ bridged_nic_bootproto = `cat #{bridged_nic_file} | grep BOOTPROTO | awk -F'=' '{
 Chef::Log.info "Using BOOTPROTO \"#{bridged_nic_bootproto}\""
 
 if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
-  if "#{bridged_nic_bootproto}" == "static"
+  if "#{bridged_nic_bootproto}" != "dhcp" and "#{bridged_nic_bootproto}" != "bootp"
     template bridge_file do
       source "ifcfg-br-static-vpcmido.erb"
       mode 0644
@@ -107,7 +107,7 @@ if node["eucalyptus"]["network"]["mode"] == "VPCMIDO"
     end
   end
 else
-  if "#{bridged_nic_bootproto}" == "static"
+  if "#{bridged_nic_bootproto}" != "dhcp" and "#{bridged_nic_bootproto}" != "bootp"
     template bridge_file do
       source "ifcfg-br-static.erb"
       mode 0644
