@@ -221,7 +221,7 @@ fi
 
 # Check to see that we're running on CentOS or RHEL and the right version.
 echo "[Precheck] Checking OS"
-cat /etc/redhat-release | egrep 'release.*7.[23]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*7.[234]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
