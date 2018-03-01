@@ -78,7 +78,7 @@ function coffee()
         sleep $IMG_REFRESH
     done; done
     tput_loop "cud1"
-    tput cvvis
+    tput cnorm
 }
 
 # Check IP inputs to make sure they're valid
