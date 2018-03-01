@@ -11,4 +11,3 @@ A few notes:
 * Must have internet access;
 * Must have a fixed IP address for the host (i.e. no DHCP);
 * Must have some IP addresses set aside on the local network;
-* Runs on CentOS or RHEL 6.5 only.
