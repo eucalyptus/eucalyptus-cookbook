@@ -368,7 +368,7 @@ echo ""
 
 # Check to see if the primary network interface is configured to use DHCP.
 # If it is, warn and abort.
-grep -i dhcp /etc/sysconfig/network-scripts/ifcfg-$active_nic
+grep -iE '=dhcp|=bootp'  /etc/sysconfig/network-scripts/ifcfg-$active_nic
 if [ "$?" == "0" ]; then
     echo "====="
     echo "WARNING: we recommend configuring Eucalypus servers to use"
