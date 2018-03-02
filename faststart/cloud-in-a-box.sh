@@ -368,7 +368,7 @@ echo ""
 
 # Check to see if the primary network interface is configured to use DHCP.
 # If it is, warn and abort.
-grep -i dhcp /etc/sysconfig/network-scripts/ifcfg-$active_nic
+grep -iE '=dhcp|=bootp'  /etc/sysconfig/network-scripts/ifcfg-$active_nic
 if [ "$?" == "0" ]; then
     echo "====="
     echo "WARNING: we recommend configuring Eucalypus servers to use"
@@ -408,6 +408,14 @@ ciab_netmask_cidr=`ip addr show $active_nic | grep 'inet' | grep -v 'inet6' | aw
 
 if [ "$ciab_netmask_cidr" -eq 16 ]; then
   ciab_netmask_guess="255.255.0.0"
+elif [ "$ciab_netmask_cidr" -eq 20 ]; then
+  ciab_netmask_guess="255.255.240.0"  
+elif [ "$ciab_netmask_cidr" -eq 21 ]; then
+  ciab_netmask_guess="255.255.248.0"
+elif [ "$ciab_netmask_cidr" -eq 22 ]; then
+  ciab_netmask_guess="255.255.252.0"
+elif [ "$ciab_netmask_cidr" -eq 23 ]; then
+  ciab_netmask_guess="255.255.254.0"  
 elif [ "$ciab_netmask_cidr" -eq 24 ]; then
   ciab_netmask_guess="255.255.255.0"
 elif [ "$ciab_netmask_cidr" -eq 25 ]; then
