@@ -277,6 +277,26 @@ fi
 echo "[Precheck] OK, processor supports virtualization"
 echo ""
 
+# Check to see if SELinux is set to Permissive.
+echo "[Precheck] Checking SELinux setting"
+grep ^SELINUX=enforcing /etc/selinux/config 1>>$LOGFILE
+if [ "$?" = "0" ]; then
+    echo "====="
+    echo "WARNING: SELinux is Enforcing"
+    echo ""
+    echo "Your /etc/selinux/config file is set to 'enforcing'."
+    echo "Eucalyptus isn't ready for that yet, it can only handle Permissive mode."
+    echo ""
+    echo "I am changing that for you now."
+    /usr/sbin/setenforce permissive
+    sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+    echo "Done."
+    echo ""
+else
+    echo "[Precheck] OK, SELinux is Permissive"
+fi
+echo ""
+
 echo "[Precheck] Identifying primary network interface"
 
 # Get info about the primary network interface.
