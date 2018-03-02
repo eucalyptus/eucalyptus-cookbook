@@ -287,10 +287,21 @@ if [ "$?" = "0" ]; then
     echo "Your /etc/selinux/config file is set to 'enforcing'."
     echo "Eucalyptus isn't ready for that yet, it can only handle Permissive mode."
     echo ""
-    echo "I am changing that for you now."
-    /usr/sbin/setenforce permissive
-    sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
-    echo "Done."
+    echo "Do you want me to switch SELinux from Enforcing to Permissive?"
+    echo "If you answer 'yes' I will change that for you."
+    echo "Note that this lowers the level of security."
+    echo "Proceed? [y/N]"
+    read use_selinux_permissive_mode
+    echo $use_selinux_permissive_mode | grep -qs '^[Yy]'
+    if [ $? = 0 ]; then
+        echo "I am changing that for you now."
+        /usr/sbin/setenforce permissive
+        sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+        echo "Done."
+    else
+        echo "Stopped by user request."
+        exit 1
+    fi
     echo ""
 else
     echo "[Precheck] OK, SELinux is Permissive"
