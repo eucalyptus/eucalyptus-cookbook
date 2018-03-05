@@ -2,7 +2,7 @@ Welcome to Eucalyptus!  Here's a more detailed look at some of the commands nece
 you started.  For a more in-depth explanation of Eucalyptus commands, please consult the 
 Eucalyptus User Guide:
 
-https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#user-guide/getting_started.html
+https://docs.eucalyptus.com/eucalyptus/4.4.2/index.html#shared/user_section.html
 
 * * * * *
 
@@ -19,7 +19,7 @@ By default, Faststart only sets up one user: the admin user.  The credentials cr
 To learn more about how access works in Eucalyptus, consult the Manage Access section of the
 Administration Guide:
 
-https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#admin-guide/managing_auth.html
+https://docs.eucalyptus.com/eucalyptus/4.4.2/index.html#iam-guide/managing_auth.html
 
 * * * * *
 
@@ -43,7 +43,7 @@ is generated when an image is uploaded.
 
 For more information about the euca-describe-images command output, consult the euca2ools guide:
 
-https://www.eucalyptus.com/docs/eucalyptus/3.4/index.html#euca2ools-guide/euca-describe-images.html
+https://docs.eucalyptus.com/eucalyptus/4.4.2/index.html#euca2ools-guide/euca-describe-images.html
 
 Initially, only the one image is installed, and it isn't very useful.  Your first task will be
 to install a more useful Linux image that can do real work.
@@ -54,16 +54,16 @@ INSTALLING IMAGES
 
 Many Linux distributions now have preconfigured cloud images; the easiest way to get
 started is to download and install one of these preconfigured cloud images.  We're going to
-start with Fedora 20. 
+start with Fedora 27. 
 
   # Download the image
-  curl http://mirror.fdcservers.net/fedora/updates/20/Images/x86_64/Fedora-x86_64-20-20140407-sda.raw.xz > fedora.raw.xz
+  curl -L https://download.fedoraproject.org/pub/fedora/linux/releases/27/CloudImages/x86_64/images/Fedora-Cloud-Base-27-1.6.x86_64.raw.xz > fedora.raw.xz
 
   # Unzip the image.
   xz -d fedora.raw.xz 
 
   # Install the image.
-  euca-install-image -n Fedora20 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
+  euca-install-image -n Fedora27 -b fedora -i fedora.raw -r x86_64 --virtualization-type hvm
 
   # Set the image to be available to all users.
   euca-modify-image-attribute -l -a all $(euca-describe-images | grep fedora | grep emi | cut -f 2)
