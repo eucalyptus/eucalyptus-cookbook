@@ -51,8 +51,9 @@ echo "${bold}euca-describe-availability-zones --region admin@${region}${normal}"
 echo ""
 echo "To learn more about using euca2ools configuration file, please refer to"
 echo "the Euca2ools Guide section entitled \"Working with Euca2ools Configuration Files\":"
-echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#shared/euca2ools_working_with_config_files.html"
-
+echo "  https://docs.eucalyptus.com/eucalyptus/4.4.2/index.html#shared/euca2ools_working_with_config_files.html"
+echo ""
+echo "Hit Enter to continue."
 read continue
 
 echo "The euca2ools command for listing images is ${bold}euca-describe-images${normal}."
