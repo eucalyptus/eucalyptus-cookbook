@@ -85,4 +85,4 @@ echo "  only be run by the owner of the image are marked private."
 echo "" 
 
 echo "To learn more about the euca-describe-images command, check out the documentaion:"
-echo "  http://docs.hpcloud.com/eucalyptus/4.2.0/#euca2ools-guide/euca-describe-images.html"
+echo "  https://docs.eucalyptus.com/eucalyptus/4.4.2/index.html#euca2ools-guide/euca-describe-instances.html"
