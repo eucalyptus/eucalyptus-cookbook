@@ -1,9 +1,15 @@
 {
     "eucalyptus": {
       "yum-options": "--nogpg",
-      "eucalyptus-repo": "http://downloads.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
-      "euca2ools-repo": "http://downloads.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
+      "eucalyptus-repo": "http://downloads-cdn0.eucalyptus.com/software/eucalyptus/4.1/centos/6/x86_64/",
+      "euca2ools-repo": "http://downloads-cdn0.eucalyptus.com/software/euca2ools/3.2/centos/6/x86_64/",
       "install-service-image": EXTRASERVICES,
+      "ntp-server": "NTP",
+      "system-properties": {
+          "authentication.access_keys_limit": 10,
+          "authentication.signing_certificates_limit": 10,
+          "authentication.credential_download_generate_certificate": "Limited"
+      },
       "topology": {
         "clc-1": "IPADDR",
         "walrus": "IPADDR",
@@ -20,7 +26,7 @@
         "mode": "EDGE",
         "public-interface": "br0",
         "private-interface": "br0",
-        "bridged-nic":"NIC", 
+        "bridged-nic":"NIC",
         "bridge-ip": "IPADDR",
         "bridge-netmask": "NETMASK",
         "bridge-gateway": "GATEWAY",

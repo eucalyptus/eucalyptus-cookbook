@@ -1,22 +1,33 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Taken from
 # http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 OPTIND=1  # Reset in case getopts has been used previously in the shell.
 
 # Initialize our own variables:
-cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.0.tgz"
+cookbooks_url="http://euca-chef.s3.amazonaws.com/eucalyptus-cookbooks-4.1.2.tgz"
+nc_install_only=0
 
-while getopts "u:" opt; do
-    case "$opt" in
-    u)  cookbooks_url=$OPTARG
-        ;;
+function usage
+{
+    echo "usage: cloud-in-a-box.sh [[[-u path-to-cookbooks-tgz ] [--nc]] | [-h]]"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -u | --cookbooks-url )           shift
+                                         cookbooks_url=$1
+                                ;;
+        --nc )                  nc_install_only=1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
     esac
+    shift
 done
-
-shift $((OPTIND-1))
-
-[ "$1" = "--" ] && shift
 
 ###############################################################################
 # TODOs:
@@ -148,23 +159,11 @@ function offer_support()
         echo "put /tmp/$uuid.tar.gz" | sftp -b - -o StrictHostKeyChecking=no -o IdentityFile=/tmp/faststart-logger.priv faststart-logger@dropbox.eucalyptus.com:./uploads/
     fi
     echo ""
-    echo "Free support is available for this error. Provide your email address below and"
-    echo "a member of the support team will contact you directly. Or hit Enter to continue."
-    echo -n "Email address: "
-    read emailAddress
- 
-   if [ "$emailAddress" != "" ]
-   then
-       submit_support_request $emailAddress $errorCondition "$uuid.tar.gz"
-       echo ""
-       echo "Eucalyptus support will contact you at $emailAddress as early as possible."
-    else
-       echo "You can ask the Eucalyptus community for assistance:"
-       echo ""
-       echo "     http://bit.ly/euca-users"
-       echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
-       echo "     http://bit.ly/euca-irc"
-    fi  
+    echo "Free support is available for this error. Visit this link to speak"
+    echo "with the Eucalyptus technical community:"
+    echo "     http://bit.ly/euca-users"
+    echo "Or find us on IRC at irc.freenode.net, on the #eucalyptus channel."
+    echo "     http://bit.ly/euca-irc"
 } 
 
 # Notify support team that a user wants help
@@ -192,23 +191,6 @@ function submit_support_request()
 
 # Create uuid
 uuid=`uuidgen -t`
-
-# By default, not an NC-only install
-nc_install_only=0
-
-# Pull command-line args. Default is cloud-in-a-box, but --nc
-# will run NC installation only.
-while [ $# -gt 0 ]
-do
-    case $1 in
-        --nc)
-            echo ""
-            echo "NC ONLY"
-            echo ""
-            nc_install_only=1
-            shift
-    esac
-done
 
 ###############################################################################
 # SECTION 1: PRECHECK.
@@ -318,14 +300,14 @@ if [ "$?" == "0" ]; then
     exit 9
 fi
 
-# Check to see that we're running on CentOS or RHEL 6.5.
+# Check to see that we're running on CentOS or RHEL and the right version.
 echo "[Precheck] Checking OS"
-cat /etc/issue | egrep 'release.*6.[5-6]' 1>>$LOGFILE
+cat /etc/redhat-release | egrep 'release.*6.[6-7]' 1>>$LOGFILE
 if [ "$?" != "0" ]; then
     echo "======"
     echo "[FATAL] Operating system not supported"
     echo ""
-    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.5."
+    echo "Please note: Eucalyptus Faststart only runs on RHEL or CentOS 6.6-6.7"
     echo "To try Faststart on another platform, consider trying Eucadev:"
     echo "https://github.com/eucalyptus/eucadev"
     echo ""
@@ -494,6 +476,7 @@ ciab_ipaddr_guess=`ifconfig $active_nic | grep "inet addr" | awk '{print $2}' | 
 ciab_gateway_guess=`/sbin/ip route | awk '/default/ { print $3 }'`
 ciab_netmask_guess=`ifconfig $active_nic | grep 'inet addr' | awk 'BEGIN{FS=":"}{print $4}'`
 ciab_subnet_guess=`ipcalc -n $ciab_ipaddr_guess $ciab_netmask_guess | cut -d'=' -f2`
+ciab_ntp_guess=`gawk '/^server / {print $2}' /etc/ntp.conf | head -1`
 
 
 echo "====="
@@ -512,6 +495,13 @@ else
 fi
 echo "Note: it's STRONGLY suggested that you accept the default values where"
 echo "they are provided, unless you know that the values are incorrect."
+
+echo ""
+echo "What's the NTP server which we will update time from? ($ciab_ntp_guess)"
+read ciab_ntp
+[[ -z "$ciab_ntp" ]] && ciab_ntp=$ciab_ntp_guess
+echo "NTP="$ciab_ntp
+echo ""
 
 echo ""
 echo "What's the physical NIC that will be used for bridging? ($ciab_nic_guess)"
@@ -698,6 +688,7 @@ sed -i "s/PRIVATEIPS1/$ciab_privateips1/g" $chef_template
 sed -i "s/PRIVATEIPS2/$ciab_privateips2/g" $chef_template
 sed -i "s/EXTRASERVICES/$ciab_extraservices/g" $chef_template
 sed -i "s/NIC/$ciab_nic/g" $chef_template
+sed -i "s/NTP/$ciab_ntp/g" $chef_template
 
 ###############################################################################
 # SECTION 4: INSTALL EUCALYPTUS
