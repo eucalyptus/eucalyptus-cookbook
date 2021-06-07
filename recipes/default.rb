@@ -87,20 +87,18 @@ if Eucalyptus::Enterprise.is_enterprise?(node)
   file cert_file do
     content <<-EOH
     -----BEGIN CERTIFICATE-----
-    #{node['eucalyptus']['clientcert']}
+    #{node['eucalyptus']['enterprise']['clientcert']}
     -----END CERTIFICATE-----
     EOH
     mode "0700"
-    not_if { ::File.exist? "#{cert_file}" }
   end
   file key_file do
     content <<-EOH
     -----BEGIN RSA PRIVATE KEY-----
-    #{node['eucalyptus']['clientkey']}
+    #{node['eucalyptus']['enterprise']['clientkey']}
     -----END RSA PRIVATE KEY-----
     EOH
     mode "0700"
-    not_if { ::File.exist? "#{key_file}" }
   end
   yum_repository "eucalyptus-enterprise" do
     description "Eucalyptus Enterprise Package Repo"
